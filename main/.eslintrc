@@ -1,0 +1,17 @@
+{
+	"parser": "babel-eslint",
+	"extends": "eslint:recommended",
+	"parserOptions": {
+		"ecmaVersion": 8,
+		"sourceType": "module"
+	},
+	"rules": {
+		"no-console": "off",
+		"eqeqeq": ["error", "smart"]
+	},
+	"env": {
+		"browser": true,
+		"commonjs": true,
+		"es6": true
+	}
+}

@@ -1,0 +1,18 @@
+{
+	"files": {},
+	"ignore": ".*",
+	"signs": {},
+	"user_contents": {
+		"cert_signers": {
+			"zeroid.bit": ["1iD5ZQJMNXu43w1qLB8sfdHVKppVMduGz"],
+			"kxoid.bit": ["12F5SvxoPR128aiudte78h8pY7mobroG6V"]
+		},
+		"permission_rules": {
+			".*": {
+				"files_allowed": "data.json",
+				"max_size": 50000
+			}
+		},
+		"permissions": {}
+	}
+}
