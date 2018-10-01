@@ -4,7 +4,7 @@ export default vue => [
 	{
 		path: "",
 		controller: () => {
-			vue.mainView = Home;
+			vue.currentView = Home;
 		}
 	}
 ];
