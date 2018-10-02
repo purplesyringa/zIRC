@@ -5,6 +5,10 @@ import Vue from "vue/dist/vue.min.js";
 import AsyncComputed from "vue-async-computed";
 Vue.use(AsyncComputed);
 
+// Components
+import Avatar from "vue_components/avatar/avatar.vue";
+Vue.component("Avatar", Avatar);
+
 Vue.prototype.$eventBus = new Vue();
 
 import Vuex from "vuex";
