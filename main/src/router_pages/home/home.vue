@@ -22,6 +22,8 @@
 </style>
 
 <script type="text/javascript">
+	import IRC from "libs/irc";
+
 	export default {
 		name: "Home",
 		data() {
@@ -36,7 +38,7 @@
 					return;
 				}
 
-				console.log(this.message.trim());
+				IRC.send(this.message.trim());
 
 				this.message = "";
 				this.$refs.message.focus();
