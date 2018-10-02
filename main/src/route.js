@@ -15,7 +15,14 @@ export const route = vue => {
 		router.router.add({
 			path: route.path,
 			controller(params) {
+				const oldView = vue.currentView;
+
 				route.controller(params);
+				vue.$store.commit("route", router.router);
+				if(oldView === vue.currentView) {
+					vue.currentView = null;
+					vue.$nextTick(() => vue.currentView = oldView);
+				}
 			}
 		});
 	});

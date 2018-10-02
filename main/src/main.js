@@ -8,6 +8,8 @@ Vue.use(AsyncComputed);
 // Components
 import Avatar from "vue_components/avatar/avatar.vue";
 Vue.component("Avatar", Avatar);
+import Sidebar from "vue_components/sidebar/sidebar.vue";
+Vue.component("Sidebar", Sidebar);
 
 Vue.prototype.$eventBus = new Vue();
 
@@ -23,7 +25,7 @@ const store = new Vuex.Store({
 		currentParams: null,
 		currentRoute: null,
 		currentHash: null,
-		tab: ""
+		currentChannel: null
 	},
 	mutations: {
 		setSiteInfo(state, siteInfo) {
@@ -33,6 +35,9 @@ const store = new Vuex.Store({
 			state.currentParams = router.currentParams;
 			state.currentRoute = router.currentRoute;
 			state.currentHash = router.currentHash;
+		},
+		openChannel(state, channel) {
+			state.currentChannel = channel;
 		}
 	}
 });

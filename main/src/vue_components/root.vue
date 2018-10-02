@@ -1,5 +1,6 @@
 <template>
 	<div class="current-view">
+		<Sidebar />
 		<component :is="$parent.currentView" ref="currentView"></component>
 	</div>
 </template>
