@@ -12,7 +12,7 @@
 			type="text"
 			v-model="message"
 			ref="message"
-			class="message"
+			class="input"
 			@keypress.enter="submit"
 		/>
 		<button @click="submit">Send &gt;</button>
@@ -22,7 +22,6 @@
 				v-for="message in history.slice().reverse()"
 				:key="message.message.id"
 
-				class="message"
 				v-bind="message"
 			/>
 		</div>
@@ -35,7 +34,7 @@
 		flex: 1 0 0
 		overflow-y: auto
 
-		.message, button
+		.input, button
 			font-family: "Courier New", monospace
 			font-size: 16px
 			padding: 8px 12px
@@ -46,6 +45,9 @@
 			.monospace
 				font-family: "Courier New", monospace
 				font-size: 16px
+
+		.messages
+			margin-top: 16px
 </style>
 
 <script type="text/javascript">

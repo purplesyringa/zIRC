@@ -1,11 +1,20 @@
 <template>
 	<div class="message">
-		{{certUserId}}: {{message.text}}
+		<span class="user">{{certUserId}}</span>
+		<span class="date">[{{dateText}}]</span>:
+		{{message.text}}
 	</div>
 </template>
 
 <style lang="sass" scoped>
-	
+	.message
+		margin: 4px 0
+		font-family: "Courier New", monospace
+
+		.user
+			font-weight: bold
+		.date
+			font-style: italic
 </style>
 
 <script type="text/javascript">
@@ -23,6 +32,12 @@
 					id: ""
 				}
 			};
+		},
+
+		computed: {
+			dateText() {
+				return (new Date(this.message.date)).toLocaleString();
+			}
 		}
 	};
 </script>
