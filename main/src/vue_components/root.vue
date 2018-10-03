@@ -12,8 +12,18 @@
 </style>
 
 <script language="text/javascript">
+	import {zeroPage} from "zero";
+
 	export default {
 		props: [],
-		name: "root"
+		name: "root",
+
+		async mounted() {
+			// Request merger permission
+			const permissions = (await zeroPage.getSiteInfo()).settings.permissions;
+			if(permissions.indexOf("Merger:IRC") === -1) {
+				await zeroPage.cmd("wrapperPermissionAdd", ["Merger:IRC"]);
+			}
+		}
 	};
 </script>
