@@ -4,7 +4,7 @@
  "background-color": "#FFF",
  "clone_root": "template-new",
  "cloned_from": "1HeLLo4uzjaLetFx6NH3PMwFP3qbRbTf3D",
- "description": "",
+ "description": "Check out IRC at /1chat4ahuD4atjYby2JA9T9xZWdTY4W4D/",
  "files": {
   "index.html": {
    "sha512": "23d2c38d7fa8a2fcde7aa42494db82889308c118ce15a89b725ac13886d785fb",
@@ -17,14 +17,15 @@
  },
  "ignore": "",
  "inner_path": "content.json",
- "modified": 1538579335,
+ "merged_type": "IRC",
+ "modified": 1538579392,
  "postmessage_nonce_security": true,
  "signers_sign": "HGvw6EhdWm+eGXTeMYJBVvkUR1ml84MRF/H6Sr/arJCtDwwR5ONh29uMMpuptgUPegkVnvzzU91cPl7POyvZt5k=",
  "signs": {
-  "19Ruw8j8YVq2W3Snkm6rKyWN1gmFBKUBay": "HB8HroFvnp4F4FI5Vebnd4jOVOhs6w+kNLX1IccNisRbbww+20u6JC17Q/jEKsDSB+wgVf1V9DP2TUo64tIcbU0="
+  "19Ruw8j8YVq2W3Snkm6rKyWN1gmFBKUBay": "HJK04QYytWkh9Ebdicd03W29K6faCUn6MGWvohY9G3n8LIJExAmbwbdVCVU9BTwwVwxF0ZQGOUezNjIJ7hgZRAQ="
  },
  "signs_required": 1,
- "title": "my new site",
+ "title": "PeerMessage hub",
  "translate": ["js/all.js"],
  "zeronet_version": "0.6.3"
 }
