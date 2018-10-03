@@ -10,6 +10,8 @@ import Avatar from "vue_components/avatar/avatar.vue";
 Vue.component("Avatar", Avatar);
 import Sidebar from "vue_components/sidebar/sidebar.vue";
 Vue.component("Sidebar", Sidebar);
+import Message from "vue_components/message/message.vue";
+Vue.component("Message", Message);
 
 Vue.prototype.$eventBus = new Vue();
 

@@ -7,6 +7,7 @@
 
 <style lang="sass" scoped>
 	.current-view
+		display: flex
 		height: 100%
 </style>
 

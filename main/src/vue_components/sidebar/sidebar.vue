@@ -13,7 +13,6 @@
 
 <style lang="sass" scoped>
 	aside
-		float: left
 		width: 320px
 		height: 100%
 		background-color: #EEE
