@@ -42,7 +42,7 @@ export default new class FileTransport extends EventEmitter {
 		const authAddress = (await zeroPage.getSiteInfo()).auth_address;
 
 		const hash = crypto.createHash("sha256").update(id).digest("hex");
-		const fileName = id[0] + hash;
+		const fileName = id.charCodeAt(0).toString(16) + "_" + hash;
 
 		await zeroDB.insertRow(
 			`data/users/${authAddress}/${fileName}.json`,

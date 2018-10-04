@@ -6,17 +6,29 @@
 		"users/.+/content.json": {
 			"to_json_table": ["cert_user_id"]
 		},
-		"users/.+/#.*.json": {
-			"to_table": ["channels"],
-			"file_name": "content.json"
+		"users/.+/23_.*.json": {
+			"to_table": [
+				{
+					"node": "messages",
+					"table": "channels"
+				}
+			]
 		},
-		"users/.+/!.*.json": {
-			"to_table": ["groups"],
-			"file_name": "content.json"
+		"users/.+/21_.*.json": {
+			"to_table": [
+				{
+					"node": "messages",
+					"table": "groups"
+				}
+			]
 		},
-		"users/.+/@.*.json": {
-			"to_table": ["users"],
-			"file_name": "content.json"
+		"users/.+/40_.*.json": {
+			"to_table": [
+				{
+					"node": "messages",
+					"table": "users"
+				}
+			]
 		}
 	},
 	"tables": {
