@@ -1,5 +1,5 @@
 import EventEmitter from "wolfy87-eventemitter";
-import {zeroPage} from "zero";
+import {zeroPage, zeroFS} from "zero";
 
 const PEERMESSAGE_HUB = "19Ruw8j8YVq2W3Snkm6rKyWN1gmFBKUBay";
 
@@ -7,12 +7,20 @@ export default new class PeerTransport extends EventEmitter {
 	constructor() {
 		super();
 
-		zeroPage.on("peerReceive", ({params: {cert, message, signed_by: signedBy}}) => {
-			this.emit("receive", {
-				authAddress: signedBy,
-				certUserId: cert.split("/").slice(1).join("/"),
-				message: message.message
-			});
+		zeroPage.on("peerReceive", async ({params: {message, signed_by: signedBy}}) => {
+			// message.signedBy -- main site address
+			// signedBy -- unique hub address
+			let contentJson = await zeroFS.readFile(`data/users/${message.signedBy}/content.json`);
+			contentJson = JSON.parse(contentJson);
+			if(contentJson.signatureAddresses.indexOf(signedBy) > -1) {
+				// The sender and the signer both agree with each other's
+				// identity, so they should be the same person.
+				this.emit("receive", {
+					authAddress: message.signedBy,
+					certUserId: contentJson.cert_user_id,
+					message
+				});
+			}
 		});
 	}
 
@@ -41,11 +49,49 @@ export default new class PeerTransport extends EventEmitter {
 			});
 		}
 
+		// Get hub auth_address
+		const hubInfo = await zeroPage.cmd("as", [
+			PEERMESSAGE_HUB,
+			"siteInfo"
+		]);
+		const hubAuthAddress = hubInfo.auth_address;
+
+		// Get main auth_address
+		const siteInfo = await zeroPage.getSiteInfo();
+		const authAddress = siteInfo.auth_address;
+
+		// Add hub auth_address to our user's content.json
+		let contentJson;
+		try {
+			contentJson = await zeroFS.readFile(`data/users/${authAddress}/content.json`);
+			contentJson = JSON.parse(contentJson);
+		} catch(e) {
+			contentJson = {
+				files: {}
+			};
+		}
+
+		let currentSignatureAddresses = contentJson.signatureAddresses || [];
+		if(currentSignatureAddresses.indexOf(hubAuthAddress) === -1) {
+			// If it's not there, add & publish it
+			currentSignatureAddresses.push(hubAuthAddress);
+			contentJson.signatureAddresses = currentSignatureAddresses;
+
+			contentJson = JSON.stringify(contentJson, null, 1);
+			await zeroFS.writeFile(`data/users/${authAddress}/content.json`, contentJson);
+			try {
+				await zeroPage.publish(`data/users/${authAddress}/content.json`);
+			} catch(e) {
+				// Fallthrough
+			}
+		}
+
+		// Send the message
 		zeroPage.cmd("as", [
 			PEERMESSAGE_HUB,
 			"peerBroadcast",
 			{
-				message,
+				message: {...message, signedBy: authAddress},
 				immediate: false,
 				privatekey: false
 			}

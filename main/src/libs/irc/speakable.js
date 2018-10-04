@@ -20,6 +20,9 @@ export default class Speakable extends EventEmitter {
 	async loadHistory() {
 		if(!this.history) {
 			this.history = await this._loadHistory();
+			for(const message of this.history) {
+				this.received[message.message.id] = true;
+			}
 		}
 
 		return this.history;
