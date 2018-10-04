@@ -31,6 +31,11 @@ const store = new Vuex.Store({
 	},
 	mutations: {
 		setSiteInfo(state, siteInfo) {
+			if(siteInfo.address === state.siteInfo.address) {
+				state.siteInfo = siteInfo;
+			}
+		},
+		forceSetSiteInfo(state, siteInfo) {
 			state.siteInfo = siteInfo;
 		},
 		route(state, router) {
@@ -61,7 +66,7 @@ Vue.prototype.$zeroPage = zeroPage;
 
 (async function() {
 	const siteInfo = await zeroPage.getSiteInfo();
-	store.commit("setSiteInfo", siteInfo);
+	store.commit("forceSetSiteInfo", siteInfo);
 	route(app);
 	app.$eventBus.$emit("setSiteInfo", siteInfo);
 })();
