@@ -131,6 +131,12 @@ module.exports = {
 		]),
 		new CopyWebpackPlugin([
 			{
+				from: "./dbschema.json",
+				to: "./dbschema.json"
+			}
+		]),
+		new CopyWebpackPlugin([
+			{
 				from: "./p2p.json",
 				to: "./p2p.json"
 			}
@@ -161,7 +167,10 @@ module.exports = {
 				}
 				circularErrors.push(newPaths.join(" -> "));
 
-				compilation.errors.push(new Error(paths.join(" -> ")));
+				if(!paths.some(path => path.indexOf("node_modules") > -1)) {
+					// Ignore crypto bugs, etc.
+					compilation.errors.push(new Error(paths.join(" -> ")));
+				}
 			}
 		})
 	]

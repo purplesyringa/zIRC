@@ -16,7 +16,7 @@ export default new class PeerTransport extends EventEmitter {
 		});
 	}
 
-	async send(message) {
+	async send(id, message) {
 		// Check that we have the plugin
 		const plugins = (await zeroPage.cmd("serverInfo")).plugins;
 		if(plugins.indexOf("PeerMessage") === -1) {

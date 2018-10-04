@@ -1,0 +1,61 @@
+{
+	"db_name": "irc",
+	"db_file": "data/irc.db",
+	"version": 2,
+	"maps": {
+		"users/.+/content.json": {
+			"to_json_table": ["cert_user_id"]
+		},
+		"users/.+/#.*.json": {
+			"to_table": ["channels"],
+			"file_name": "content.json"
+		},
+		"users/.+/!.*.json": {
+			"to_table": ["groups"],
+			"file_name": "content.json"
+		},
+		"users/.+/@.*.json": {
+			"to_table": ["users"],
+			"file_name": "content.json"
+		}
+	},
+	"tables": {
+		"json": {
+			"cols": [
+				["json_id", "INTEGER PRIMARY KEY AUTOINCREMENT"],
+				["directory", "TEXT"],
+				["file_name", "TEXT"],
+				["cert_user_id", "TEXT"]
+			],
+			"indexes": ["CREATE UNIQUE INDEX path ON json(directory, file_name)"],
+			"schema_changed": 1
+		},
+		"channels": {
+			"cols": [
+				["hash", "TEXT"],
+				["message", "TEXT"],
+				["json_id", "INTEGER"]
+			],
+			"indexes": ["CREATE UNIQUE INDEX channel_hash ON channels(hash)"],
+			"schema_changed": 1
+		},
+		"groups": {
+			"cols": [
+				["hash", "TEXT"],
+				["message", "TEXT"],
+				["json_id", "INTEGER"]
+			],
+			"indexes": ["CREATE UNIQUE INDEX group_hash ON groups(hash)"],
+			"schema_changed": 1
+		},
+		"users": {
+			"cols": [
+				["hash", "TEXT"],
+				["message", "TEXT"],
+				["json_id", "INTEGER"]
+			],
+			"indexes": ["CREATE UNIQUE INDEX user_hash ON users(hash)"],
+			"schema_changed": 1
+		}
+	}
+}

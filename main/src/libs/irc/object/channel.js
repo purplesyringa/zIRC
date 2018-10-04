@@ -23,7 +23,7 @@ export default class Channel extends Speakable {
 	}
 
 	_transfer(message, transport) {
-		transport.send({
+		transport.send(this.name, {
 			cmd: "channel" + this.name,
 			message
 		});
