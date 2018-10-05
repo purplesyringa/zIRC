@@ -1,5 +1,5 @@
 import EventEmitter from "wolfy87-eventemitter";
-import {zeroPage, zeroDB, zeroFS} from "zero";
+import {zeroPage, zeroDB, zeroFS, zeroAuth} from "zero";
 import crypto from "crypto";
 
 export default new class FileTransport extends EventEmitter {
@@ -39,7 +39,19 @@ export default new class FileTransport extends EventEmitter {
 	}
 
 	async send(id, message) {
-		const authAddress = (await zeroPage.getSiteInfo()).auth_address;
+		const siteInfo = await zeroPage.getSiteInfo();
+		const certUserId = siteInfo.cert_user_id;
+		if(
+			!certUserId ||
+			!zeroAuth.acceptedDomains.some(domain => certUserId.endsWith("@" + domain))
+		) {
+			// The cert_user_id is not signed by any provider
+			// we allow -- post as anonymous, via peer transport.
+			return;
+		}
+
+
+		const authAddress = siteInfo.auth_address;
 
 		const hash = crypto.createHash("sha256").update(id).digest("hex");
 		const fileName = id.charCodeAt(0).toString(16) + "_" + hash;
