@@ -2,8 +2,8 @@ import Speakable from "libs/irc/speakable";
 import {zeroPage, zeroFS} from "zero";
 
 export default class HelloBot extends Speakable {
-	constructor(name) {
-		super(name);
+	constructor() {
+		super("/HelloBot");
 		this.state = "start";
 	}
 
