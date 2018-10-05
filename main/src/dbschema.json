@@ -14,7 +14,7 @@
 				}
 			]
 		},
-		"users/.+/21_.*.json": {
+		"users/.+/2b_.*.json": {
 			"to_table": [
 				{
 					"node": "messages",

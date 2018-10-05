@@ -15,7 +15,7 @@ export default class HelloBot extends Speakable {
 				message: {
 					date: Date.now(),
 					text: `
-						Hi, I'm *HelloBot! I'll help you start using our IRC.
+						Hi, I'm /HelloBot! I'll help you start using our IRC.
 						Please, tell me something! ^_^
 					`,
 					id: "hellobot/0"
@@ -104,7 +104,7 @@ export default class HelloBot extends Speakable {
 						date: Date.now(),
 						text: `
 							Okay. Now, look at the sidebar at the left << Right
-							now, you only see *HelloBot (that's me!!) here.
+							now, you only see /HelloBot (that's me!!) here.
 							Let's start our tour by opening #lobby. Press the +
 							at the bottom-left corner and type in "#lobby". Now,
 							enjoy using the IRC! ^_^

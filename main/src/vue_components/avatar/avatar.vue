@@ -48,7 +48,7 @@
 				} else if(this.channel[0] === "!") {
 					// It's a private group
 					return "group";
-				} else if(this.channel[0] === "*") {
+				} else if(this.channel[0] === "/") {
 					// It's a bot
 					return "bot";
 				} else if(this.channel[0] === "@") {
@@ -67,9 +67,9 @@
 				if(this.type === "channel") {
 					return "#" + this.channel[1].toUpperCase();
 				} else if(this.type === "group") {
-					return "!" + this.channel[1].toUpperCase();
+					return "+" + this.channel[1].toUpperCase();
 				} else if(this.type === "bot") {
-					return "*" + this.channel[1].toUpperCase();
+					return "/" + this.channel[1].toUpperCase();
 				} else if(this.type === "user-id") {
 					return "@" + this.channel[2].toUpperCase();
 				} else if(this.type === "user-name") {

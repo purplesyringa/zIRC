@@ -8,7 +8,7 @@ export default vue => [
 			// Let's check whether there's an object in users.json
 			const userSettings = await zeroPage.cmd("userGetSettings");
 			if(!userSettings || !userSettings.channels) {
-				vue.$store.commit("openChannel", "*HelloBot");
+				vue.$store.commit("openChannel", "/HelloBot");
 			} else {
 				vue.$store.commit("openChannel", "#lobby");
 			}

@@ -76,7 +76,7 @@
 		async mounted() {
 			const userSettings = await zeroPage.cmd("userGetSettings");
 			this.channels = (userSettings || {}).channels || [
-				"*HelloBot"
+				"/HelloBot"
 			];
 		},
 
