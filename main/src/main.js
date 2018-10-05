@@ -6,6 +6,8 @@ import AsyncComputed from "vue-async-computed";
 Vue.use(AsyncComputed);
 
 // Components
+import Icon from "vue-awesome/components/Icon.vue";
+Vue.component("icon", Icon);
 import Avatar from "vue_components/avatar/avatar.vue";
 Vue.component("Avatar", Avatar);
 import Sidebar from "vue_components/sidebar/sidebar.vue";

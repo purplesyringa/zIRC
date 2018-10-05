@@ -88,4 +88,34 @@ export default new class Storage extends EventEmitter {
 		}
 		return objects;
 	}
+
+
+	async deleteHistory(id) {
+		// Get permanent storages
+		const mergedSites = await zeroPage.cmd("mergerSiteList", [true]);
+		let permanentStorages = [];
+		for(const address of Object.keys(mergedSites)) {
+			const content = mergedSites[address].content;
+			if(content.permanent_storage && content.setup) {
+				permanentStorages.push(address);
+			}
+		}
+
+		console.log("Deleting", id, "from permanent storages:", permanentStorages);
+
+		// Get file names
+		const hash = crypto.createHash("sha256").update(id).digest("hex");
+		const fileName = id.charCodeAt(0).toString(16) + "_" + hash;
+
+		// Delete
+		await Promise.all(
+			permanentStorages.map(async address => {
+				try {
+					await zeroFS.deleteFile(`merged-IRC/${address}/data/${fileName}.json`);
+				} catch(e) {
+					// Fallthrough
+				}
+			})
+		);
+	}
 };

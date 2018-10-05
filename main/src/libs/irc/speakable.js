@@ -49,6 +49,16 @@ export default class Speakable extends EventEmitter {
 		return this.history;
 	}
 
+	async deleteHistory() {
+		await Storage.deleteHistory(this.name);
+	}
+
+	async refreshHistory() {
+		delete this.history;
+		this.received = {};
+		return await this.loadHistory();
+	}
+
 	async send(message) {
 		message = {
 			date: Date.now(),

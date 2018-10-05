@@ -8,14 +8,20 @@
 			</span>
 		</div>
 
-		<input
-			type="text"
-			v-model="message"
-			ref="message"
-			class="input"
-			@keypress.enter="submit"
-		/>
-		<button @click="submit">Send &gt;</button>
+		<div>
+			<input
+				type="text"
+				v-model="message"
+				ref="message"
+				class="input"
+				@keypress.enter="submit"
+			/>
+			<button @click="submit">Send &gt;</button>
+
+			<button class="right" title="Delete history from permanent storage" @click="deleteHistory">
+				<icon name="trash" />
+			</button>
+		</div>
 
 		<div class="messages">
 			<Message
@@ -39,6 +45,9 @@
 			font-size: 16px
 			padding: 8px 12px
 
+		.right
+			float: right
+
 		.info
 			margin-bottom: 16px
 
@@ -53,6 +62,7 @@
 <script type="text/javascript">
 	import IRC from "libs/irc";
 	import {zeroPage, zeroAuth} from "zero";
+	import "vue-awesome/icons/trash";
 
 	export default {
 		name: "Home",
@@ -96,6 +106,11 @@
 
 			onReceived(obj) {
 				//this.history.push(obj);
+			},
+
+			async deleteHistory() {
+				await this.currentObject.deleteHistory();
+				this.history = await this.currentObject.refreshHistory();
 			}
 		},
 
