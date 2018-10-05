@@ -65,6 +65,7 @@ import {zeroPage} from "./zero";
 Vue.prototype.$zeroPage = zeroPage;
 
 (async function() {
+	zeroPage.cmd("wrapperInnerLoaded");
 	const siteInfo = await zeroPage.getSiteInfo();
 	store.commit("forceSetSiteInfo", siteInfo);
 	route(app);

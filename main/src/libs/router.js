@@ -10,10 +10,12 @@ module.exports = class Router {
 	}
 
 	getURL() {
+		console.log(location.search, location.hash);
 		return this.clearSlashes(
 			location.search
 				.replace(/[?&]wrapper_nonce=([A-Za-z0-9]+)/, "")
-				.replace("?/", "")
+				.replace("?/", "") +
+			location.hash
 		);
 	}
 	clearSlashes(path) {
