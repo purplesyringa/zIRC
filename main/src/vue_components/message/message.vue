@@ -1,6 +1,7 @@
 <template>
 	<div class="message">
-		<span class="user">{{certUserId}}</span>
+		<span class="user" v-if="certUserId">{{certUserId}}</span>
+		<span class="user anonymous" v-else>Anonymous</span>
 		<span class="date">[{{dateText}}]</span>:
 		{{message.text}}
 	</div>
@@ -13,6 +14,9 @@
 
 		.user
 			font-weight: bold
+		.anonymous
+			font-style: italic
+			color: #008
 		.date
 			font-style: italic
 </style>
