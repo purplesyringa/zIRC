@@ -5,6 +5,7 @@ export default class HelloBot extends Speakable {
 	constructor() {
 		super("/HelloBot");
 		this.state = "start";
+		this.currentId = Math.random().toString(16).substr(2);
 	}
 
 	async _loadHistory() {
@@ -27,7 +28,7 @@ export default class HelloBot extends Speakable {
 								lost now! When you're ready to start using IRC,
 								tell me.
 							`,
-							id: "hellobot/6"
+							id: this.generateId(0)
 						}
 					}
 				];
@@ -53,7 +54,7 @@ export default class HelloBot extends Speakable {
 						Hi, I'm /HelloBot! I'll help you start using our IRC.
 						Please, tell me something! ^_^
 					`,
-					id: "hellobot/0"
+					id: this.generateId(1)
 				}
 			}
 		];
@@ -83,7 +84,7 @@ export default class HelloBot extends Speakable {
 							[https://github.com/HelloZeroNet/Plugin-PeerMessage]
 							.
 						`,
-						id: "hellobot/1"
+						id: this.generateId(2)
 					}
 				});
 				this.state = "plugin";
@@ -102,7 +103,7 @@ export default class HelloBot extends Speakable {
 								others will only be able to read "Anonymous"
 								messages if they have PeerMessage plugin.
 							`,
-							id: "hellobot/2"
+							id: this.generateId(3)
 						}
 					});
 					this.state = "anonymous";
@@ -118,7 +119,7 @@ export default class HelloBot extends Speakable {
 									clicking the [Change] button ^^ and tell me
 									when you're ready.
 								`,
-								id: "hellobot/3"
+								id: this.generateId(4)
 							}
 						});
 						this.state = "login";
@@ -141,7 +142,7 @@ export default class HelloBot extends Speakable {
 							answer "yes"/"no", whether you want to set up a
 							permanent storage.
 						`,
-						id: "hellobot/4"
+						id: this.generateId(5)
 					}
 				});
 				this.state = "storage";
@@ -158,7 +159,7 @@ export default class HelloBot extends Speakable {
 								Niiice! So, you'll see a message inviting to
 								clone a site, please do it! ^_^
 							`,
-							id: "hellobot/5"
+							id: this.generateId(6)
 						}
 					});
 					this.state = "clone";
@@ -182,7 +183,7 @@ export default class HelloBot extends Speakable {
 								typing "/storage". When you're ready to start
 								using IRC, tell me.
 							`,
-							id: "hellobot/7"
+							id: this.generateId(7)
 						}
 					});
 					this.state = "tour";
@@ -197,7 +198,7 @@ export default class HelloBot extends Speakable {
 							text: `
 								Please answer "yes" or "no".
 							`,
-							id: "hellobot/8"
+							id: this.generateId(8)
 						}
 					});
 				}, 1000);
@@ -221,11 +222,15 @@ export default class HelloBot extends Speakable {
 							at the bottom-left corner and type in "#lobby". Now,
 							enjoy using the IRC! ^_^
 						`,
-						id: "hellobot/9"
+						id: this.generateId(9)
 					}
 				});
 				this.state = "done";
 			}, 1000);
 		}
+	}
+
+	generateId(id) {
+		return this.currentId + "/" + id;
 	}
 }
