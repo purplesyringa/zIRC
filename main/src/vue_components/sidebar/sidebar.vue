@@ -82,7 +82,11 @@
 
 		methods: {
 			open(name) {
-				this.$router.navigate(name);
+				if(name[0] === "/") {
+					this.$router.navigate(`bot${name}`);
+				} else {
+					this.$router.navigate(name);
+				}
 			},
 
 			async addChannel() {

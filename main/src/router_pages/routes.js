@@ -22,5 +22,12 @@ export default vue => [
 			vue.currentView = Home;
 			vue.$store.commit("openChannel", channel);
 		}
+	},
+	{
+		path: "bot/:bot",
+		controller: ({bot}) => {
+			vue.currentView = Home;
+			vue.$store.commit("openChannel", `/${bot}`);
+		}
 	}
 ];
