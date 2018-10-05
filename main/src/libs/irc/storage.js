@@ -2,8 +2,8 @@ import EventEmitter from "wolfy87-eventemitter";
 import {zeroPage, zeroFS} from "zero";
 import crypto from "crypto";
 
-export default new class StorageTransport extends EventEmitter {
-	async send(id, message) {
+export default new class Storage extends EventEmitter {
+	async save(id, object) {
 		// Get permanent storages and sort them by their
 		// current_size/max_size.
 		const mergedSites = await zeroPage.cmd("mergerSiteList", [true]);
@@ -40,10 +40,10 @@ export default new class StorageTransport extends EventEmitter {
 			data = {};
 		}
 
-		if(!data.messages) {
-			data.messages = [];
+		if(!data.objects) {
+			data.objects = [];
 		}
-		data.messages.push(message);
+		data.objects.push(object);
 
 		data = JSON.stringify(data);
 		await zeroFS.writeFile(`merged-IRC/${address}/data/${fileName}.json`, data);

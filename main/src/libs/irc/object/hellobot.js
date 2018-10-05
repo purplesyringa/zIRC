@@ -3,8 +3,7 @@ import {zeroPage, zeroFS} from "zero";
 
 export default class HelloBot extends Speakable {
 	constructor(name) {
-		super();
-		this.name = name;
+		super(name);
 		this.state = "start";
 	}
 
