@@ -8,6 +8,10 @@
 			>
 				<Avatar :channel="channel" />
 				{{channel.substr(0, 18)}}
+
+				<span class="close" @click.stop="removeChannel(channel)">
+					&times;
+				</span>
 			</div>
 		</div>
 
@@ -43,6 +47,16 @@
 
 				&.current, &:hover
 					background-color: #FFF
+
+				.close
+					float: right
+					margin: 16px 0
+					padding: 8px
+					border-radius: 50%
+					font-size: 32px
+
+					&:hover
+						background-color: #EEE
 
 		.footer
 			flex: 0 0 48px
@@ -108,6 +122,26 @@
 
 				// And open
 				this.open(channel);
+			},
+
+			async removeChannel(channel) {
+				const idx = this.channels.indexOf(channel);
+				if(idx > -1) {
+					this.channels.splice(idx, 1);
+				}
+
+				// Save
+				let userSettings = await zeroPage.cmd("userGetSettings");
+				if(!userSettings) {
+					userSettings = {};
+				}
+				userSettings.channels = this.channels;
+				await zeroPage.cmd("userSetSettings", [userSettings]);
+
+				if(this.current === channel) {
+					// Open #lobby if we removed the current channel
+					this.open("#lobby");
+				}
 			}
 		},
 
