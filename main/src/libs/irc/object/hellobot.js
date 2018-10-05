@@ -1,5 +1,5 @@
 import Speakable from "libs/irc/speakable";
-import {zeroPage} from "zero";
+import {zeroPage, zeroFS} from "zero";
 
 export default class HelloBot extends Speakable {
 	constructor(name) {
@@ -33,6 +33,13 @@ export default class HelloBot extends Speakable {
 					}
 				];
 				this.state = "tour";
+
+				let content = await zeroFS.readFile(`merged-IRC/${address}/content.json`);
+				content = JSON.parse(content);
+				content.setup = true;
+				content = JSON.stringify(content, null, 1);
+				await zeroFS.writeFile(`merged-IRC/${address}/content.json`, content);
+
 				return messages;
 			}
 		}

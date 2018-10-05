@@ -1,5 +1,6 @@
 import PeerTransport from "libs/irc/transport/peer";
 import FileTransport from "libs/irc/transport/file";
+import StorageTransport from "libs/irc/transport/storage";
 import EventEmitter from "wolfy87-eventemitter";
 import {zeroPage} from "zero";
 
@@ -14,6 +15,8 @@ export default class Speakable extends EventEmitter {
 			this._listen(PeerTransport);
 			// Listen from files
 			this._listen(FileTransport);
+			// Listen from storage
+			this._listen(StorageTransport);
 		}, 0);
 	}
 
@@ -39,6 +42,8 @@ export default class Speakable extends EventEmitter {
 		this._transfer(message, PeerTransport);
 		// Transfer via files
 		this._transfer(message, FileTransport);
+		// Transfer via storage
+		this._transfer(message, StorageTransport);
 
 		// Receive, in case the transfers are slow
 		const siteInfo = await zeroPage.getSiteInfo();
