@@ -21,9 +21,20 @@ export default class Speakable extends EventEmitter {
 
 	async loadHistory() {
 		if(!this.history) {
+			// Get history by reading data files
 			this.history = await this._loadHistory();
 			for(const message of this.history) {
 				this.received[message.message.id] = true;
+			}
+
+			// And now load history from permanent storage
+			for(const message of await Storage.load(this.name)) {
+				if(this.received[message.message.id]) {
+					continue;
+				}
+
+				this.received[message.message.id] = true;
+				this.history.push(message);
 			}
 		}
 
