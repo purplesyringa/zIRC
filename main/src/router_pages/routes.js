@@ -1,11 +1,19 @@
 import Home from "./home/home.vue";
+import {zeroPage} from "zero";
 
 export default vue => [
 	{
 		path: "",
-		controller: () => {
+		controller: async () => {
+			// Let's check whether there's an object in users.json
+			const userSettings = await zeroPage.cmd("userGetSettings");
+			if(!userSettings || !userSettings.channels) {
+				vue.$store.commit("openChannel", "*HelloBot");
+			} else {
+				vue.$store.commit("openChannel", "#lobby");
+			}
+
 			vue.currentView = Home;
-			vue.$store.commit("openChannel", "*HelloBot");
 		}
 	},
 	{
