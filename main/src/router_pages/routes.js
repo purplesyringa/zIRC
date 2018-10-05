@@ -5,7 +5,7 @@ export default vue => [
 		path: "",
 		controller: () => {
 			vue.currentView = Home;
-			vue.$store.commit("openChannel", "#lobby");
+			vue.$store.commit("openChannel", "*HelloBot");
 		}
 	},
 	{

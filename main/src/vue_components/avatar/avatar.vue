@@ -48,6 +48,9 @@
 				} else if(this.channel[0] === "!") {
 					// It's a private group
 					return "group";
+				} else if(this.channel[0] === "*") {
+					// It's a bot
+					return "bot";
 				} else if(this.channel[0] === "@") {
 					// It's an ID-based user
 					return "user-id";
@@ -64,7 +67,9 @@
 				if(this.type === "channel") {
 					return "#" + this.channel[1].toUpperCase();
 				} else if(this.type === "group") {
-					return "!" + this.channel[1].toUpperCase()
+					return "!" + this.channel[1].toUpperCase();
+				} else if(this.type === "bot") {
+					return "*" + this.channel[1].toUpperCase();
 				} else if(this.type === "user-id") {
 					return "@" + this.channel[2].toUpperCase();
 				} else if(this.type === "user-name") {
@@ -76,6 +81,12 @@
 
 			backgroundColor() {
 				let hash = 0;
+				for(let i = 0; i < this.channel.length; i++) {
+					hash = this.channel.charCodeAt(i) + ((hash << 5) - hash);
+				}
+				for(let i = 0; i < this.channel.length; i++) {
+					hash = this.channel.charCodeAt(i) + ((hash << 5) - hash);
+				}
 				for(let i = 0; i < this.channel.length; i++) {
 					hash = this.channel.charCodeAt(i) + ((hash << 5) - hash);
 				}

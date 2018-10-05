@@ -34,17 +34,21 @@
 </style>
 
 <script type="text/javascript">
+	import {zeroPage} from "zero";
+
 	export default {
 		name: "Sidebar",
 		data() {
 			return {
-				channels: [
-					"#lobby",
-					"krixano@kxoid.bit",
-					"@1A5jvsSuBHC7HAFGazmKSmNanh1pWY8Smy",
-					"!zim"
-				]
+				channels: []
 			};
+		},
+
+		async mounted() {
+			const userSettings = await zeroPage.cmd("userGetSettings");
+			this.channels = (userSettings || {}).channels || [
+				"*HelloBot"
+			];
 		},
 
 		methods: {
