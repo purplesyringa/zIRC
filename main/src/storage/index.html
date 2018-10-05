@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Permanent storage</title>
+		<meta charset="utf-8">
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<base href="" target="_top" id="base">
+		<script>base.href = document.location.href.replace("/media", "").replace("index.html", "").replace(/[&?]wrapper=False/, "").replace(/[&?]wrapper_nonce=[A-Za-z0-9]+/, "")</script>
+	</head>
+	<body>
+		This is your own permanent storage for <a href="/1chat4ahuD4atjYby2JA9T9xZWdTY4W4D/">IRC</a>.
+
+		<script src="ZeroFrame.js"></script>
+		<script>
+			// Check whether this site is set up for storage.
+			var zeroFrame = new ZeroFrame();
+			zeroFrame.cmd("siteInfo", [], function(siteInfo) {
+				if(!siteInfo.content.setup) {
+					top.location.replace("/1chat4ahuD4atjYby2JA9T9xZWdTY4W4D/?/add-storage/" + siteInfo.address);
+				}
+			});
+		</script>
+	</body>
+</html>

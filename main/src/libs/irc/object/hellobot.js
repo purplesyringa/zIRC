@@ -1,4 +1,5 @@
 import Speakable from "libs/irc/speakable";
+import {zeroPage} from "zero";
 
 export default class HelloBot extends Speakable {
 	constructor(name) {
@@ -8,6 +9,34 @@ export default class HelloBot extends Speakable {
 	}
 
 	async _loadHistory() {
+		// Let's check whether there's a storage we haven't setup yet
+		const mergedSites = await zeroPage.cmd("mergerSiteList", [true]);
+		for(const address of Object.keys(mergedSites)) {
+			const content = mergedSites[address].content;
+			if(content.permanent_storage && !content.setup) {
+				// Yay, we've found an unset hub!
+				const messages = [
+					{
+						authAddress: "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
+						certUserId: "HelloBot",
+						message: {
+							date: Date.now(),
+							text: `
+								Okay, so you've just made a permanent storage!
+								It has address "${address}", but you don't have
+								to remember that. Just know that nothing will be
+								lost now! When you're ready to start using IRC,
+								tell me.
+							`,
+							id: "hellobot/6"
+						}
+					}
+				];
+				this.state = "tour";
+				return messages;
+			}
+		}
+
 		return [
 			{
 				authAddress: "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
@@ -91,6 +120,83 @@ export default class HelloBot extends Speakable {
 				}, 5000);
 			}, 1000);
 		} else if(this.state === "login") {
+			setTimeout(() => {
+				this._received({
+					authAddress: "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
+					certUserId: "HelloBot",
+					message: {
+						date: Date.now(),
+						text: `
+							Nice! Now another question: would you like to save
+							the messages you receive and send to a permanent
+							storage? This means that Anonymous messages will be
+							saved (not deleted, as usual), and if someone
+							deletes his message, you'll still have it. Please
+							answer "yes"/"no", whether you want to set up a
+							permanent storage.
+						`,
+						id: "hellobot/4"
+					}
+				});
+				this.state = "storage";
+			}, 1000);
+		} else if(this.state === "storage") {
+			if(message.text === "yes") {
+				setTimeout(() => {
+					this._received({
+						authAddress: "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
+						certUserId: "HelloBot",
+						message: {
+							date: Date.now(),
+							text: `
+								Niiice! So, you'll see a message inviting to
+								clone a site, please do it! ^_^
+							`,
+							id: "hellobot/5"
+						}
+					});
+					this.state = "clone";
+
+					setTimeout(async () => {
+						const siteInfo = await zeroPage.getSiteInfo();
+						zeroPage.cmd("siteClone", [siteInfo.address, "storage"]);
+					}, 1000);
+				}, 1000);
+			} else if(message.text === "no") {
+				setTimeout(() => {
+					this._received({
+						authAddress: "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
+						certUserId: "HelloBot",
+						message: {
+							date: Date.now(),
+							text: `
+								Oh. Okaay, you can always setup the permanent
+								storage any time later by accessing me
+								(reminder: press "+", then "/HelloBot" ^_^) and
+								typing "/storage". When you're ready to start
+								using IRC, tell me.
+							`,
+							id: "hellobot/7"
+						}
+					});
+					this.state = "tour";
+				}, 1000);
+			} else {
+				setTimeout(() => {
+					this._received({
+						authAddress: "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
+						certUserId: "HelloBot",
+						message: {
+							date: Date.now(),
+							text: `
+								Please answer "yes" or "no".
+							`,
+							id: "hellobot/8"
+						}
+					});
+				}, 1000);
+			}
+		} else if(this.state === "tour") {
 			transport.send("#HelloBot_join", {
 				cmd: "channel#HelloBot_join",
 				message
@@ -109,7 +215,7 @@ export default class HelloBot extends Speakable {
 							at the bottom-left corner and type in "#lobby". Now,
 							enjoy using the IRC! ^_^
 						`,
-						id: "hellobot/4"
+						id: "hellobot/9"
 					}
 				});
 				this.state = "done";

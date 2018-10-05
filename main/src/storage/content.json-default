@@ -1,0 +1,24 @@
+{
+ "address": "19Ruw8j8YVq2W3Snkm6rKyWN1gmFBKUBay",
+ "background-color": "#FFF",
+ "description": "Check out IRC at /1chat4ahuD4atjYby2JA9T9xZWdTY4W4D/",
+ "files": {
+  "index.html": {
+   "sha512": "",
+   "size": 0
+  },
+  "ZeroFrame.js": {
+   "sha512": "",
+   "size": 0
+  }
+ },
+ "merged_type": "IRC",
+ "modified": 1538579392,
+ "signers_sign": "",
+ "signs": {},
+ "signs_required": 1,
+ "title": " permanent storage",
+ "permanent_storage": true,
+ "translate": ["js/all.js"],
+ "zeronet_version": "0.6.3"
+}

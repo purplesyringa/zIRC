@@ -147,6 +147,12 @@ module.exports = {
 				to: "./data"
 			}
 		]),
+		new CopyWebpackPlugin([
+			{
+				from: "./storage",
+				to: "./storage"
+			}
+		]),
 		new CircularDependencyPlugin({
 			exclude: /node_modules/,
 			failOnError: true,

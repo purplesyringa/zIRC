@@ -29,5 +29,13 @@ export default vue => [
 			vue.currentView = Home;
 			vue.$store.commit("openChannel", `/${bot}`);
 		}
+	},
+
+	{
+		path: "add-storage/:address",
+		controller: ({address}) => {
+			zeroPage.cmd("mergerSiteAdd", [address]);
+			vue.$router.navigate("bot/HelloBot");
+		}
 	}
 ];
