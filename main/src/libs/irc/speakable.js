@@ -40,9 +40,7 @@ export default class Speakable extends EventEmitter {
 			}
 
 			this.history.sort((a, b) => {
-				const aDate = a.receiveDate || a.message.date;
-				const bDate = b.receiveDate || b.message.date;
-				return aDate - bDate;
+				return a.message.date - b.message.date;
 			});
 		}
 

@@ -2,7 +2,7 @@
 	<div class="message">
 		<span class="user" v-if="certUserId">{{certUserId}}</span>
 		<span class="user anonymous" v-else>Anonymous</span>
-		<span class="date">[{{dateText}}]</span>:
+		<span class="date" :title="title">[{{dateText}}]</span>:
 		{{message.text}}
 	</div>
 </template>
@@ -41,6 +41,13 @@
 		computed: {
 			dateText() {
 				return (new Date(this.message.date)).toLocaleString();
+			},
+			title() {
+				if(this.receiveDate) {
+					return `Received at: ${(new Date(this.receiveDate)).toLocaleString()}`;
+				} else {
+					return "";
+				}
 			}
 		}
 	};
