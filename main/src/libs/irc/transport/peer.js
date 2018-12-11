@@ -35,7 +35,7 @@ export default new class PeerTransport extends EventEmitter {
 		// Request add
 		const mergedSites = await zeroPage.cmd("mergerSiteList");
 		if(!mergedSites[PEERMESSAGE_HUB]) {
-			// await zeroPage.cmd("mergerSiteAdd", [PEERMESSAGE_HUB]);
+			await zeroPage.cmd("mergerSiteAdd", [PEERMESSAGE_HUB]);
 			await new Promise(resolve => {
 				const handler = ({params: siteInfo}) => {
 					if(siteInfo.address === PEERMESSAGE_HUB) {
