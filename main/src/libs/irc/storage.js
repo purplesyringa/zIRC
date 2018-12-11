@@ -21,6 +21,11 @@ export default new class Storage extends EventEmitter {
 			}
 		}
 
+		if(permanentStorages.length === 0) {
+			// Skip if there are no permanent storages
+			return;
+		}
+
 		permanentStorages.sort((a, b) => {
 			return a.currentSize / a.maxSize - b.currentSize / b.maxSize;
 		});
