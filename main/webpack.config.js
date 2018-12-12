@@ -156,7 +156,7 @@ module.exports = {
 		new CircularDependencyPlugin({
 			exclude: /node_modules/,
 			failOnError: true,
-			allowAsyncCycles: false,
+			allowAsyncCycles: true,
 			cwd: process.cwd(),
 
 			onStart() {
