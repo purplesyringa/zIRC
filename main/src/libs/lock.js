@@ -22,4 +22,4 @@ export default class Lock {
 			this.acquired = false;
 		}
 	}
-};
+}
