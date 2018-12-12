@@ -1,5 +1,7 @@
-import ECIES from "@/libs/crypto/ecies";
-import Lock from "@/libs/lock";
+import ECIES from "libs/crypto/ecies";
+import Lock from "libs/lock";
+import {zeroPage, zeroFS} from "zero";
+import {Buffer} from "buffer";
 
 export default new class CryptMessage {
 	constructor() {
@@ -26,6 +28,24 @@ export default new class CryptMessage {
 		}
 
 		this.ecdhLock.release();
+
+		// Now check that the user has the public key saved in content.json
+		const siteInfo = await zeroPage.getSiteInfo();
+		const authAddress = siteInfo.auth_address;
+		let content;
+		try {
+			content = JSON.parse(await zeroFS.readFile(`data/users/${authAddress}/content.json`));
+		} catch(e) {
+			// Create content.json
+			await zeroPage.sign(`data/users/${authAddress}/content.json`);
+			content = JSON.parse(await zeroFS.readFile(`data/users/${authAddress}/content.json`));
+		}
+		if(content.publicKey !== this.ecdh.getPublicKey()) { // e.g. missing or incorrect
+			content.publicKey = this.ecdh.getPublicKey();
+			// Save
+			content = JSON.stringify(content, null, 1);
+			await zeroFS.writeFile(`data/users/${authAddress}/content.json`, content);
+		}
 	}
 
 	// Encrypt via other's public key
