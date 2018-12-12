@@ -56,6 +56,20 @@ export default new class FileTransport extends EventEmitter {
 		const hash = crypto.createHash("sha256").update(id).digest("hex");
 		const fileName = id.charCodeAt(0).toString(16) + "_" + hash;
 
+		// Check content.json
+		let contentJson;
+		try {
+			contentJson = JSON.parse(await zeroFS.readFile(`data/users/${authAddress}/content.json`));
+		} catch(e) {
+			contentJson = {
+				files: {}
+			};
+		}
+		if(!contentJson.optional) {
+			contentJson.optional = "(2b|40)_.*\\.json";
+			await zeroFS.writeFile(`data/users/${authAddress}/content.json`, JSON.stringify(contentJson, null, 1))
+		}
+
 		await zeroDB.insertRow(
 			`data/users/${authAddress}/${fileName}.json`,
 			`data/users/${authAddress}/content.json`,

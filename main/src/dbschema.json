@@ -4,7 +4,7 @@
 	"version": 2,
 	"maps": {
 		"users/.+/content.json": {
-			"to_json_table": ["cert_user_id"]
+			"to_json_table": ["cert_user_id", "publicKey"]
 		},
 		"users/.+/23_.*.json": {
 			"to_table": [
@@ -37,10 +37,11 @@
 				["json_id", "INTEGER PRIMARY KEY AUTOINCREMENT"],
 				["directory", "TEXT"],
 				["file_name", "TEXT"],
-				["cert_user_id", "TEXT"]
+				["cert_user_id", "TEXT"],
+				["publicKey", "TEXT"]
 			],
 			"indexes": ["CREATE UNIQUE INDEX path ON json(directory, file_name)"],
-			"schema_changed": 2
+			"schema_changed": 3
 		},
 		"channels": {
 			"cols": [
@@ -66,7 +67,6 @@
 				["message", "TEXT"],
 				["json_id", "INTEGER"]
 			],
-			"indexes": ["CREATE INDEX user_hash ON users(hash)"],
 			"schema_changed": 2
 		}
 	}

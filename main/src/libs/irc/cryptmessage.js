@@ -18,13 +18,13 @@ export default new class CryptMessage {
 
 		if(privateKey) {
 			// Derive from private key
-			this.ecdh = ECIES.fromPrivatekey(privateKey);
+			this.ecdh = ECIES.fromPrivatekey(Buffer.from(privateKey, "base64"));
 		} else {
 			// Generate keypair
 			this.ecdh = ECIES.generateKey();
 			// Save private key
-			userSettings.privateKey = this.ecdh.getPrivateKey();
-			await zeroPage.cmd("userSetSettings", userSettings);
+			userSettings.privateKey = this.ecdh.getPrivateKey().toString("base64");
+			await zeroPage.cmd("userSetSettings", [userSettings]);
 		}
 
 		this.ecdhLock.release();
@@ -40,8 +40,8 @@ export default new class CryptMessage {
 			await zeroPage.sign(`data/users/${authAddress}/content.json`);
 			content = JSON.parse(await zeroFS.readFile(`data/users/${authAddress}/content.json`));
 		}
-		if(content.publicKey !== this.ecdh.getPublicKey()) { // e.g. missing or incorrect
-			content.publicKey = this.ecdh.getPublicKey();
+		if(content.publicKey !== this.ecdh.getPublicKey().toString("base64")) { // e.g. missing or incorrect
+			content.publicKey = this.ecdh.getPublicKey().toString("base64");
 			// Save
 			content = JSON.stringify(content, null, 1);
 			await zeroFS.writeFile(`data/users/${authAddress}/content.json`, content);
@@ -50,13 +50,19 @@ export default new class CryptMessage {
 
 	// Encrypt via other's public key
 	encrypt(message, publicKey) {
-		return ECIES.encrypt(Buffer.from(message, "utf8"), publicKey).toString("base64");
+		message = JSON.stringify(message);
+		return ECIES.encrypt(Buffer.from(message, "utf8"), Buffer.from(publicKey, "base64")).toString("base64");
 	}
+	async findPublicKey(authAddress) {
+		const content = JSON.parse(await zeroFS.readFile(`data/users/${authAddress}/content.json`));
+		return content.publicKey || null;
+	}
+
 	// Decrypt via own private key
 	async decrypt(message) {
 		// Wait for ECDH
 		await this.ecdhLock.acquire();
 		this.ecdhLock.release();
-		return ECIES.decrypt(Buffer.from(message, "base64"), this.ecdh.getPrivateKey());
+		return JSON.parse(ECIES.decrypt(Buffer.from(message, "base64"), this.ecdh.getPrivateKey()).toString("utf8"));
 	}
 };
