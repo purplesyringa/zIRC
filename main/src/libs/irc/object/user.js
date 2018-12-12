@@ -1,11 +1,13 @@
 import Speakable from "libs/irc/speakable";
-import {zeroDB} from "zero";
+import {zeroPage, zeroFS, zeroDB} from "zero";
 import crypto from "crypto";
 import CryptMessage from "libs/irc/cryptmessage";
+import InviteStorage from "libs/irc/invitestorage";
 
 export default class User extends Speakable {
 	constructor(name) {
 		super(name);
+		this.id = name;
 		this.init();
 	}
 	async init() {
@@ -35,6 +37,8 @@ export default class User extends Speakable {
 				this.name = "@" + directory.replace("users/", "");
 			}
 		}
+
+		InviteStorage.bindUser(this);
 	}
 
 	async _loadHistory() {
@@ -111,6 +115,18 @@ export default class User extends Speakable {
 	}
 
 	async _transfer(message, transport) {
+		const publicKey = await this.getPublicKey();
+		if(!publicKey) {
+			return;
+		}
+
+		transport.send(this.name, {
+			cmd: "user",
+			message: CryptMessage.encrypt(message, publicKey)
+		});
+	}
+
+	async getPublicKey() {
 		let publicKey;
 		try {
 			publicKey = await CryptMessage.findPublicKey(this.name.replace("@", ""));
@@ -124,7 +140,7 @@ export default class User extends Speakable {
 					id: Math.random().toString(36).substr(2) + "/" + Date.now()
 				}
 			});
-			return;
+			return null;
 		}
 		if(!publicKey) {
 			this._received({
@@ -136,12 +152,72 @@ export default class User extends Speakable {
 					id: Math.random().toString(36).substr(2) + "/" + Date.now()
 				}
 			});
-			return;
+			return null;
+		}
+		return publicKey;
+	}
+
+	// Invite a user to join a direct chat if he wasn't invited before
+	async invite() {
+		const siteInfo = await zeroPage.getSiteInfo();
+		const authAddress = siteInfo.auth_address;
+		const content = JSON.parse(await zeroFS.readFile(`data/users/${authAddress}/content.json`));
+
+		for(const invite of content.invites || []) {
+			// Try to decrypt the invite
+			const inviteContent = await CryptMessage.decrypt(invite.for_self);
+			if(inviteContent === self.name) {
+				// Invited before
+				return;
+			}
 		}
 
-		transport.send(this.name, {
-			cmd: "user",
-			message: CryptMessage.encrypt(message, publicKey)
-		});
+		// Add the invite
+		await zeroDB.insertRow(
+			`data/users/${authAddress}/content.json`,
+			`data/users/${authAddress}/content.json`,
+			"invites",
+			{
+				for_self: await CryptMessage.encrypt(this.name, await CryptMessage.getSelfPublicKey()),
+				for_invitee: await CryptMessage.encrypt(this.name, await this.getPublicKey())
+			}
+		);
+	}
+
+	// Accept/dismiss user's invite
+	async acceptInvite() {
+		await this.handleInvite("accept");
+	}
+	async dismissInvite() {
+		await this.handleInvite("dismiss");
+	}
+	async handleInvite(result) {
+		const siteInfo = await zeroPage.getSiteInfo();
+		const authAddress = siteInfo.auth_address;
+
+		await zeroDB.insertRow(
+			`data/users/${authAddress}/content.json`,
+			`data/users/${authAddress}/content.json`,
+			"handledInvites",
+			{
+				for_self: await CryptMessage.encrypt(`${this.name}:${result}`, await CryptMessage.getSelfPublicKey()),
+				for_invitee: await CryptMessage.encrypt(`${this.name}:${result}`, await this.getPublicKey())
+			}
+		);
+
+		this.emit("inviteHandled");
+	}
+
+	// Returns whether a user invited us, and we have handled the result (i.e. accepted or dismissed)
+	async wasInviteHandled() {
+		const siteInfo = await zeroPage.getSiteInfo();
+		const authAddress = siteInfo.auth_address;
+		const content = JSON.parse(await zeroFS.readFile(`data/users/${authAddress}/content.json`));
+
+		return (await Promise.all(
+			(content.handledInvites || []).map(invite => {
+				return CryptMessage.decrypt(invite.for_self);
+			})
+		)).some(invite => invite.startsWith(this.name + ":"));
 	}
 }

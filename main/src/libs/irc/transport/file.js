@@ -1,6 +1,7 @@
 import EventEmitter from "wolfy87-eventemitter";
 import {zeroPage, zeroDB, zeroFS, zeroAuth} from "zero";
 import crypto from "crypto";
+import CryptMessage from "libs/irc/cryptmessage";
 
 export default new class FileTransport extends EventEmitter {
 	constructor() {
@@ -10,29 +11,60 @@ export default new class FileTransport extends EventEmitter {
 			if(
 				event &&
 				event[0] === "file_done" &&
-				event[1].startsWith("data/users/") &&
-				!event[1].endsWith("/content.json")
+				event[1].startsWith("data/users/")
 			) {
 				// We've received *something*, but we don't know what *exactly*
 				// was updated.
-				const authAddress = event[1].split("/")[2];
+				if(event[1].endsWith("/content.json")) {
+					// Probably an invite?
+					const authAddress = event[1].split("/")[2];
 
-				const contentJson = JSON.parse(
-					await zeroFS.readFile(
-						`data/users/${authAddress}/content.json`
-					)
-				);
-				const certUserId = contentJson.cert_user_id;
+					const contentJson = JSON.parse(await zeroFS.readFile(event[1]));
+					const certUserId = contentJson.cert_user_id;
 
-				const dataJson = JSON.parse(await zeroFS.readFile(event[1]));
-				for(const message of dataJson.messages) {
-					const data = JSON.parse(message.message);
+					for(const invite of contentJson.invites || []) {
+						try {
+							await CryptMessage.decrypt(invite.for_invitee);
+						} catch(e) {
+							continue;
+						}
 
-					this.emit("receive", {
-						authAddress,
-						certUserId,
-						message: data
-					});
+						// We are invited. Check whether we have dismissed/accepted the invite before
+						// We can't use top-level import because of circular dependency loop
+						const User = await import("libs/irc/object/user");
+
+						const user = new User(`auth_address:${authAddress}`);
+						if(await user.wasInviteHandled()) {
+							continue;
+						}
+
+						this.emit("invite", {
+							authAddress,
+							certUserId
+						});
+					}
+
+					// Or maybe they replied to our invite?
+				} else {
+					const authAddress = event[1].split("/")[2];
+
+					const contentJson = JSON.parse(
+						await zeroFS.readFile(
+							`data/users/${authAddress}/content.json`
+						)
+					);
+					const certUserId = contentJson.cert_user_id;
+
+					const dataJson = JSON.parse(await zeroFS.readFile(event[1]));
+					for(const message of dataJson.messages) {
+						const data = JSON.parse(message.message);
+
+						this.emit("receive", {
+							authAddress,
+							certUserId,
+							message: data
+						});
+					}
 				}
 			}
 		});

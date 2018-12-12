@@ -4,7 +4,13 @@
 	"version": 2,
 	"maps": {
 		"users/.+/content.json": {
-			"to_json_table": ["cert_user_id", "publicKey"]
+			"to_json_table": ["cert_user_id", "publicKey"],
+			"to_table": [
+				{
+					"node": "invites",
+					"table": "invites"
+				}
+			]
 		},
 		"users/.+/23_.*.json": {
 			"to_table": [
@@ -68,6 +74,14 @@
 				["json_id", "INTEGER"]
 			],
 			"schema_changed": 2
+		},
+		"invites": {
+			"cols": [
+				["for_self", "TEXT"],
+				["for_invitee", "TEXT"],
+				["json_id", "INTEGER"]
+			],
+			"schema_changed": 1
 		}
 	}
 }
