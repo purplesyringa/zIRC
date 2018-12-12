@@ -48,6 +48,13 @@ export default new class CryptMessage {
 		}
 	}
 
+	async getECDH() {
+		// Wait for ECDH
+		await this.ecdhLock.acquire();
+		this.ecdhLock.release();
+		return this.ecdh;
+	}
+
 	// Encrypt via other's public key
 	encrypt(message, publicKey) {
 		message = JSON.stringify(message);
@@ -57,12 +64,14 @@ export default new class CryptMessage {
 		const content = JSON.parse(await zeroFS.readFile(`data/users/${authAddress}/content.json`));
 		return content.publicKey || null;
 	}
+	async getSelfPublicKey() {
+		return (await this.getECDH()).getPublicKey().toString("base64");
+	}
 
 	// Decrypt via own private key
 	async decrypt(message) {
 		// Wait for ECDH
-		await this.ecdhLock.acquire();
-		this.ecdhLock.release();
-		return JSON.parse(ECIES.decrypt(Buffer.from(message, "base64"), this.ecdh.getPrivateKey()).toString("utf8"));
+		const ecdh = await this.getECDH();
+		return JSON.parse(ECIES.decrypt(Buffer.from(message, "base64"), ecdh.getPrivateKey()).toString("utf8"));
 	}
 };
