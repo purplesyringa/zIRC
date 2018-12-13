@@ -3,11 +3,15 @@ import {zeroPage, zeroFS, zeroDB} from "zero";
 import crypto from "crypto";
 import CryptMessage from "libs/irc/cryptmessage";
 import InviteStorage from "libs/irc/invitestorage";
+import Lock from "libs/lock";
 
 export default class User extends Speakable {
 	constructor(name) {
 		super(name);
 		this.id = name;
+		this.wasInviteHandled = false;
+		this.initLock = new Lock();
+		this.initLock.acquire();
 		this.init();
 	}
 	async init() {
@@ -39,6 +43,19 @@ export default class User extends Speakable {
 		}
 
 		InviteStorage.bindUser(this);
+
+		// Check whether a user invited us, and we have handled the result (i.e. accepted or dismissed)
+		const siteInfo = await zeroPage.getSiteInfo();
+		const authAddress = siteInfo.auth_address;
+		const content = JSON.parse(await zeroFS.readFile(`data/users/${authAddress}/content.json`));
+
+		this.wasInviteHandled = (await Promise.all(
+			(content.handledInvites || []).map(invite => {
+				return CryptMessage.decrypt(invite.for_self);
+			})
+		)).some(invite => invite.startsWith(this.name + ":"));
+
+		this.initLock.release();
 	}
 
 	async _loadHistory() {
@@ -205,19 +222,7 @@ export default class User extends Speakable {
 			}
 		);
 
+		this.wasInviteHandled = true;
 		this.emit("inviteHandled");
-	}
-
-	// Returns whether a user invited us, and we have handled the result (i.e. accepted or dismissed)
-	async wasInviteHandled() {
-		const siteInfo = await zeroPage.getSiteInfo();
-		const authAddress = siteInfo.auth_address;
-		const content = JSON.parse(await zeroFS.readFile(`data/users/${authAddress}/content.json`));
-
-		return (await Promise.all(
-			(content.handledInvites || []).map(invite => {
-				return CryptMessage.decrypt(invite.for_self);
-			})
-		)).some(invite => invite.startsWith(this.name + ":"));
 	}
 }

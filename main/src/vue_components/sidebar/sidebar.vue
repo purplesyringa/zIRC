@@ -1,18 +1,39 @@
 <template>
 	<aside>
 		<div class="channels">
-			<div
+			<template
 				v-for="channel in channels"
-				:class="['channel', {current: current === channel}]"
-				@click="open(channel)"
 			>
-				<Avatar :channel="channel" />
-				{{channel.substr(0, 18)}}
+				<div
+					v-if="(channel.object instanceof User) && !channel.object.wasInviteHandled"
 
-				<span class="close" @click.stop="removeChannel(channel)">
-					&times;
-				</span>
-			</div>
+					:class="['channel', {current: current === channel.visibleName}]"
+				>
+					<!-- Show invite -->
+					<Avatar :channel="channel.visibleName" />
+
+					<div class="invite">
+						{{channel.visibleName.substr(0, 18)}}<br>
+						<div class="invite-status">Invited</div>
+					</div>
+				</div>
+
+				<div
+					v-else
+
+					:class="['channel', {current: current === channel.visibleName}]"
+					@click="open(channel.visibleName)"
+				>
+					<!-- Show user/channel/group badge -->
+					<Avatar :channel="channel.visibleName" />
+
+					{{channel.visibleName.substr(0, 18)}}
+
+					<span class="close" @click.stop="removeChannel(channel.visibleName)">
+						&times;
+					</span>
+				</div>
+			</template>
 		</div>
 
 		<div class="footer">
@@ -41,6 +62,13 @@
 				border-bottom: 1px solid #DDD
 				font-family: "Courier New", monospace
 				cursor: pointer
+
+				.invite
+					display: inline-block
+					vertical-align: middle
+
+					.invite-status
+						color: #F06
 
 				&:first-child
 					border-top: 1px solid #FFF
@@ -78,20 +106,36 @@
 
 <script type="text/javascript">
 	import {zeroPage} from "zero";
+	import IRC from "libs/irc";
+	import InviteStorage from "libs/irc/invitestorage";
+	import User from "libs/irc/object/user";
 
 	export default {
 		name: "Sidebar",
 		data() {
 			return {
-				channels: []
+				channels: [],
+				invites: [],
+				User
 			};
 		},
 
 		async mounted() {
 			const userSettings = await zeroPage.cmd("userGetSettings");
-			this.channels = (userSettings || {}).channels || [
+			this.channels = ((userSettings || {}).channels || [
 				"/HelloBot"
-			];
+			]).map(name => {
+				return {
+					visibleName: name,
+					object: IRC.getObjectById(name)
+				};
+			});
+
+			InviteStorage.on("invitesUpdated", this.renderInvites);
+			this.renderInvites();
+		},
+		destroyed() {
+			InviteStorage.off("invitesUpdated", this.renderInvites);
 		},
 
 		methods: {
@@ -108,8 +152,11 @@
 					"Which channel (user, group) are you going to join?"
 				);
 
-				if(this.channels.indexOf(channel) === -1) {
-					this.channels.push(channel);
+				if(this.channels.some(o => o.visibleName === channel) === -1) {
+					this.channels.push({
+						visibleName: channel,
+						object: IRC.getObjectById(channel)
+					});
 
 					// Save
 					let userSettings = await zeroPage.cmd("userGetSettings");
@@ -125,10 +172,7 @@
 			},
 
 			async removeChannel(channel) {
-				const idx = this.channels.indexOf(channel);
-				if(idx > -1) {
-					this.channels.splice(idx, 1);
-				}
+				this.channels = this.channels.filter(o => o.visibleName !== channel);
 
 				// Save
 				let userSettings = await zeroPage.cmd("userGetSettings");
@@ -142,6 +186,10 @@
 					// Open #lobby if we removed the current channel
 					this.open("#lobby");
 				}
+			},
+
+			renderInvites() {
+				this.invites = InviteStorage.invites.slice();
 			}
 		},
 

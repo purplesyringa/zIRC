@@ -1,9 +1,11 @@
+import EventEmitter from "wolfy87-eventemitter";
 import {zeroDB} from "zero";
 import FileTransport from "libs/irc/transport/file";
 import CryptMessage from "libs/irc/cryptmessage";
 
-export default new class InviteStorage {
+export default new class InviteStorage extends EventEmitter {
 	constructor() {
+		super();
 		this.invites = [];
 
 		this.loadInvites();
@@ -43,12 +45,16 @@ export default new class InviteStorage {
 
 			// We are invited. Check whether we have dismissed/accepted the invite before
 			const user = new User(`auth_address:${authAddress}`);
-			if(await user.wasInviteHandled()) {
+			await user.initLock.acquire();
+			user.initLock.release();
+			if(user.wasInviteHandled) {
 				continue;
 			}
 
 			this.invites.push({authAddress, certUserId});
 		}
+
+		this.emit("invitesUpdated");
 	}
 
 	listen(transport) {
@@ -59,6 +65,7 @@ export default new class InviteStorage {
 			}
 
 			this.invites.push({authAddress, certUserId});
+			this.emit("invitesUpdated");
 		});
 	}
 
@@ -70,7 +77,8 @@ export default new class InviteStorage {
 				} else {
 					return invite.certUserId !== user.id;
 				}
-			})
+			});
+			this.emit("invitesUpdated");
 		});
 	}
 };
