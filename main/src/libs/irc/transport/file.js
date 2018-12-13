@@ -31,9 +31,9 @@ export default new class FileTransport extends EventEmitter {
 
 						// We are invited. Check whether we have dismissed/accepted the invite before
 						// We can't use top-level import because of circular dependency loop
-						const User = await import("libs/irc/object/user");
+						const IRC = await import("libs/irc");
 
-						const user = new User(`auth_address:${authAddress}`);
+						const user = IRC.getObjectById(`@${authAddress}`);
 						await user.initLock.acquire();
 						user.initLock.release();
 						if(user.wasTheirInviteHandled) {
@@ -47,6 +47,20 @@ export default new class FileTransport extends EventEmitter {
 					}
 
 					// Or maybe they replied to our invite?
+					for(const invite of contentJson.handledInvites || []) {
+						let result;
+						try {
+							result = (await CryptMessage.decrypt(invite.for_invitee)).split(":").slice(-1)[0];
+						} catch(e) {
+							continue;
+						}
+
+						this.emit("inviteHandled", {
+							authAddress,
+							certUserId,
+							result
+						});
+					}
 				} else {
 					const authAddress = event[1].split("/")[2];
 

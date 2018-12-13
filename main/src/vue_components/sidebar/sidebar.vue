@@ -5,7 +5,28 @@
 				v-for="channel in channels"
 			>
 				<div
-					v-if="(channel.object instanceof User) && !channel.object.wasTheirInviteHandled"
+					v-if="(channel.object instanceof User) && channel.object.theyInvited && !channel.object.wasTheirInviteHandled"
+
+					:class="['channel', {current: current === channel.visibleName}]"
+				>
+					<!-- Show invite -->
+					<Avatar :channel="channel.visibleName" />
+
+					<div class="invite">
+						{{channel.visibleName.substr(0, 18)}}<br>
+						<div class="invite-status">
+							<button class="accept" @click="acceptInvite(channel)">Accept</button>
+							<button class="dismiss" @click="dismissInvite(channel)">Dismiss</button>
+						</div>
+					</div>
+
+					<span class="close" @click.stop="removeChannel(channel.visibleName)">
+						&times;
+					</span>
+				</div>
+
+				<div
+					v-if="(channel.object instanceof User) && channel.object.weInvited && !channel.object.wasOurInviteHandled"
 
 					:class="['channel', {current: current === channel.visibleName}]"
 				>
@@ -74,6 +95,17 @@
 					.invite-status
 						color: #F06
 
+						button
+							border: none
+							border-radius: 4px
+							padding: 4px 8px
+							border: 1px solid #F06
+							cursor: pointer
+
+							&.accept
+								background-color: #F06
+								color: #FFF
+
 				&:first-child
 					border-top: 1px solid #FFF
 
@@ -131,7 +163,8 @@
 			]).map(name => {
 				return {
 					visibleName: name,
-					object: IRC.getObjectById(name)
+					object: IRC.getObjectById(name),
+					fromInviteStorage: false
 				};
 			});
 
@@ -159,7 +192,8 @@
 				if(!this.channels.some(o => o.visibleName === channel)) {
 					this.channels.push({
 						visibleName: channel,
-						object: IRC.getObjectById(channel)
+						object: IRC.getObjectById(channel),
+						fromInviteStorage: false
 					});
 
 					// Save
@@ -176,7 +210,7 @@
 					await obj.initLock.acquire();
 					obj.initLock.release();
 
-					if(!obj.wasTheirInviteHandled) {
+					if(!obj.wasTheirInviteHandled || !obj.wasOurInviteHandled) {
 						// Don't open in case invite wasn't handled
 						return;
 					}
@@ -203,8 +237,27 @@
 				}
 			},
 
+			acceptInvite(channel) {
+				channel.object.acceptInvite();
+			},
+			dismissInvite(channel) {
+				channel.object.dismissInvite();
+			},
+
 			renderInvites() {
-				this.invites = InviteStorage.invites.slice();
+				this.channels = this.channels.filter(o => !o.fromInviteStorage);
+
+				const inviteChannels = InviteStorage.invites.map(invite => {
+					const user = IRC.getObjectById(`@${invite.authAddress}`);
+					return {
+						visibleName: `@${invite.certUserId}`,
+						object: user,
+						fromInviteStorage: true
+					};
+				});
+				if(inviteChannels.length) {
+					this.channels.splice(0, 0, inviteChannels);
+				}
 			}
 		},
 

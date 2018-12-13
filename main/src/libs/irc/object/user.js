@@ -9,9 +9,16 @@ export default class User extends Speakable {
 	constructor(name) {
 		super(name);
 		this.id = name;
+		this.theyInvited = false;
+		this.weInvited = false;
 		this.wasTheirInviteHandled = false;
+		this.wasOurInviteHandled = false;
+		this.ourInviteState = null;
 		this.initLock = new Lock();
 		this.initLock.acquire();
+		this.publicKeyLock = new Lock();
+		this.publicKeyLock.acquire();
+		this.publicKeyCache = undefined;
 		this.init();
 	}
 	async init() {
@@ -51,9 +58,46 @@ export default class User extends Speakable {
 
 		this.wasTheirInviteHandled = (await Promise.all(
 			(content.handledInvites || []).map(invite => {
-				return CryptMessage.decrypt(invite.for_self);
+				return CryptMessage.decrypt(invite.for_self)
+					.catch(() => null);
 			})
-		)).some(invite => invite.startsWith(this.name + ":"));
+		)).some(invite => invite === `${this.name}:accept` || invite === `${this.name}:dismiss`);
+
+		// Check whether we invited them
+		this.weInvited = (await Promise.all(
+			(content.invites || []).map(invite => {
+				return CryptMessage.decrypt(invite.for_self)
+					.catch(() => null);
+			})
+		)).some(invite => invite === this.name);
+
+		// Now check whether the user accepted/dismissed our invite
+		if(this.name !== "@unknown") {
+			const theirContent = JSON.parse(await zeroFS.readFile(`data/users/${this.name.substr(1)}/content.json`));
+
+			this.wasOurInviteHandled = (await Promise.all(
+				(theirContent.handledInvites || []).map(invite => {
+					return CryptMessage.decrypt(invite.for_invitee)
+						.catch(() => null);
+				})
+			)).some(invite => {
+				if(!invite) {
+					return false;
+				}
+
+				this.ourInviteState = invite.split(":").slice(-1)[0];
+				return true;
+			});
+
+			// Check whether they invited us
+			this.theyInvited = (await Promise.all(
+				(theirContent.invites || []).map(invite => {
+					return CryptMessage.decrypt(invite.for_invitee)
+						.catch(() => null);
+				})
+			)).some(i => i);
+		}
+
 
 		this.initLock.release();
 	}
@@ -144,6 +188,15 @@ export default class User extends Speakable {
 	}
 
 	async getPublicKey() {
+		if(this.publicKeyCache !== undefined) {
+			return this.publicKeyCache;
+		}
+		await this.publicKeyLock.acquire();
+		if(this.publicKeyCache !== undefined) {
+			this.publicKeyLock.release();
+			return this.publicKeyCache;
+		}
+
 		let publicKey;
 		try {
 			publicKey = await CryptMessage.findPublicKey(this.name.replace("@", ""));
@@ -153,10 +206,12 @@ export default class User extends Speakable {
 				certUserId: "UserBot",
 				message: {
 					date: Date.now(),
-					text: `Error getting public key: ${e.message}`,
+					text: `Error getting public key: ${e}`,
 					id: Math.random().toString(36).substr(2) + "/" + Date.now()
 				}
 			});
+			this.publicKeyCache = null;
+			this.publicKeyLock.release();
 			return null;
 		}
 		if(!publicKey) {
@@ -169,8 +224,12 @@ export default class User extends Speakable {
 					id: Math.random().toString(36).substr(2) + "/" + Date.now()
 				}
 			});
+			this.publicKeyCache = null;
+			this.publicKeyLock.release();
 			return null;
 		}
+		this.publicKeyCache = publicKey;
+		this.publicKeyLock.release();
 		return publicKey;
 	}
 
