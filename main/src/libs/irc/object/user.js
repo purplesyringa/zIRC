@@ -9,7 +9,7 @@ export default class User extends Speakable {
 	constructor(name) {
 		super(name);
 		this.id = name;
-		this.wasInviteHandled = false;
+		this.wasTheirInviteHandled = false;
 		this.initLock = new Lock();
 		this.initLock.acquire();
 		this.init();
@@ -49,7 +49,7 @@ export default class User extends Speakable {
 		const authAddress = siteInfo.auth_address;
 		const content = JSON.parse(await zeroFS.readFile(`data/users/${authAddress}/content.json`));
 
-		this.wasInviteHandled = (await Promise.all(
+		this.wasTheirInviteHandled = (await Promise.all(
 			(content.handledInvites || []).map(invite => {
 				return CryptMessage.decrypt(invite.for_self);
 			})
@@ -222,7 +222,7 @@ export default class User extends Speakable {
 			}
 		);
 
-		this.wasInviteHandled = true;
+		this.wasThreirInviteHandled = true;
 		this.emit("inviteHandled");
 	}
 }

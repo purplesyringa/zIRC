@@ -5,7 +5,7 @@
 				v-for="channel in channels"
 			>
 				<div
-					v-if="(channel.object instanceof User) && !channel.object.wasInviteHandled"
+					v-if="(channel.object instanceof User) && !channel.object.wasTheirInviteHandled"
 
 					:class="['channel', {current: current === channel.visibleName}]"
 				>
@@ -16,6 +16,10 @@
 						{{channel.visibleName.substr(0, 18)}}<br>
 						<div class="invite-status">Invited</div>
 					</div>
+
+					<span class="close" @click.stop="removeChannel(channel.visibleName)">
+						&times;
+					</span>
 				</div>
 
 				<div
@@ -152,7 +156,7 @@
 					"Which channel (user, group) are you going to join?"
 				);
 
-				if(this.channels.some(o => o.visibleName === channel) === -1) {
+				if(!this.channels.some(o => o.visibleName === channel)) {
 					this.channels.push({
 						visibleName: channel,
 						object: IRC.getObjectById(channel)
@@ -163,8 +167,19 @@
 					if(!userSettings) {
 						userSettings = {};
 					}
-					userSettings.channels = this.channels;
+					userSettings.channels = this.channels.map(o => o.visibleName);
 					await zeroPage.cmd("userSetSettings", [userSettings]);
+				}
+
+				const obj = IRC.getObjectById(channel);
+				if(obj instanceof User) {
+					await obj.initLock.acquire();
+					obj.initLock.release();
+
+					if(!obj.wasTheirInviteHandled) {
+						// Don't open in case invite wasn't handled
+						return;
+					}
 				}
 
 				// And open
@@ -179,7 +194,7 @@
 				if(!userSettings) {
 					userSettings = {};
 				}
-				userSettings.channels = this.channels;
+				userSettings.channels = this.channels.map(o => o.visibleName);
 				await zeroPage.cmd("userSetSettings", [userSettings]);
 
 				if(this.current === channel) {

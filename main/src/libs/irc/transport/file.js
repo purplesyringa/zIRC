@@ -34,7 +34,9 @@ export default new class FileTransport extends EventEmitter {
 						const User = await import("libs/irc/object/user");
 
 						const user = new User(`auth_address:${authAddress}`);
-						if(await user.wasInviteHandled()) {
+						await user.initLock.acquire();
+						user.initLock.release();
+						if(user.wasTheirInviteHandled) {
 							continue;
 						}
 

@@ -47,7 +47,7 @@ export default new class InviteStorage extends EventEmitter {
 			const user = new User(`auth_address:${authAddress}`);
 			await user.initLock.acquire();
 			user.initLock.release();
-			if(user.wasInviteHandled) {
+			if(user.wasTheirInviteHandled) {
 				continue;
 			}
 
