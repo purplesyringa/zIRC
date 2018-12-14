@@ -161,6 +161,7 @@
 	import {zeroPage} from "zero";
 	import IRC from "libs/irc";
 	import InviteStorage from "libs/irc/invitestorage";
+	import UserStorage from "libs/irc/userstorage";
 	import User from "libs/irc/object/user";
 
 	export default {
@@ -174,7 +175,7 @@
 		},
 
 		async mounted() {
-			const userSettings = await zeroPage.cmd("userGetSettings");
+			const userSettings = await UserStorage.get();
 			this.channels = ((userSettings || {}).channels || [
 				"/HelloBot"
 			]).map(name => {
@@ -322,14 +323,14 @@
 
 			async saveChannels() {
 				// Save
-				let userSettings = await zeroPage.cmd("userGetSettings");
+				let userSettings = await UserStorage.get();
 				if(!userSettings) {
 					userSettings = {};
 				}
 				userSettings.channels = this.channels
 					.filter(o => !o.fromInviteStorage)
 					.map(o => o.visibleName);
-				await zeroPage.cmd("userSetSettings", [userSettings]);
+				await UserStorage.set(userSettings);
 			}
 		},
 

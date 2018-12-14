@@ -2,6 +2,7 @@ import ECIES from "libs/crypto/ecies";
 import Lock from "libs/lock";
 import {zeroPage, zeroFS} from "zero";
 import {Buffer} from "buffer";
+import UserStorage from "libs/irc/userstorage";
 
 export default new class CryptMessage {
 	constructor() {
@@ -13,7 +14,7 @@ export default new class CryptMessage {
 
 	async init() {
 		// Get the private key from user settings
-		let userSettings = await zeroPage.cmd("userGetSettings");
+		let userSettings = await UserStorage.get();
 		let privateKey = (userSettings || {}).privateKey;
 
 		if(privateKey) {
@@ -24,7 +25,7 @@ export default new class CryptMessage {
 			this.ecdh = ECIES.generateKey();
 			// Save private key
 			userSettings.privateKey = this.ecdh.getPrivateKey().toString("base64");
-			await zeroPage.cmd("userSetSettings", [userSettings]);
+			await UserStorage.set(userSettings);
 		}
 
 		this.ecdhLock.release();

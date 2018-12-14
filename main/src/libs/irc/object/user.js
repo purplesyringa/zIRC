@@ -262,7 +262,6 @@ export default class User extends Speakable {
 		await this.initLock.acquire();
 		this.initLock.release();
 
-		console.log(this.theyInvited, this.wasTheirInviteHandled);
 		if(this.theyInvited && !this.wasTheirInviteHandled) {
 			// If we were invited by the user, accept their invite instead of making ours
 			await this.acceptInvite();
