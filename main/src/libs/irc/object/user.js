@@ -132,7 +132,11 @@ export default class User extends Speakable {
 	}
 
 	async _loadHistory() {
-		const hash = crypto.createHash("sha256").update(this.name).digest("hex");
+		if(!this.encId) {
+			return [];
+		}
+
+		const hash = crypto.createHash("sha256").update(this.encId).digest("hex");
 
 		const response = await zeroDB.query(`
 			SELECT
@@ -210,7 +214,7 @@ export default class User extends Speakable {
 			return;
 		}
 
-		if(!this.wasOurInviteHandled && !this.wasTheirInviteHandled) {
+		if(!this.encId) {
 			this._received({
 				authAddress: "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
 				certUserId: "UserBot",
@@ -223,7 +227,7 @@ export default class User extends Speakable {
 			return;
 		}
 
-		transport.send(this.name, {
+		transport.send(this.encId, {
 			cmd: "user",
 			message: CryptMessage.encrypt(message, publicKey)
 		});
