@@ -286,6 +286,7 @@ export default class User extends Speakable {
 					return;
 				}
 			} catch(e) {
+				// fallthrough
 			}
 		}
 
