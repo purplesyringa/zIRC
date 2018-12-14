@@ -208,7 +208,13 @@
 
 					if(!object.weInvited && !object.wasTheirInviteHandled) {
 						// Invite user
-						await object.invite();
+						try {
+							await object.invite();
+						} catch(e) {
+							zeroPage.error(`Error while inviting user: ${e}`);
+							this.channels = this.channels.filter(o => o.visibleName !== channel);
+							return;
+						}
 						this.channels = this.channels.slice();
 						return;
 					}
@@ -240,7 +246,12 @@
 			},
 
 			async acceptInvite(channel) {
-				channel.object.acceptInvite();
+				try {
+					await channel.object.acceptInvite();
+				} catch(e) {
+					zeroPage.error(`Error while accepting user's invite: ${e}`);
+					return;
+				}
 
 				channel.fromInviteStorage = false;
 				this.channels.push(channel);
@@ -253,8 +264,12 @@
 				userSettings.channels = this.channels.map(o => o.visibleName);
 				await zeroPage.cmd("userSetSettings", [userSettings]);
 			},
-			dismissInvite(channel) {
-				channel.object.dismissInvite();
+			async dismissInvite(channel) {
+				try {
+					await channel.object.dismissInvite();
+				} catch(e) {
+					zeroPage.error(`Error while dismissing user's invite: ${e}`);
+				}
 			},
 
 			renderInvites() {

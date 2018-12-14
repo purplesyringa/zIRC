@@ -210,9 +210,6 @@ export default class User extends Speakable {
 
 	async _transfer(message, transport) {
 		const publicKey = await this.getPublicKey();
-		if(!publicKey) {
-			return;
-		}
 
 		if(!this.encId) {
 			this._received({
@@ -243,40 +240,19 @@ export default class User extends Speakable {
 			return this.publicKeyCache;
 		}
 
-		let publicKey;
 		try {
-			publicKey = await CryptMessage.findPublicKey(this.name.replace("@", ""));
+			const publicKey = await CryptMessage.findPublicKey(this.name.replace("@", ""));
+			if(!publicKey) {
+				throw new Error("Couldn't find public key of the user")
+			}
+			this.publicKeyCache = publicKey;
+			return publicKey;
 		} catch(e) {
-			this._received({
-				authAddress: "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
-				certUserId: "UserBot",
-				message: {
-					date: Date.now(),
-					text: `Error getting public key: ${e}`,
-					id: Math.random().toString(36).substr(2) + "/" + Date.now()
-				}
-			});
 			this.publicKeyCache = null;
+			throw e;
+		} finally {
 			this.publicKeyLock.release();
-			return null;
 		}
-		if(!publicKey) {
-			this._received({
-				authAddress: "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
-				certUserId: "UserBot",
-				message: {
-					date: Date.now(),
-					text: "Couldn't find public key of the user.",
-					id: Math.random().toString(36).substr(2) + "/" + Date.now()
-				}
-			});
-			this.publicKeyCache = null;
-			this.publicKeyLock.release();
-			return null;
-		}
-		this.publicKeyCache = publicKey;
-		this.publicKeyLock.release();
-		return publicKey;
 	}
 
 	// Invite a user to join a direct chat if he wasn't invited before

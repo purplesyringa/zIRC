@@ -87,15 +87,20 @@
 		},
 
 		methods: {
-			submit() {
+			async submit() {
 				if(!this.message.trim()) {
 					return;
 				}
 
-				this.currentObject.send(this.message.trim());
-
+				const message = this.message.trim();
 				this.message = "";
 				this.$refs.message.focus();
+
+				try {
+					await this.currentObject.send(message);
+				} catch(e) {
+					zeroPage.error(`Error while sending message: ${e}`);
+				}
 			},
 
 			login() {

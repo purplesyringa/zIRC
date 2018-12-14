@@ -76,11 +76,6 @@ export default class Speakable extends EventEmitter {
 			id: Math.random().toString(36).substr(2) + "/" + Date.now()
 		};
 
-		// Transfer via peers
-		this._transfer(message, PeerTransport);
-		// Transfer via files
-		this._transfer(message, FileTransport);
-
 		// Receive, in case the transfers are slow
 		const siteInfo = await zeroPage.getSiteInfo();
 		this._received({
@@ -88,6 +83,14 @@ export default class Speakable extends EventEmitter {
 			certUserId: siteInfo.cert_user_id,
 			message
 		});
+
+		// Use Promise.all to handle errors
+		await Promise.all([
+			// Transfer via peers
+			this._transfer(message, PeerTransport),
+			// Transfer via files
+			this._transfer(message, FileTransport)
+		]);
 	}
 
 	async _received({authAddress, certUserId, message}) {
