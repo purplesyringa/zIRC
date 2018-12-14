@@ -243,6 +243,15 @@ export default class User extends Speakable {
 
 	// Invite a user to join a direct chat if he wasn't invited before
 	async invite() {
+		await this.initLock.acquire();
+		this.initLock.release();
+
+		if(this.theyInvited) {
+			// If we were invited by the user, accept their invite instead of making ours
+			await this.acceptInvite();
+			return;
+		}
+
 		const siteInfo = await zeroPage.getSiteInfo();
 		const authAddress = siteInfo.auth_address;
 		const content = JSON.parse(await zeroFS.readFile(`data/users/${authAddress}/content.json`));
