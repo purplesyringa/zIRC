@@ -70,7 +70,7 @@ export default class User extends Speakable {
 			})
 		)).some(invite => invite === this.name);
 
-		// Now check whether the user accepted/dismissed our invitelet content;
+		// Now check whether the user accepted/dismissed our invite
 		let theirContent;
 		try {
 			theirContent = JSON.parse(await zeroFS.readFile(`data/users/${this.name.substr(1)}/content.json`));
@@ -80,6 +80,8 @@ export default class User extends Speakable {
 
 		if(theirContent) {
 			const theirContent = JSON.parse(await zeroFS.readFile(`data/users/${this.name.substr(1)}/content.json`));
+			const siteInfo = await zeroPage.getSiteInfo();
+			const authAddress = siteInfo.auth_address;
 
 			this.wasOurInviteHandled = (await Promise.all(
 				(theirContent.handledInvites || []).map(invite => {
@@ -87,7 +89,7 @@ export default class User extends Speakable {
 						.catch(() => null);
 				})
 			)).some(invite => {
-				if(!invite) {
+				if(invite !== `@${authAddress}:accept` && invite !== `@${authAddress}:dismiss`) {
 					return false;
 				}
 
@@ -101,7 +103,7 @@ export default class User extends Speakable {
 					return CryptMessage.decrypt(invite.for_invitee)
 						.catch(() => null);
 				})
-			)).some(i => i);
+			)).some(invite => invite === `@${authAddress}`);
 		}
 
 

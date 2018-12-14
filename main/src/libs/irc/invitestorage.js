@@ -1,5 +1,5 @@
 import EventEmitter from "wolfy87-eventemitter";
-import {zeroDB} from "zero";
+import {zeroPage, zeroDB} from "zero";
 import FileTransport from "libs/irc/transport/file";
 import CryptMessage from "libs/irc/cryptmessage";
 
@@ -31,6 +31,9 @@ export default new class InviteStorage extends EventEmitter {
 			)
 		`);
 
+		const siteInfo = await zeroPage.getSiteInfo();
+		const myAuthAddress = siteInfo.auth_address;
+
 		const IRC = (await import("libs/irc")).default;
 
 		for(const invite of response) {
@@ -38,7 +41,9 @@ export default new class InviteStorage extends EventEmitter {
 			const certUserId = invite.cert_user_id;
 
 			try {
-				await CryptMessage.decrypt(invite.for_invitee);
+				if(await CryptMessage.decrypt(invite.for_invitee) !== `@${myAuthAddress}`) {
+					continue;
+				}
 			} catch(e) {
 				continue;
 			}
