@@ -18,6 +18,7 @@ export default class User extends Speakable {
 		this.initLock.acquire();
 		this.publicKeyLock = new Lock();
 		this.publicKeyCache = undefined;
+		this.encId = null;
 		this.init();
 	}
 	async init() {
@@ -60,7 +61,20 @@ export default class User extends Speakable {
 				return CryptMessage.decrypt(invite.for_self)
 					.catch(() => null);
 			})
-		)).some(invite => invite === `${this.name}:accept` || invite === `${this.name}:dismiss`);
+		)).some(invite => {
+			if(!invite) {
+				return false;
+			}
+
+			const encId = invite.substr(0, invite.indexOf("!!"));
+
+			if(invite === `${encId}!!${this.name}:accept` || invite === `${encId}!!${this.name}:dismiss`) {
+				this.encId = encId;
+				return true;
+			} else {
+				return false;
+			}
+		});
 
 		// Check whether we invited them
 		this.weInvited = (await Promise.all(
@@ -89,11 +103,18 @@ export default class User extends Speakable {
 						.catch(() => null);
 				})
 			)).some(invite => {
-				if(invite !== `@${authAddress}:accept` && invite !== `@${authAddress}:dismiss`) {
+				if(!invite) {
+					return false;
+				}
+
+				const encId = invite.substr(0, invite.indexOf("!!"));
+
+				if(invite !== `${encId}!!@${authAddress}:accept` && invite !== `${encId}!!@${authAddress}:dismiss`) {
 					return false;
 				}
 
 				this.ourInviteState = invite.split(":").slice(-1)[0];
+				this.encId = encId;
 				return true;
 			});
 
@@ -186,6 +207,19 @@ export default class User extends Speakable {
 	async _transfer(message, transport) {
 		const publicKey = await this.getPublicKey();
 		if(!publicKey) {
+			return;
+		}
+
+		if(!this.wasOurInviteHandled && !this.wasTheirInviteHandled) {
+			this._received({
+				authAddress: "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
+				certUserId: "UserBot",
+				message: {
+					date: Date.now(),
+					text: `The users didn't reach consensus on invitation, can't send message.`,
+					id: Math.random().toString(36).substr(2) + "/" + Date.now()
+				}
+			});
 			return;
 		}
 
@@ -290,13 +324,14 @@ export default class User extends Speakable {
 		const siteInfo = await zeroPage.getSiteInfo();
 		const authAddress = siteInfo.auth_address;
 
+		const encId = Math.random().toString(36).substr(2);
 		await zeroDB.insertRow(
 			`data/users/${authAddress}/content.json`,
 			`data/users/${authAddress}/content.json`,
 			"handledInvites",
 			{
-				for_self: await CryptMessage.encrypt(`${this.name}:${result}`, await CryptMessage.getSelfPublicKey()),
-				for_invitee: await CryptMessage.encrypt(`${this.name}:${result}`, await this.getPublicKey())
+				for_self: await CryptMessage.encrypt(`${encId}!!${this.name}:${result}`, await CryptMessage.getSelfPublicKey()),
+				for_invitee: await CryptMessage.encrypt(`${encId}!!${this.name}:${result}`, await this.getPublicKey())
 			}
 		);
 
