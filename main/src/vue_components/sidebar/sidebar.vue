@@ -247,7 +247,12 @@
 					return;
 				}
 
-				channel.fromInviteStorage = false;
+				this.channels.push({
+					visibleName: channel.visibleName,
+					object: channel.object,
+					fromInviteStorage: false
+				});
+				this.renderInvites();
 
 				await this.saveChannels();
 			},
