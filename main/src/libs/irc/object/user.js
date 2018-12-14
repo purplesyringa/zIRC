@@ -281,7 +281,7 @@ export default class User extends Speakable {
 			// Try to decrypt the invite
 			try {
 				const inviteContent = await CryptMessage.decrypt(invite.for_self);
-				if(inviteContent === self.name) {
+				if(inviteContent === this.name) {
 					// Invited before
 					return;
 				}
@@ -308,6 +308,34 @@ export default class User extends Speakable {
 				)
 			).filter(invite => invite);
 		}
+
+		// Publish
+		await zeroFS.writeFile(`data/users/${authAddress}/content.json`, JSON.stringify(content, null, 1));
+		zeroPage.publish(`data/users/${authAddress}/content.json`);
+	}
+	async cancelInvite() {
+		await this.initLock.acquire();
+		this.initLock.release();
+
+		const siteInfo = await zeroPage.getSiteInfo();
+		const authAddress = siteInfo.auth_address;
+		const content = JSON.parse(await zeroFS.readFile(`data/users/${authAddress}/content.json`));
+
+		let newInvites = [];
+		for(const invite of content.invites || []) {
+			// Try to decrypt the invite
+			try {
+				const inviteContent = await CryptMessage.decrypt(invite.for_self);
+				if(inviteContent !== this.name) {
+					newInvites.push(invite);
+				}
+			} catch(e) {
+				// fallthrough
+			}
+		}
+		content.invites = newInvites;
+
+		this.weInvited = false;
 
 		// Publish
 		await zeroFS.writeFile(`data/users/${authAddress}/content.json`, JSON.stringify(content, null, 1));

@@ -55,7 +55,7 @@
 						<div v-else class="invite-status">Dismissed :(</div>
 					</div>
 
-					<span class="close" @click.stop="removeChannel(channel.visibleName)">
+					<span class="close" @click.stop="cancelInvite(channel)">
 						&times;
 					</span>
 				</div>
@@ -307,6 +307,11 @@
 				this.renderInvites();
 
 				await this.saveChannels();
+			},
+
+			async cancelInvite(channel) {
+				await channel.object.cancelInvite();
+				await this.removeChannel(channel.visibleName);
 			},
 
 			renderInvites() {
