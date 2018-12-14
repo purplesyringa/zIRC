@@ -22,7 +22,7 @@
 				</div>
 
 				<div
-					v-if="(channel.object instanceof User) && channel.object.weInvited && !channel.object.wasOurInviteHandled"
+					v-else-if="(channel.object instanceof User) && channel.object.weInvited && !channel.object.wasOurInviteHandled"
 
 					:class="['channel', {current: current === channel.visibleName}]"
 				>
@@ -258,7 +258,10 @@
 					};
 				});
 
-				this.channels = inviteChannels.concat(this.channels);
+				this.channels = inviteChannels.concat(this.channels)
+					.filter((val, idx, arr) => {
+						return arr.findIndex(o => o.visibleName === val.visibleName) === idx;
+					});
 			}
 		},
 
