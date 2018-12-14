@@ -31,7 +31,7 @@ export default new class FileTransport extends EventEmitter {
 
 						// We are invited. Check whether we have dismissed/accepted the invite before
 						// We can't use top-level import because of circular dependency loop
-						const IRC = await import("libs/irc");
+						const IRC = (await import("libs/irc")).default;
 
 						const user = IRC.getObjectById(`@${authAddress}`);
 						await user.initLock.acquire();

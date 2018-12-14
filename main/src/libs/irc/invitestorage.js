@@ -31,7 +31,7 @@ export default new class InviteStorage extends EventEmitter {
 			)
 		`);
 
-		const IRC = await import("libs/irc");
+		const IRC = (await import("libs/irc")).default;
 
 		for(const invite of response) {
 			const authAddress = invite.directory.replace("users/", "");

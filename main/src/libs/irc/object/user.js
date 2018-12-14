@@ -17,7 +17,6 @@ export default class User extends Speakable {
 		this.initLock = new Lock();
 		this.initLock.acquire();
 		this.publicKeyLock = new Lock();
-		this.publicKeyLock.acquire();
 		this.publicKeyCache = undefined;
 		this.init();
 	}
@@ -247,6 +246,8 @@ export default class User extends Speakable {
 				return;
 			}
 		}
+
+		this.weInvited = true;
 
 		// Add the invite
 		await zeroDB.insertRow(

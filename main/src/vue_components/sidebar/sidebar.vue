@@ -189,10 +189,11 @@
 					"Which channel (user, group) are you going to join?"
 				);
 
+				const object = IRC.getObjectById(channel);
 				if(!this.channels.some(o => o.visibleName === channel)) {
 					this.channels.push({
 						visibleName: channel,
-						object: IRC.getObjectById(channel),
+						object,
 						fromInviteStorage: false
 					});
 
@@ -205,12 +206,17 @@
 					await zeroPage.cmd("userSetSettings", [userSettings]);
 				}
 
-				const obj = IRC.getObjectById(channel);
-				if(obj instanceof User) {
-					await obj.initLock.acquire();
-					obj.initLock.release();
+				if(object instanceof User) {
+					await object.initLock.acquire();
+					object.initLock.release();
 
-					if(!obj.wasTheirInviteHandled || !obj.wasOurInviteHandled) {
+					if(!object.weInvited && !object.wasTheirInviteHandled) {
+						// Invite user
+						await object.invite();
+						this.channels = this.channels.slice();
+						return;
+					}
+					if(!object.wasTheirInviteHandled || !object.wasOurInviteHandled) {
 						// Don't open in case invite wasn't handled
 						return;
 					}
@@ -255,9 +261,8 @@
 						fromInviteStorage: true
 					};
 				});
-				if(inviteChannels.length) {
-					this.channels.splice(0, 0, inviteChannels);
-				}
+
+				this.channels = inviteChannels.concat(this.channels);
 			}
 		},
 
