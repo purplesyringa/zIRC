@@ -202,7 +202,6 @@
 							this.channels = this.channels.filter(o => o.visibleName !== channel);
 							return;
 						}
-						this.channels = this.channels.slice();
 						doOpen = false;
 					}
 					if(!object.wasTheirInviteHandled || !object.wasOurInviteHandled) {
@@ -212,12 +211,13 @@
 				}
 
 				// Add channel to list
-				if(!this.channels.some(o => o.visibleName === channel)) {
+				if(!this.channels.some(o => !o.fromInviteStorage && o.visibleName === channel)) {
 					this.channels.push({
 						visibleName: channel,
 						object,
 						fromInviteStorage: false
 					});
+					this.channels = this.channels.slice();
 
 					await this.saveChannels();
 				}

@@ -87,11 +87,7 @@ export default new class InviteStorage extends EventEmitter {
 	bindUser(user) {
 		user.on("inviteHandled", () => {
 			this.invites = this.invites.filter(invite => {
-				if(user.id[0] === "@") {
-					return invite.authAddress !== user.id.substr(1);
-				} else {
-					return invite.certUserId !== user.id;
-				}
+				return `@${invite.authAddress}` !== user.name;
 			});
 			this.emit("invitesUpdated");
 		});
