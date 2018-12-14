@@ -17,17 +17,19 @@ export default class User extends Speakable {
 		this.theirInviteState = null;
 		this.ourInviteState = null;
 		this.initLock = new Lock();
-		this.initLock.acquire();
 		this.publicKeyLock = new Lock();
 		this.publicKeyCache = undefined;
 		this.encId = null;
 		this.init();
+		InviteStorage.bindUser(this);
 		UserStorage.on("changeUser", () => {
 			this.name = this.id;
 			this.init();
 		});
 	}
 	async init() {
+		await this.initLock.acquire();
+
 		// Set correct name
 		if(this.name.startsWith("auth_address:")) {
 			this.name = "@" + this.name.replace("auth_address:", "");
@@ -54,8 +56,6 @@ export default class User extends Speakable {
 				this.name = "@" + directory.replace("users/", "");
 			}
 		}
-
-		InviteStorage.bindUser(this);
 
 		// Check whether a user invited us, and we have handled the result (i.e. accepted or dismissed)
 		const siteInfo = await zeroPage.getSiteInfo();
