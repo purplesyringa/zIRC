@@ -136,7 +136,7 @@ export default class User extends Speakable {
 			return [];
 		}
 
-		const hash = crypto.createHash("sha256").update(this.encId).digest("hex");
+		const hash = crypto.createHash("sha256").update(`@${this.encId}`).digest("hex");
 
 		const response = await zeroDB.query(`
 			SELECT
@@ -224,7 +224,7 @@ export default class User extends Speakable {
 			return;
 		}
 
-		transport.send(this.encId, {
+		transport.send(`@${this.encId}`, {
 			cmd: "user",
 			message: CryptMessage.encrypt(message, publicKey)
 		});
