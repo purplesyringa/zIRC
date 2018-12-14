@@ -22,6 +22,26 @@
 				</div>
 
 				<div
+					v-else-if="(channel.object instanceof User) && channel.object.theirInviteState === 'dismiss' && !channel.object.weInvited"
+
+					:class="['channel', {current: current === channel.visibleName}]"
+				>
+					<!-- Show invite -->
+					<Avatar :channel="channel.visibleName" />
+
+					<div class="invite">
+						{{channel.visibleName.substr(0, 18)}}<br>
+						<div class="invite-status">
+							<button class="accept" @click="invite(channel)">Invite</button>
+						</div>
+					</div>
+
+					<span class="close" @click.stop="removeChannel(channel.visibleName)">
+						&times;
+					</span>
+				</div>
+
+				<div
 					v-else-if="(channel.object instanceof User) && channel.object.weInvited && channel.object.ourInviteState !== 'accept'"
 
 					:class="['channel', {current: current === channel.visibleName}]"
@@ -32,7 +52,7 @@
 					<div class="invite">
 						{{channel.visibleName.substr(0, 18)}}<br>
 						<div v-if="!channel.object.wasOurInviteHandled" class="invite-status">Invited</div>
-						<div v-else class="invite-status">Dismissed</div>
+						<div v-else class="invite-status">Dismissed :(</div>
 					</div>
 
 					<span class="close" @click.stop="removeChannel(channel.visibleName)">
@@ -205,7 +225,7 @@
 						}
 						doOpen = false;
 					}
-					if((object.theyInvited && !object.wasTheirInviteHandled) || (object.weInvited && !object.wasOurInviteHandled)) {
+					if((object.theyInvited && !object.wasTheirInviteHandled) || (object.weInvited && !object.wasOurInviteHandled) || object.theirInviteState === "dismiss" || object.ourInviteState === "dismiss") {
 						// Don't open in case invite wasn't handled
 						doOpen = false;
 					}
@@ -263,6 +283,23 @@
 				} catch(e) {
 					zeroPage.error(`Error while dismissing user's invite: ${e}`);
 				}
+			},
+			async invite(channel) {
+				try {
+					await channel.object.invite();
+				} catch(e) {
+					zeroPage.error(`Error while inviting user: ${e}`);
+					return;
+				}
+
+				this.channels.push({
+					visibleName: channel.visibleName,
+					object: channel.object,
+					fromInviteStorage: false
+				});
+				this.renderInvites();
+
+				await this.saveChannels();
 			},
 
 			renderInvites() {

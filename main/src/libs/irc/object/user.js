@@ -13,6 +13,7 @@ export default class User extends Speakable {
 		this.weInvited = false;
 		this.wasTheirInviteHandled = false;
 		this.wasOurInviteHandled = false;
+		this.theirInviteState = null;
 		this.ourInviteState = null;
 		this.initLock = new Lock();
 		this.initLock.acquire();
@@ -70,6 +71,7 @@ export default class User extends Speakable {
 
 			if(invite === `${encId}!!${this.name}:accept` || invite === `${encId}!!${this.name}:dismiss`) {
 				this.encId = encId;
+				this.theirInviteState = invite.split(":").slice(-1)[0];
 				return true;
 			} else {
 				return false;
@@ -260,7 +262,8 @@ export default class User extends Speakable {
 		await this.initLock.acquire();
 		this.initLock.release();
 
-		if(this.theyInvited) {
+		console.log(this.theyInvited, this.wasTheirInviteHandled);
+		if(this.theyInvited && !this.wasTheirInviteHandled) {
 			// If we were invited by the user, accept their invite instead of making ours
 			await this.acceptInvite();
 			return;
@@ -282,15 +285,21 @@ export default class User extends Speakable {
 		this.weInvited = true;
 
 		// Add the invite
-		await zeroDB.insertRow(
-			`data/users/${authAddress}/content.json`,
-			`data/users/${authAddress}/content.json`,
-			"invites",
-			{
-				for_self: await CryptMessage.encrypt(this.name, await CryptMessage.getSelfPublicKey()),
-				for_invitee: await CryptMessage.encrypt(this.name, await this.getPublicKey())
-			}
-		);
+		content.invites = content.invites || [];
+		content.invites.push({
+			for_self: await CryptMessage.encrypt(this.name, await CryptMessage.getSelfPublicKey()),
+			for_invitee: await CryptMessage.encrypt(this.name, await this.getPublicKey())
+		});
+		// Remove dismiss
+		if(content.handledInvites) {
+			content.handledInvites = (await Promise.all(content.handledInvites.map(async invite => {
+				return (await CryptMessage.decrypt(invite.for_self)).endsWith(`!!${this.name}:dismiss`) ? null : invite;
+			}))).filter(invite => invite);
+		}
+
+		// Publish
+		await zeroFS.writeFile(`data/users/${authAddress}/content.json`, JSON.stringify(content, null, 1));
+		zeroPage.publish(`data/users/${authAddress}/content.json`);
 	}
 
 	// Accept/dismiss user's invite
