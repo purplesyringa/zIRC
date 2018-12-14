@@ -61,8 +61,12 @@ export default new class CryptMessage {
 		return ECIES.encrypt(Buffer.from(message, "utf8"), Buffer.from(publicKey, "base64")).toString("base64");
 	}
 	async findPublicKey(authAddress) {
-		const content = JSON.parse(await zeroFS.readFile(`data/users/${authAddress}/content.json`));
-		return content.publicKey || null;
+		try {
+			const content = JSON.parse(await zeroFS.readFile(`data/users/${authAddress}/content.json`));
+			return content.publicKey || null;
+		} catch(e) {
+			throw new Error("User isn't registered");
+		}
 	}
 	async getSelfPublicKey() {
 		return (await this.getECDH()).getPublicKey().toString("base64");
