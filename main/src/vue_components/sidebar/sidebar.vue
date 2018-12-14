@@ -323,10 +323,7 @@
 
 			async saveChannels() {
 				// Save
-				let userSettings = await UserStorage.get();
-				if(!userSettings) {
-					userSettings = {};
-				}
+				let userSettings = (await UserStorage.get()) || {};
 				userSettings.channels = this.channels
 					.filter(o => !o.fromInviteStorage)
 					.map(o => o.visibleName);

@@ -14,8 +14,8 @@ export default new class CryptMessage {
 
 	async init() {
 		// Get the private key from user settings
-		let userSettings = await UserStorage.get();
-		let privateKey = (userSettings || {}).privateKey;
+		let userSettings = (await UserStorage.get()) || {};
+		let privateKey = userSettings.privateKey;
 
 		if(privateKey) {
 			// Derive from private key
