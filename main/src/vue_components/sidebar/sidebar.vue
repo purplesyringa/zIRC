@@ -22,7 +22,7 @@
 				</div>
 
 				<div
-					v-else-if="(channel.object instanceof User) && channel.object.weInvited && !channel.object.wasOurInviteHandled"
+					v-else-if="(channel.object instanceof User) && channel.object.weInvited && channel.object.ourInviteState !== 'accept'"
 
 					:class="['channel', {current: current === channel.visibleName}]"
 				>
@@ -31,7 +31,8 @@
 
 					<div class="invite">
 						{{channel.visibleName.substr(0, 18)}}<br>
-						<div class="invite-status">Invited</div>
+						<div v-if="!channel.object.wasOurInviteHandled" class="invite-status">Invited</div>
+						<div v-else class="invite-status">Dismissed</div>
 					</div>
 
 					<span class="close" @click.stop="removeChannel(channel.visibleName)">
