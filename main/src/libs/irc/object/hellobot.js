@@ -65,6 +65,45 @@ export default class HelloBot extends Speakable {
 	}
 
 	_transfer(message, transport) {
+		if(message.text === "/storage") {
+			setTimeout(() => {
+				this._received({
+					authAddress: "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
+					certUserId: "HelloBot",
+					message: {
+						date: Date.now(),
+						text: `
+							You'll see a message inviting to clone a site,
+							please do it! ^_^
+						`,
+						id: this.generateId(10)
+					}
+				});
+				this.state = "clone";
+
+				setTimeout(async () => {
+					const siteInfo = await zeroPage.getSiteInfo();
+					zeroPage.cmd("siteClone", [siteInfo.address, "storage"]);
+				}, 1000);
+			}, 1000);
+			return;
+		} else if(message.text === "/help") {
+			setTimeout(() => {
+				this._received({
+					authAddress: "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
+					certUserId: "HelloBot",
+					message: {
+						date: Date.now(),
+						text: `
+							Help: /storage -- create a new permanent storage
+						`,
+						id: this.generateId(11)
+					}
+				});
+			}, 1000);
+			return;
+		}
+
 		if(this.state === "start") {
 			setTimeout(() => {
 				this._received({
