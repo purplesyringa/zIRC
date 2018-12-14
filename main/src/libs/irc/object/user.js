@@ -279,10 +279,13 @@ export default class User extends Speakable {
 
 		for(const invite of content.invites || []) {
 			// Try to decrypt the invite
-			const inviteContent = await CryptMessage.decrypt(invite.for_self);
-			if(inviteContent === self.name) {
-				// Invited before
-				return;
+			try {
+				const inviteContent = await CryptMessage.decrypt(invite.for_self);
+				if(inviteContent === self.name) {
+					// Invited before
+					return;
+				}
+			} catch(e) {
 			}
 		}
 
@@ -296,9 +299,13 @@ export default class User extends Speakable {
 		});
 		// Remove dismiss
 		if(content.handledInvites) {
-			content.handledInvites = (await Promise.all(content.handledInvites.map(async invite => {
-				return (await CryptMessage.decrypt(invite.for_self)).endsWith(`!!${this.name}:dismiss`) ? null : invite;
-			}))).filter(invite => invite);
+			content.handledInvites = (
+				await Promise.all(
+					content.handledInvites.map(async invite => {
+						return (await CryptMessage.decrypt(invite.for_self)).endsWith(`!!${this.name}:dismiss`) ? null : invite;
+					}).map(promise => promise.catch(() => null))
+				)
+			).filter(invite => invite);
 		}
 
 		// Publish
