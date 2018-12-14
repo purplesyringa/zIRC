@@ -186,22 +186,9 @@
 				);
 
 				const object = IRC.getObjectById(channel);
-				if(!this.channels.some(o => o.visibleName === channel)) {
-					this.channels.push({
-						visibleName: channel,
-						object,
-						fromInviteStorage: false
-					});
+				let doOpen = true;
 
-					// Save
-					let userSettings = await zeroPage.cmd("userGetSettings");
-					if(!userSettings) {
-						userSettings = {};
-					}
-					userSettings.channels = this.channels.map(o => o.visibleName);
-					await zeroPage.cmd("userSetSettings", [userSettings]);
-				}
-
+				// Invite user (in case they weren't invited before)
 				if(object instanceof User) {
 					await object.initLock.acquire();
 					object.initLock.release();
@@ -216,28 +203,35 @@
 							return;
 						}
 						this.channels = this.channels.slice();
-						return;
+						doOpen = false;
 					}
 					if(!object.wasTheirInviteHandled || !object.wasOurInviteHandled) {
 						// Don't open in case invite wasn't handled
-						return;
+						doOpen = false;
 					}
 				}
 
-				// And open
-				this.open(channel);
+				// Add channel to list
+				if(!this.channels.some(o => o.visibleName === channel)) {
+					this.channels.push({
+						visibleName: channel,
+						object,
+						fromInviteStorage: false
+					});
+
+					await this.saveChannels();
+				}
+
+				// Open channel
+				if(doOpen) {
+					this.open(channel);
+				}
 			},
 
 			async removeChannel(channel) {
 				this.channels = this.channels.filter(o => o.visibleName !== channel);
 
-				// Save
-				let userSettings = await zeroPage.cmd("userGetSettings");
-				if(!userSettings) {
-					userSettings = {};
-				}
-				userSettings.channels = this.channels.map(o => o.visibleName);
-				await zeroPage.cmd("userSetSettings", [userSettings]);
+				await this.saveChannels();
 
 				if(this.current === channel) {
 					// Open #lobby if we removed the current channel
@@ -254,15 +248,8 @@
 				}
 
 				channel.fromInviteStorage = false;
-				this.channels.push(channel);
 
-				// Save
-				let userSettings = await zeroPage.cmd("userGetSettings");
-				if(!userSettings) {
-					userSettings = {};
-				}
-				userSettings.channels = this.channels.map(o => o.visibleName);
-				await zeroPage.cmd("userSetSettings", [userSettings]);
+				await this.saveChannels();
 			},
 			async dismissInvite(channel) {
 				try {
@@ -288,6 +275,18 @@
 					.filter((val, idx, arr) => {
 						return arr.findIndex(o => o.visibleName === val.visibleName) === idx;
 					});
+			},
+
+			async saveChannels() {
+				// Save
+				let userSettings = await zeroPage.cmd("userGetSettings");
+				if(!userSettings) {
+					userSettings = {};
+				}
+				userSettings.channels = this.channels
+					.filter(o => !o.fromInviteStorage)
+					.map(o => o.visibleName);
+				await zeroPage.cmd("userSetSettings", [userSettings]);
 			}
 		},
 
