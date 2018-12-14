@@ -8,11 +8,14 @@ export default new class CryptMessage {
 	constructor() {
 		this.ecdh = null;
 		this.ecdhLock = new Lock();
-		this.ecdhLock.acquire();
+
 		this.init();
+		UserStorage.on("changeUser", () => this.init());
 	}
 
 	async init() {
+		await this.ecdhLock.acquire();
+
 		// Get the private key from user settings
 		let userSettings = (await UserStorage.get()) || {};
 		let privateKey = userSettings.privateKey;

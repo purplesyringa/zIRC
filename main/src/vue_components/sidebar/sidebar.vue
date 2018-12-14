@@ -175,25 +175,31 @@
 		},
 
 		async mounted() {
-			const userSettings = await UserStorage.get();
-			this.channels = ((userSettings || {}).channels || [
-				"/HelloBot"
-			]).map(name => {
-				return {
-					visibleName: name,
-					object: IRC.getObjectById(name),
-					fromInviteStorage: false
-				};
-			});
-
+			await this.reloadAll();
 			InviteStorage.on("invitesUpdated", this.renderInvites);
-			this.renderInvites();
+			UserStorage.on("changeUser", this.reloadAll);
 		},
 		destroyed() {
 			InviteStorage.off("invitesUpdated", this.renderInvites);
+			UserStorage.off("changeUser", this.reloadAll);
 		},
 
 		methods: {
+			async reloadAll() {
+				const userSettings = await UserStorage.get();
+				this.channels = ((userSettings || {}).channels || [
+					"/HelloBot"
+				]).map(name => {
+					return {
+						visibleName: name,
+						object: IRC.getObjectById(name),
+						fromInviteStorage: false
+					};
+				});
+
+				this.renderInvites();
+			},
+
 			open(name) {
 				if(name[0] === "/") {
 					this.$router.navigate(`bot${name}`);

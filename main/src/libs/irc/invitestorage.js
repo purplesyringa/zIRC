@@ -2,6 +2,7 @@ import EventEmitter from "wolfy87-eventemitter";
 import {zeroPage, zeroDB} from "zero";
 import FileTransport from "libs/irc/transport/file";
 import CryptMessage from "libs/irc/cryptmessage";
+import UserStorage from "libs/irc/userstorage";
 
 export default new class InviteStorage extends EventEmitter {
 	constructor() {
@@ -11,6 +12,11 @@ export default new class InviteStorage extends EventEmitter {
 		this.loadInvites();
 
 		this.listen(FileTransport);
+
+		UserStorage.on("changeUser", () => {
+			this.invites = [];
+			this.loadInvites();
+		});
 	}
 
 	async loadInvites() {

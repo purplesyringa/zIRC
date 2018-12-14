@@ -3,6 +3,7 @@ import {zeroPage, zeroFS, zeroDB} from "zero";
 import crypto from "crypto";
 import CryptMessage from "libs/irc/cryptmessage";
 import InviteStorage from "libs/irc/invitestorage";
+import UserStorage from "libs/irc/userstorage";
 import Lock from "libs/lock";
 
 export default class User extends Speakable {
@@ -21,6 +22,10 @@ export default class User extends Speakable {
 		this.publicKeyCache = undefined;
 		this.encId = null;
 		this.init();
+		UserStorage.on("changeUser", () => {
+			this.name = this.id;
+			this.init();
+		});
 	}
 	async init() {
 		// Set correct name
