@@ -70,8 +70,15 @@ export default class User extends Speakable {
 			})
 		)).some(invite => invite === this.name);
 
-		// Now check whether the user accepted/dismissed our invite
-		if(this.name !== "@unknown") {
+		// Now check whether the user accepted/dismissed our invitelet content;
+		let theirContent;
+		try {
+			theirContent = JSON.parse(await zeroFS.readFile(`data/users/${this.name.substr(1)}/content.json`));
+		} catch(e) {
+			theirContent = null;
+		}
+
+		if(theirContent) {
 			const theirContent = JSON.parse(await zeroFS.readFile(`data/users/${this.name.substr(1)}/content.json`));
 
 			this.wasOurInviteHandled = (await Promise.all(

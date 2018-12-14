@@ -252,7 +252,7 @@
 				const inviteChannels = InviteStorage.invites.map(invite => {
 					const user = IRC.getObjectById(`@${invite.authAddress}`);
 					return {
-						visibleName: `@${invite.certUserId}`,
+						visibleName: invite.certUserId || `@${invite.authAddress}`,
 						object: user,
 						fromInviteStorage: true
 					};
