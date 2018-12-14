@@ -19,10 +19,6 @@
 							<button class="dismiss" @click="dismissInvite(channel)">Dismiss</button>
 						</div>
 					</div>
-
-					<span class="close" @click.stop="removeChannel(channel.visibleName)">
-						&times;
-					</span>
 				</div>
 
 				<div
