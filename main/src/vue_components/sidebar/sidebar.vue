@@ -239,8 +239,19 @@
 				}
 			},
 
-			acceptInvite(channel) {
+			async acceptInvite(channel) {
 				channel.object.acceptInvite();
+
+				channel.fromInviteStorage = false;
+				this.channels.push(channel);
+
+				// Save
+				let userSettings = await zeroPage.cmd("userGetSettings");
+				if(!userSettings) {
+					userSettings = {};
+				}
+				userSettings.channels = this.channels.map(o => o.visibleName);
+				await zeroPage.cmd("userSetSettings", [userSettings]);
 			},
 			dismissInvite(channel) {
 				channel.object.dismissInvite();
