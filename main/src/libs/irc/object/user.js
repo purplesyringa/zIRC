@@ -99,7 +99,7 @@ export default class User extends Speakable {
 
 			this.wasOurInviteHandled = (await Promise.all(
 				(theirContent.handledInvites || []).map(invite => {
-					return CryptMessage.decrypt(invite.for_invitee)
+					return CryptMessage.decrypt(invite.for_inviter)
 						.catch(() => null);
 				})
 			)).some(invite => {
@@ -311,7 +311,7 @@ export default class User extends Speakable {
 			"handledInvites",
 			{
 				for_self: await CryptMessage.encrypt(`${encId}!!${this.name}:${result}`, await CryptMessage.getSelfPublicKey()),
-				for_invitee: await CryptMessage.encrypt(`${encId}!!${this.name}:${result}`, await this.getPublicKey())
+				for_inviter: await CryptMessage.encrypt(`${encId}!!${this.name}:${result}`, await this.getPublicKey())
 			}
 		);
 

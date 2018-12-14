@@ -50,7 +50,7 @@ export default new class FileTransport extends EventEmitter {
 					for(const invite of contentJson.handledInvites || []) {
 						let result;
 						try {
-							result = (await CryptMessage.decrypt(invite.for_invitee)).split(":").slice(-1)[0];
+							result = (await CryptMessage.decrypt(invite.for_inviter)).split(":").slice(-1)[0];
 						} catch(e) {
 							continue;
 						}
