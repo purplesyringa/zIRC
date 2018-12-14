@@ -58,7 +58,7 @@ export default new class InviteStorage extends EventEmitter {
 			const user = IRC.getObjectById(`@${authAddress}`);
 			await user.initLock.acquire();
 			user.initLock.release();
-			if(user.wasTheirInviteHandled) {
+			if(user.wasTheirInviteHandled || user.wasOurInviteHandled) {
 				continue;
 			}
 
