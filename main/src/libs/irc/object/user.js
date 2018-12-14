@@ -291,7 +291,7 @@ export default class User extends Speakable {
 			}
 		);
 
-		this.wasThreirInviteHandled = true;
+		this.wasTheirInviteHandled = true;
 		this.emit("inviteHandled");
 	}
 }
