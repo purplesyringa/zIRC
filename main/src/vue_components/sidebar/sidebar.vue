@@ -205,7 +205,7 @@
 						}
 						doOpen = false;
 					}
-					if(!object.wasTheirInviteHandled || !object.wasOurInviteHandled) {
+					if((object.theyInvited && !object.wasTheirInviteHandled) || (object.weInvited && !object.wasOurInviteHandled)) {
 						// Don't open in case invite wasn't handled
 						doOpen = false;
 					}
