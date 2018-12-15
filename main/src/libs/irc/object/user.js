@@ -353,18 +353,45 @@ export default class User extends Speakable {
 		const siteInfo = await zeroPage.getSiteInfo();
 		const authAddress = siteInfo.auth_address;
 
-		const encId = Math.random().toString(36).substr(2);
+		this.encId = Math.random().toString(36).substr(2);
 		await zeroDB.insertRow(
 			`data/users/${authAddress}/content.json`,
 			`data/users/${authAddress}/content.json`,
 			"handledInvites",
 			{
-				for_self: await CryptMessage.encrypt(`${encId}!!${this.name}:${result}`, await CryptMessage.getSelfPublicKey()),
-				for_inviter: await CryptMessage.encrypt(`${encId}!!${this.name}:${result}`, await this.getPublicKey())
+				for_self: await CryptMessage.encrypt(`${this.encId}!!${this.name}:${result}`, await CryptMessage.getSelfPublicKey()),
+				for_inviter: await CryptMessage.encrypt(`${this.encId}!!${this.name}:${result}`, await this.getPublicKey())
 			}
 		);
 
 		this.wasTheirInviteHandled = true;
 		this.emit("inviteHandled");
+	}
+
+	async spreadUpdate() {
+		const IRC = (await import("libs/irc")).default;
+
+		// First, update by auth address
+		let objects = [IRC.getObjectById(this.name)];
+
+		// Second, update by cert user id
+		const certUserId = ((await zeroDB.query(`
+			SELECT cert_user_id FROM json WHERE directory = :directory AND file_name = "content.json"
+		`, {
+			directory: `users/${this.name.substr(1)}`
+		}))[0] || {}).cert_user_id;
+		if(certUserId) {
+			objects.push(IRC.getObjectById(certUserId));
+		}
+
+		for(const object of objects) {
+			object.theyInvited = this.theyInvited;
+			object.weInvited = this.weInvited;
+			object.wasTheirInviteHandled = this.wasTheirInviteHandled;
+			object.wasOurInviteHandled = this.wasOurInviteHandled;
+			object.theirInviteState = this.theirInviteState;
+			object.ourInviteState = this.ourInviteState;
+			object.encId = this.encId;
+		}
 	}
 }
