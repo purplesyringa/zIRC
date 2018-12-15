@@ -144,14 +144,16 @@
 				while(i < posts.length) {
 					const curPost = posts[i];
 					let messages = [curPost.message];
+					let prevDate = curPost.message.date;
 					while(true) {
 						const prevPost = posts[++i];
 						if(
 							prevPost &&
 							prevPost.authAddress === curPost.authAddress &&
 							prevPost.certUserId === curPost.certUserId &&
-							curPost.message.date - prevPost.message.date < 2 * 60 * 1000 // 2 min
+							prevDate - prevPost.message.date < 2 * 60 * 1000 // 2 min
 						) {
+							prevDate = prevPost.message.date;
 							messages.push(prevPost.message);
 						} else {
 							break;
