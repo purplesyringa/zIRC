@@ -18,12 +18,13 @@ export default vue => [
 		}
 	},
 	{
-		path: ":channel",
-		controller: ({channel}) => {
-			vue.currentView = Home;
-			vue.$store.commit("openChannel", channel);
+		path: "add-storage/:address",
+		controller: ({address}) => {
+			zeroPage.cmd("mergerSiteAdd", [address]);
+			vue.$router.navigate("bot/HelloBot");
 		}
 	},
+
 	{
 		path: "bot/:bot",
 		controller: ({bot}) => {
@@ -31,12 +32,11 @@ export default vue => [
 			vue.$store.commit("openChannel", `/${bot}`);
 		}
 	},
-
 	{
-		path: "add-storage/:address",
-		controller: ({address}) => {
-			zeroPage.cmd("mergerSiteAdd", [address]);
-			vue.$router.navigate("bot/HelloBot");
+		path: "*:channel",
+		controller: ({channel}) => {
+			vue.currentView = Home;
+			vue.$store.commit("openChannel", channel);
 		}
 	}
 ];

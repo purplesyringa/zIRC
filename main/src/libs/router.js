@@ -39,8 +39,8 @@ module.exports = class Router {
 					new RegExp(
 						"^" +
 						route.path
-							.replace(/:([^/]+)/g, "([^/]*)")
-							.replace(/\*/g, '(?:[^/]*)') +
+							.replace(/\*:([^/]+)/g, "(.*)")
+							.replace(/:([^/]+)/g, "([^/]*)") +
 						"$"
 					)
 				);
