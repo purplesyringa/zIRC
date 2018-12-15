@@ -32,7 +32,7 @@ module.exports = class Router {
 	}
 
 	check(hash) {
-		this.routes.forEach(route => {
+		for(const route of this.routes) {
 			let match = hash
 				.replace(/^\//, "")
 				.match(
@@ -59,8 +59,9 @@ module.exports = class Router {
 				this.currentHash = hash;
 
 				route.controller(routeParams);
+				break;
 			}
-		});
+		}
 	}
 
 	refresh() {
