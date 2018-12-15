@@ -48,9 +48,11 @@ export default new class FileTransport extends EventEmitter {
 
 					// Or maybe they replied to our invite?
 					for(const invite of contentJson.handledInvites || []) {
-						let result;
+						let result, encId;
 						try {
-							result = (await CryptMessage.decrypt(invite.for_inviter)).split(":").slice(-1)[0];
+							const decrypted = await CryptMessage.decrypt(invite.for_inviter);
+							result = decrypted.split(":").slice(-1)[0];
+							encId = decrypted.split("!!")[0];
 						} catch(e) {
 							continue;
 						}
@@ -58,7 +60,8 @@ export default new class FileTransport extends EventEmitter {
 						this.emit("inviteHandled", {
 							authAddress,
 							certUserId,
-							result
+							result,
+							encId
 						});
 					}
 				} else {

@@ -58,6 +58,7 @@ export default new class InviteStorage extends EventEmitter {
 			const user = IRC.getObjectById(`@${authAddress}`);
 			await user.initLock.acquire();
 			user.initLock.release();
+			user.theyInvited = true;
 			if(user.wasTheirInviteHandled || user.wasOurInviteHandled) {
 				continue;
 			}
@@ -69,21 +70,38 @@ export default new class InviteStorage extends EventEmitter {
 	}
 
 	listen(transport) {
-		transport.on("invite", ({authAddress, certUserId}) => {
+		transport.on("invite", async ({authAddress, certUserId}) => {
 			// Skip if we already have this invite
 			if(this.invites.some(invite => invite.authAddress === authAddress)) {
 				return;
 			}
 
+			const IRC = (await import("libs/irc")).default;
+			const user = IRC.getObjectById(`@${authAddress}`);
+			await user.initLock.acquire();
+			user.initLock.release();
+			user.theyInvited = true;
+			user.spreadUpdate();
+
 			this.invites.push({authAddress, certUserId});
 			this.emit("invitesUpdated");
 		});
 
-		transport.on("inviteHandled", ({authAddress}) => {
+		transport.on("inviteHandled", async ({authAddress, result, encId}) => {
 			let oldSize = this.invites.length;
 			this.invites = this.invites.filter(invite => {
 				return invite.authAddress !== authAddress;
 			});
+
+			const IRC = (await import("libs/irc")).default;
+			const user = IRC.getObjectById(`@${authAddress}`);
+			await user.initLock.acquire();
+			user.initLock.release();
+			user.wasOurInviteHandled = true;
+			user.ourInviteState = result;
+			user.encId = encId;
+			user.spreadUpdate();
+
 			if(oldSize !== this.invites.length) {
 				this.emit("invitesUpdated");
 			}
