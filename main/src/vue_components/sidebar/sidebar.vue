@@ -1,18 +1,81 @@
 <template>
 	<aside>
 		<div class="channels">
-			<div
+			<template
 				v-for="channel in channels"
-				:class="['channel', {current: current === channel}]"
-				@click="open(channel)"
 			>
-				<Avatar :channel="channel" />
-				{{channel.substr(0, 18)}}
+				<div
+					v-if="(channel.object instanceof User) && channel.object.theyInvited && !channel.object.wasTheirInviteHandled"
 
-				<span class="close" @click.stop="removeChannel(channel)">
-					&times;
-				</span>
-			</div>
+					:class="['channel', {current: current === channel.visibleName}]"
+				>
+					<!-- Show invite -->
+					<Avatar :channel="channel.visibleName" />
+
+					<div class="invite">
+						{{channel.visibleName.substr(0, 18)}}<br>
+						<div class="invite-status">
+							<button class="accept" @click="acceptInvite(channel)">Accept</button>
+							<button class="dismiss" @click="dismissInvite(channel)">Dismiss</button>
+						</div>
+					</div>
+				</div>
+
+				<div
+					v-else-if="(channel.object instanceof User) && channel.object.theirInviteState === 'dismiss' && !channel.object.weInvited"
+
+					:class="['channel', {current: current === channel.visibleName}]"
+				>
+					<!-- Show invite -->
+					<Avatar :channel="channel.visibleName" />
+
+					<div class="invite">
+						{{channel.visibleName.substr(0, 18)}}<br>
+						<div class="invite-status">
+							<button class="accept" @click="invite(channel)">Invite</button>
+						</div>
+					</div>
+
+					<span class="close" @click.stop="removeChannel(channel.visibleName)">
+						&times;
+					</span>
+				</div>
+
+				<div
+					v-else-if="(channel.object instanceof User) && channel.object.weInvited && channel.object.ourInviteState !== 'accept'"
+
+					:class="['channel', {current: current === channel.visibleName}]"
+				>
+					<!-- Show invite -->
+					<Avatar :channel="channel.visibleName" />
+
+					<div class="invite">
+						{{channel.visibleName.substr(0, 18)}}<br>
+						<div v-if="!channel.object.wasOurInviteHandled" class="invite-status">Invited</div>
+						<div v-else class="invite-status">Dismissed :(</div>
+					</div>
+
+					<span class="close" @click.stop="cancelInvite(channel)">
+						&times;
+					</span>
+				</div>
+
+				<div
+					v-else
+
+					:class="['channel', {current: current === channel.visibleName}]"
+					@click="open(channel.visibleName)"
+				>
+					<!-- Show user/channel/group badge -->
+					<Avatar :channel="channel.visibleName" />
+
+					{{channel.visibleName.substr(0, 18)}}
+
+					<span class="close" @click.stop="removeChannel(channel.visibleName)">
+						&times;
+					</span>
+				</div>
+			</template>
 		</div>
 
 		<div class="footer">
@@ -41,6 +104,24 @@
 				border-bottom: 1px solid #DDD
 				font-family: "Courier New", monospace
 				cursor: pointer
+
+				.invite
+					display: inline-block
+					vertical-align: middle
+
+					.invite-status
+						color: #F06
+
+						button
+							border: none
+							border-radius: 4px
+							padding: 4px 8px
+							border: 1px solid #F06
+							cursor: pointer
+
+							&.accept
+								background-color: #F06
+								color: #FFF
 
 				&:first-child
 					border-top: 1px solid #FFF
@@ -78,23 +159,47 @@
 
 <script type="text/javascript">
 	import {zeroPage} from "zero";
+	import IRC from "libs/irc";
+	import InviteStorage from "libs/irc/invitestorage";
+	import UserStorage from "libs/irc/userstorage";
+	import User from "libs/irc/object/user";
 
 	export default {
 		name: "Sidebar",
 		data() {
 			return {
-				channels: []
+				channels: [],
+				invites: [],
+				User
 			};
 		},
 
 		async mounted() {
-			const userSettings = await zeroPage.cmd("userGetSettings");
-			this.channels = (userSettings || {}).channels || [
-				"/HelloBot"
-			];
+			await this.reloadAll();
+			InviteStorage.on("invitesUpdated", this.renderInvites);
+			UserStorage.on("changeUser", this.reloadAll);
+		},
+		destroyed() {
+			InviteStorage.off("invitesUpdated", this.renderInvites);
+			UserStorage.off("changeUser", this.reloadAll);
 		},
 
 		methods: {
+			async reloadAll() {
+				const userSettings = await UserStorage.get();
+				this.channels = ((userSettings || {}).channels || [
+					"/HelloBot"
+				]).map(name => {
+					return {
+						visibleName: name,
+						object: IRC.getObjectById(name),
+						fromInviteStorage: false
+					};
+				});
+
+				this.renderInvites();
+			},
+
 			open(name) {
 				if(name[0] === "/") {
 					this.$router.navigate(`bot${name}`);
@@ -108,40 +213,132 @@
 					"Which channel (user, group) are you going to join?"
 				);
 
-				if(this.channels.indexOf(channel) === -1) {
-					this.channels.push(channel);
+				const object = IRC.getObjectById(channel);
+				let doOpen = true;
 
-					// Save
-					let userSettings = await zeroPage.cmd("userGetSettings");
-					if(!userSettings) {
-						userSettings = {};
+				// Invite user (in case they weren't invited before)
+				if(object instanceof User) {
+					await object.initLock.acquire();
+					object.initLock.release();
+
+					if(!object.weInvited && !object.wasTheirInviteHandled) {
+						// Invite user
+						try {
+							await object.invite();
+						} catch(e) {
+							zeroPage.error(`Error while inviting user: ${e}`);
+							this.channels = this.channels.filter(o => o.visibleName !== channel);
+							return;
+						}
+						doOpen = false;
 					}
-					userSettings.channels = this.channels;
-					await zeroPage.cmd("userSetSettings", [userSettings]);
+					if((object.theyInvited && !object.wasTheirInviteHandled) || (object.weInvited && !object.wasOurInviteHandled) || object.theirInviteState === "dismiss" || object.ourInviteState === "dismiss") {
+						// Don't open in case invite wasn't handled
+						doOpen = false;
+					}
 				}
 
-				// And open
-				this.open(channel);
+				// Add channel to list
+				if(!this.channels.some(o => !o.fromInviteStorage && o.visibleName === channel)) {
+					this.channels.push({
+						visibleName: channel,
+						object,
+						fromInviteStorage: false
+					});
+					this.channels = this.channels.slice();
+
+					await this.saveChannels();
+				}
+
+				// Open channel
+				if(doOpen) {
+					this.open(channel);
+				}
 			},
 
 			async removeChannel(channel) {
-				const idx = this.channels.indexOf(channel);
-				if(idx > -1) {
-					this.channels.splice(idx, 1);
-				}
+				this.channels = this.channels.filter(o => o.visibleName !== channel);
 
-				// Save
-				let userSettings = await zeroPage.cmd("userGetSettings");
-				if(!userSettings) {
-					userSettings = {};
-				}
-				userSettings.channels = this.channels;
-				await zeroPage.cmd("userSetSettings", [userSettings]);
+				await this.saveChannels();
 
 				if(this.current === channel) {
 					// Open #lobby if we removed the current channel
 					this.open("#lobby");
 				}
+			},
+
+			async acceptInvite(channel) {
+				try {
+					await channel.object.acceptInvite();
+				} catch(e) {
+					zeroPage.error(`Error while accepting user's invite: ${e}`);
+					return;
+				}
+
+				this.channels.push({
+					visibleName: channel.visibleName,
+					object: channel.object,
+					fromInviteStorage: false
+				});
+				this.renderInvites();
+
+				await this.saveChannels();
+			},
+			async dismissInvite(channel) {
+				try {
+					await channel.object.dismissInvite();
+				} catch(e) {
+					zeroPage.error(`Error while dismissing user's invite: ${e}`);
+				}
+			},
+			async invite(channel) {
+				try {
+					await channel.object.invite();
+				} catch(e) {
+					zeroPage.error(`Error while inviting user: ${e}`);
+					return;
+				}
+
+				this.channels.push({
+					visibleName: channel.visibleName,
+					object: channel.object,
+					fromInviteStorage: false
+				});
+				this.renderInvites();
+
+				await this.saveChannels();
+			},
+
+			async cancelInvite(channel) {
+				await channel.object.cancelInvite();
+				await this.removeChannel(channel.visibleName);
+			},
+
+			renderInvites() {
+				this.channels = this.channels.filter(o => !o.fromInviteStorage);
+
+				const inviteChannels = InviteStorage.invites.map(invite => {
+					const user = IRC.getObjectById(`@${invite.authAddress}`);
+					return {
+						visibleName: invite.certUserId || `@${invite.authAddress}`,
+						object: user,
+						fromInviteStorage: true
+					};
+				});
+
+				this.channels = inviteChannels.concat(this.channels)
+					.filter((val, idx, arr) => {
+						return arr.findIndex(o => o.visibleName === val.visibleName) === idx;
+					});
+			},
+
+			async saveChannels() {
+				// Save
+				let userSettings = (await UserStorage.get()) || {};
+				userSettings.channels = this.channels
+					.filter(o => !o.fromInviteStorage)
+					.map(o => o.visibleName);
+				await UserStorage.set(userSettings);
 			}
 		},
 

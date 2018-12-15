@@ -1,4 +1,5 @@
 import Home from "./home/home.vue";
+import UserStorage from "libs/irc/userstorage";
 import {zeroPage} from "zero";
 
 export default vue => [
@@ -6,7 +7,7 @@ export default vue => [
 		path: "",
 		controller: async () => {
 			// Let's check whether there's an object in users.json
-			const userSettings = await zeroPage.cmd("userGetSettings");
+			const userSettings = await UserStorage.get();
 			if(!userSettings || !userSettings.channels) {
 				vue.$store.commit("openChannel", "/HelloBot");
 			} else {

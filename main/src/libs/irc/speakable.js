@@ -2,6 +2,7 @@ import PeerTransport from "libs/irc/transport/peer";
 import FileTransport from "libs/irc/transport/file";
 import Storage from "libs/irc/storage";
 import EventEmitter from "wolfy87-eventemitter";
+import Lock from "libs/lock";
 import {zeroPage} from "zero";
 
 export default class Speakable extends EventEmitter {
@@ -10,6 +11,8 @@ export default class Speakable extends EventEmitter {
 		this.name = name;
 		this.history = null;
 		this.received = {};
+
+		this.historyLock = new Lock();
 
 		setTimeout(() => {
 			// Listen from peers
@@ -20,6 +23,14 @@ export default class Speakable extends EventEmitter {
 	}
 
 	async loadHistory() {
+		// Wait for init (e.g. in User)
+		if(this.initLock) {
+			await this.initLock.acquire();
+			this.initLock.release();
+		}
+
+		await this.historyLock.acquire();
+
 		if(!this.history) {
 			this.history = [];
 
@@ -44,6 +55,7 @@ export default class Speakable extends EventEmitter {
 			});
 		}
 
+		this.historyLock.release();
 		return this.history;
 	}
 
@@ -64,11 +76,6 @@ export default class Speakable extends EventEmitter {
 			id: Math.random().toString(36).substr(2) + "/" + Date.now()
 		};
 
-		// Transfer via peers
-		this._transfer(message, PeerTransport);
-		// Transfer via files
-		this._transfer(message, FileTransport);
-
 		// Receive, in case the transfers are slow
 		const siteInfo = await zeroPage.getSiteInfo();
 		this._received({
@@ -76,6 +83,14 @@ export default class Speakable extends EventEmitter {
 			certUserId: siteInfo.cert_user_id,
 			message
 		});
+
+		// Use Promise.all to handle errors
+		await Promise.all([
+			// Transfer via peers
+			this._transfer(message, PeerTransport),
+			// Transfer via files
+			this._transfer(message, FileTransport)
+		]);
 	}
 
 	async _received({authAddress, certUserId, message}) {
@@ -88,11 +103,9 @@ export default class Speakable extends EventEmitter {
 				receiveDate: Date.now(),
 				message
 			};
-			if(this.history) {
-				this.history.push(object);
-			} else {
-				await this.loadHistory();
-			}
+
+			await this.loadHistory();
+			this.history.push(object);
 
 			Storage.save(this.name, object);
 			this.emit("received", object);

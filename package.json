@@ -61,6 +61,7 @@
     "material-icons": "^0.2.3",
     "node-sass": "^4.7.2",
     "singleton-js": "^1.0.0",
+    "standard-ecies": "^1.0.0",
     "vue": "^2.5.13",
     "vue-async-computed": "^3.3.1",
     "vue-awesome": "^3.0.0",
