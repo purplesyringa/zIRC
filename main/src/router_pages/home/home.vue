@@ -143,9 +143,9 @@
 
 				while(i < posts.length) {
 					const curPost = posts[i];
-					let messages = [];
+					let messages = [curPost.message];
 					while(true) {
-						const prevPost = posts[i++];
+						const prevPost = posts[++i];
 						if(
 							prevPost &&
 							prevPost.authAddress === curPost.authAddress &&
