@@ -16,8 +16,9 @@
 				class="input"
 				@keypress.enter="submit"
 			/>
-			<button @click="submit">Send &gt;</button>
+		</div>
 
+		<div>
 			<button class="right" title="Delete history from permanent storage" @click="deleteHistory">
 				<icon name="trash" />
 			</button>
@@ -25,8 +26,8 @@
 
 		<div class="messages">
 			<Message
-				v-for="message in history.slice().reverse()"
-				:key="message.message.id"
+				v-for="message in reverseHistory"
+				:key="message.messages[0].id"
 
 				v-bind="message"
 			/>
@@ -44,8 +45,16 @@
 			font-family: "Courier New", monospace
 			font-size: 16px
 			padding: 8px 12px
+			background-color: #444
+			border: none
+
+		.input
+			width: 100%
+		button
+			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2)
 
 		.right
+			margin-top: 16px
 			float: right
 
 		.info
@@ -125,6 +134,37 @@
 			},
 			username() {
 				return this.$store.state.siteInfo.cert_user_id || "Anonymous";
+			},
+			reverseHistory() {
+				// Combine posts by one user, posted within 2 minutes
+				const posts = this.history.slice().reverse();
+				let i = 0;
+				let result = [];
+
+				while(i < posts.length) {
+					const curPost = posts[i];
+					let messages = [];
+					while(true) {
+						const prevPost = posts[i++];
+						if(
+							prevPost &&
+							prevPost.authAddress === curPost.authAddress &&
+							prevPost.certUserId === curPost.certUserId &&
+							curPost.message.date - prevPost.message.date < 2 * 60 * 1000 // 2 min
+						) {
+							messages.push(prevPost.message);
+						} else {
+							break;
+						}
+					}
+					result.push({
+						authAddress: curPost.authAddress,
+						certUserId: curPost.certUserId,
+						receiveDate: curPost.receiveDate,
+						messages
+					});
+				}
+				return result;
 			}
 		}
 	};

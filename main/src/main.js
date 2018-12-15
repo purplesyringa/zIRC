@@ -14,6 +14,8 @@ import Sidebar from "vue_components/sidebar/sidebar.vue";
 Vue.component("Sidebar", Sidebar);
 import Message from "vue_components/message/message.vue";
 Vue.component("Message", Message);
+import ClearFix from "vue_components/clearfix.vue";
+Vue.component("ClearFix", ClearFix);
 
 Vue.prototype.$eventBus = new Vue();
 

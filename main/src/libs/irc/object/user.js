@@ -45,7 +45,7 @@ export default class User extends Speakable {
 				this.name = "@unknown";
 				this._received({
 					authAddress: "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
-					certUserId: "UserBot",
+					certUserId: "/UserBot",
 					message: {
 						date: Date.now(),
 						text: "Error getting auth address of the user.",
@@ -221,7 +221,7 @@ export default class User extends Speakable {
 		if(!this.encId) {
 			this._received({
 				authAddress: "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
-				certUserId: "UserBot",
+				certUserId: "/UserBot",
 				message: {
 					date: Date.now(),
 					text: `The users didn't reach consensus on invitation, can't send message.`,
