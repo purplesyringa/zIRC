@@ -18,7 +18,7 @@ export default class HelloBot extends Speakable {
 				const messages = [
 					{
 						authAddress: "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
-						certUserId: "HelloBot",
+						certUserId: "/HelloBot",
 						message: {
 							date: Date.now(),
 							text: `
@@ -47,7 +47,7 @@ export default class HelloBot extends Speakable {
 		return [
 			{
 				authAddress: "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
-				certUserId: "HelloBot",
+				certUserId: "/HelloBot",
 				message: {
 					date: Date.now(),
 					text: `
@@ -64,12 +64,12 @@ export default class HelloBot extends Speakable {
 		return;
 	}
 
-	_transfer(message, transport) {
+	_transfer(message) {
 		if(message.text === "/storage") {
 			setTimeout(() => {
 				this._received({
 					authAddress: "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
-					certUserId: "HelloBot",
+					certUserId: "/HelloBot",
 					message: {
 						date: Date.now(),
 						text: `
@@ -91,7 +91,7 @@ export default class HelloBot extends Speakable {
 			setTimeout(() => {
 				this._received({
 					authAddress: "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
-					certUserId: "HelloBot",
+					certUserId: "/HelloBot",
 					message: {
 						date: Date.now(),
 						text: `
@@ -108,7 +108,7 @@ export default class HelloBot extends Speakable {
 			setTimeout(() => {
 				this._received({
 					authAddress: "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
-					certUserId: "HelloBot",
+					certUserId: "/HelloBot",
 					message: {
 						date: Date.now(),
 						text: `
@@ -131,7 +131,7 @@ export default class HelloBot extends Speakable {
 				setTimeout(() => {
 					this._received({
 						authAddress: "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
-						certUserId: "HelloBot",
+						certUserId: "/HelloBot",
 						message: {
 							date: Date.now(),
 							text: `
@@ -150,7 +150,7 @@ export default class HelloBot extends Speakable {
 					setTimeout(() => {
 						this._received({
 							authAddress: "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
-							certUserId: "HelloBot",
+							certUserId: "/HelloBot",
 							message: {
 								date: Date.now(),
 								text: `
@@ -169,7 +169,7 @@ export default class HelloBot extends Speakable {
 			setTimeout(() => {
 				this._received({
 					authAddress: "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
-					certUserId: "HelloBot",
+					certUserId: "/HelloBot",
 					message: {
 						date: Date.now(),
 						text: `
@@ -191,7 +191,7 @@ export default class HelloBot extends Speakable {
 				setTimeout(() => {
 					this._received({
 						authAddress: "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
-						certUserId: "HelloBot",
+						certUserId: "/HelloBot",
 						message: {
 							date: Date.now(),
 							text: `
@@ -212,7 +212,7 @@ export default class HelloBot extends Speakable {
 				setTimeout(() => {
 					this._received({
 						authAddress: "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
-						certUserId: "HelloBot",
+						certUserId: "/HelloBot",
 						message: {
 							date: Date.now(),
 							text: `
@@ -231,7 +231,7 @@ export default class HelloBot extends Speakable {
 				setTimeout(() => {
 					this._received({
 						authAddress: "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
-						certUserId: "HelloBot",
+						certUserId: "/HelloBot",
 						message: {
 							date: Date.now(),
 							text: `
@@ -243,15 +243,10 @@ export default class HelloBot extends Speakable {
 				}, 1000);
 			}
 		} else if(this.state === "tour") {
-			transport.send("#HelloBot_join", {
-				cmd: "channel#HelloBot_join",
-				message
-			});
-
 			setTimeout(() => {
 				this._received({
 					authAddress: "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
-					certUserId: "HelloBot",
+					certUserId: "/HelloBot",
 					message: {
 						date: Date.now(),
 						text: `
