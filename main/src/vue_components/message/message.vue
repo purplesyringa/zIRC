@@ -7,7 +7,11 @@
 			<span class="user anonymous" v-else>Anonymous</span>
 			<span class="date" :title="title">[{{dateText}}]</span>
 		</div>
-		{{message.text}}
+		<div class="messages">
+			<div v-for="message in messages" class="message-item">
+				{{message.text}}
+			</div>
+		</div>
 		<ClearFix />
 	</div>
 </template>
@@ -31,28 +35,30 @@
 		.date
 			font-style: italic
 			color: #888
+
+		.messages
+			float: left
+			margin: -8px 0
+			.message-item
+				margin: 8px 0
 </style>
 
 <script type="text/javascript">
 	export default {
 		name: "Message",
-		props: ["authAddress", "certUserId", "receiveDate", "message"],
+		props: ["authAddress", "certUserId", "receiveDate", "messages"],
 		data() {
 			return {
 				authAddress: "",
 				certUserId: "",
 				receiveDate: 0,
-				message: {
-					date: 0,
-					text: "",
-					id: ""
-				}
+				messages: []
 			};
 		},
 
 		computed: {
 			dateText() {
-				return (new Date(this.message.date)).toLocaleString();
+				return (new Date(this.messages[0].date)).toLocaleString();
 			},
 			title() {
 				if(this.receiveDate) {
