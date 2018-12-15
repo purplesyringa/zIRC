@@ -88,8 +88,7 @@
 	aside
 		width: 320px
 		height: 100%
-		background-color: #EEE
-		border-right: 1px solid #DDD
+		background-color: #223
 		overflow-y: auto
 		overflow-x: hidden
 
@@ -101,7 +100,6 @@
 
 			.channel
 				padding: 12px 16px
-				border-bottom: 1px solid #DDD
 				font-family: "Courier New", monospace
 				cursor: pointer
 
@@ -110,24 +108,25 @@
 					vertical-align: middle
 
 					.invite-status
-						color: #F06
+						color: #F28
 
 						button
 							border: none
 							border-radius: 4px
 							padding: 4px 8px
-							border: 1px solid #F06
+							border: 1px solid #F28
 							cursor: pointer
+							background-color: #000
+							color: #FFF
 
 							&.accept
-								background-color: #F06
-								color: #FFF
+								background-color: #F28
 
 				&:first-child
 					border-top: 1px solid #FFF
 
 				&.current, &:hover
-					background-color: #FFF
+					background-color: #444
 
 				.close
 					float: right
@@ -137,7 +136,7 @@
 					font-size: 32px
 
 					&:hover
-						background-color: #EEE
+						background-color: #000
 
 		.footer
 			flex: 0 0 48px
@@ -154,7 +153,7 @@
 				padding-top: 12px
 
 				&:hover
-					background-color: #DDD
+					background-color: #000
 </style>
 
 <script type="text/javascript">

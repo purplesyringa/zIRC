@@ -16,8 +16,9 @@
 				class="input"
 				@keypress.enter="submit"
 			/>
-			<button @click="submit">Send &gt;</button>
+		</div>
 
+		<div>
 			<button class="right" title="Delete history from permanent storage" @click="deleteHistory">
 				<icon name="trash" />
 			</button>
@@ -44,8 +45,16 @@
 			font-family: "Courier New", monospace
 			font-size: 16px
 			padding: 8px 12px
+			background-color: #444
+			border: none
+
+		.input
+			width: 100%
+		button
+			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2)
 
 		.right
+			margin-top: 16px
 			float: right
 
 		.info

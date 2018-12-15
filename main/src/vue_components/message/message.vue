@@ -16,7 +16,7 @@
 			font-weight: bold
 		.anonymous
 			font-style: italic
-			color: #008
+			color: #FCC
 		.date
 			font-style: italic
 </style>
