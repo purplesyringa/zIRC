@@ -1,17 +1,28 @@
 <template>
 	<div class="message">
-		<span class="user" v-if="certUserId">{{certUserId}}</span>
-		<span class="user anonymous" v-else>Anonymous</span>
-		<span class="date" :title="title">[{{dateText}}]</span>:
+		<Avatar class="avatar" :channel="certUserId || `@${authAddress}`" />
+
+		<div class="header">
+			<span class="user" v-if="certUserId">{{certUserId}}</span>
+			<span class="user anonymous" v-else>Anonymous</span>
+			<span class="date" :title="title">[{{dateText}}]</span>
+		</div>
 		{{message.text}}
+		<ClearFix />
 	</div>
 </template>
 
 <style lang="sass" scoped>
 	.message
-		margin: 4px 0
+		margin: 16px 0
 		font-family: "Courier New", monospace
 
+		.avatar
+			float: left
+			margin-right: 16px
+
+		.header
+			padding: 8px 0
 		.user
 			font-weight: bold
 		.anonymous
@@ -19,6 +30,7 @@
 			color: #FCC
 		.date
 			font-style: italic
+			color: #888
 </style>
 
 <script type="text/javascript">
