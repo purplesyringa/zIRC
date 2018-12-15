@@ -122,9 +122,6 @@
 							&.accept
 								background-color: #F28
 
-				&:first-child
-					border-top: 1px solid #FFF
-
 				&.current, &:hover
 					background-color: #444
 
