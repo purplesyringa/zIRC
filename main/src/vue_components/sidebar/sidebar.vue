@@ -2,7 +2,7 @@
 	<aside>
 		<div class="channels">
 			<template
-				v-for="channel in channels"
+				v-for="channel in visibleChannels"
 			>
 				<div
 					v-if="(channel.object instanceof User) && channel.object.theyInvited && !channel.object.wasTheirInviteHandled"
@@ -387,6 +387,26 @@
 		computed: {
 			current() {
 				return this.$store.state.currentChannel;
+			},
+			visibleChannels() {
+				// I know that sort() has side effects -- actually it doesn't
+				// matter
+				return this.channels.sort((a, b) => {
+					const aMessage = (a.object.history || []).slice(-1)[0];
+					const bMessage = (b.object.history || []).slice(-1)[0];
+
+					const aDate = aMessage ? aMessage.receiveDate || aMessage.message.date : null;
+					const bDate = bMessage ? bMessage.receiveDate || bMessage.message.date : null;
+
+					if(aDate === null && bDate === null) {
+						return 0;
+					} else if(aDate === null) {
+						return 1;
+					} else if(bDate === null) {
+						return -1;
+					}
+					return bDate - aDate;
+				});
 			}
 		}
 	};
