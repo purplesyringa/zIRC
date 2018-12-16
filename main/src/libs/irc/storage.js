@@ -36,10 +36,11 @@ export default new class Storage extends EventEmitter {
 
 		const hash = crypto.createHash("sha256").update(id).digest("hex");
 		const fileName = id.charCodeAt(0).toString(16) + "_" + hash;
+		const userId = await this.getUserId();
 
 		let data;
 		try {
-			data = await zeroFS.readFile(`merged-IRC/${address}/data/${fileName}.json`);
+			data = await zeroFS.readFile(`merged-IRC/${address}/data/${userId}/${fileName}.json`);
 			data = JSON.parse(data);
 		} catch(e) {
 			data = {};
@@ -51,7 +52,7 @@ export default new class Storage extends EventEmitter {
 		data.objects.push(object);
 
 		data = JSON.stringify(data);
-		await zeroFS.writeFile(`merged-IRC/${address}/data/${fileName}.json`, data);
+		await zeroFS.writeFile(`merged-IRC/${address}/data/${userId}/${fileName}.json`, data);
 
 		// And sign
 		await zeroPage.sign(`merged-IRC/${address}/content.json`);
@@ -72,12 +73,13 @@ export default new class Storage extends EventEmitter {
 		// Get file names
 		const hash = crypto.createHash("sha256").update(id).digest("hex");
 		const fileName = id.charCodeAt(0).toString(16) + "_" + hash;
+		const userId = await this.getUserId();
 
 		// Load
 		const result = await Promise.all(
 			permanentStorages.map(async address => {
 				try {
-					let data = await zeroFS.readFile(`merged-IRC/${address}/data/${fileName}.json`);
+					let data = await zeroFS.readFile(`merged-IRC/${address}/data/${userId}/${fileName}.json`);
 					data = JSON.parse(data);
 					return data.objects || [];
 				} catch(e) {
@@ -111,16 +113,26 @@ export default new class Storage extends EventEmitter {
 		// Get file names
 		const hash = crypto.createHash("sha256").update(id).digest("hex");
 		const fileName = id.charCodeAt(0).toString(16) + "_" + hash;
+		const userId = await this.getUserId();
 
 		// Delete
 		await Promise.all(
 			permanentStorages.map(async address => {
 				try {
-					await zeroFS.deleteFile(`merged-IRC/${address}/data/${fileName}.json`);
+					await zeroFS.deleteFile(`merged-IRC/${address}/data/${userId}/${fileName}.json`);
 				} catch(e) {
 					// Fallthrough
 				}
 			})
 		);
+	}
+
+	async getUserId() {
+		const siteInfo = await zeroPage.getSiteInfo();
+		const authAddress = siteInfo.auth_address;
+		const certUserId = siteInfo.cert_user_id;
+
+		const hash = crypto.createHash("sha256").update(`${authAddress}!!${certUserId}`).digest("hex");
+		return hash;
 	}
 };
