@@ -136,6 +136,10 @@ export default class User extends Speakable {
 
 
 		this.initLock.release();
+
+		if(this.theirInviteState === "accept" || this.ourInviteState === "accept") {
+			this.loadHistory();
+		}
 	}
 
 	async _loadHistory() {
