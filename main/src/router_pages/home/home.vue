@@ -87,6 +87,7 @@
 			this.currentObject = IRC.getObjectById(this.current);
 			this.history = await this.currentObject.loadHistory();
 			this.currentObject.on("received", this.onReceived);
+			this.currentObject.markRead();
 		},
 		destroyed() {
 			if(this.currentObject) {
@@ -119,7 +120,7 @@
 			},
 
 			onReceived(obj) {
-				//this.history.push(obj);
+				this.currentObject.markRead();
 			},
 
 			async deleteHistory() {

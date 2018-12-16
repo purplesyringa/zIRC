@@ -14,7 +14,7 @@
 
 					<div class="content">
 						<div class="invite">
-							{{channel.visibleName.substr(0, 18)}}<br>
+							<div class="name">{{channel.visibleName}}</div>
 							<div class="invite-status">
 								<button class="accept" @click="acceptInvite(channel)">Accept</button>
 								<button class="dismiss" @click="dismissInvite(channel)">Dismiss</button>
@@ -33,7 +33,7 @@
 
 					<div class="content">
 						<div class="invite">
-							{{channel.visibleName.substr(0, 18)}}<br>
+							<div class="name">{{channel.visibleName}}</div>
 							<div class="invite-status">
 								<button class="accept" @click="invite(channel)">Invite</button>
 							</div>
@@ -55,7 +55,7 @@
 
 					<div class="content">
 						<div class="invite">
-							{{channel.visibleName.substr(0, 18)}}<br>
+							<div class="name">{{channel.visibleName}}</div>
 							<div v-if="!channel.object.wasOurInviteHandled" class="invite-status">Invited</div>
 							<div v-else class="invite-status">Dismissed :(</div>
 						</div>
@@ -76,13 +76,17 @@
 					<Avatar :channel="channel.visibleName" />
 
 					<div class="content">
-						{{channel.visibleName.substr(0, 18)}}
+						<div class="name">{{channel.visibleName}}</div>
 
 						<SmallMessage
 							v-if="(channel.object.history || []).length"
 							v-bind="(channel.object.history || []).slice(-1)[0]"
 						/>
 					</div>
+
+					<span class="unread" v-if="channel.object.countUnread">
+						{{channel.object.countUnread}}
+					</span>
 
 					<span class="close" @click.stop="removeChannel(channel.visibleName)">
 						&times;
@@ -135,6 +139,11 @@
 					justify-content: center
 					align-items: stretch
 
+					.name
+						overflow: hidden
+						white-space: nowrap
+						text-overflow: ellipsis
+
 					.invite
 						display: inline-block
 
@@ -161,6 +170,16 @@
 
 					&:hover
 						background-color: #000
+
+				.unread
+					width: 32px
+					height: 32px
+					text-align: center
+
+					margin: 16px 8px
+					padding: 8px
+					border-radius: 50%
+					background-color: #F28
 
 		.footer
 			flex: 0 0 48px
