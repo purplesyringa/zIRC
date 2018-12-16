@@ -6,6 +6,7 @@ export default class HelloBot extends Speakable {
 		super("/HelloBot");
 		this.state = "start";
 		this.currentId = Math.random().toString(16).substr(2);
+		this.postedHelloMessage = false;
 	}
 
 	async _loadHistory() {
@@ -44,20 +45,7 @@ export default class HelloBot extends Speakable {
 			}
 		}
 
-		return [
-			{
-				authAddress: "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
-				certUserId: "/HelloBot",
-				message: {
-					date: Date.now(),
-					text: `
-						Hi, I'm /HelloBot! I'll help you start using our IRC.
-						Please, tell me something! ^_^
-					`,
-					id: this.generateId(1)
-				}
-			}
-		];
+		return [];
 	}
 
 	_listen() {
@@ -261,6 +249,26 @@ export default class HelloBot extends Speakable {
 				});
 				this.state = "done";
 			}, 1000);
+		}
+	}
+
+	markRead() {
+		super.markRead();
+
+		if(!this.postedHelloMessage) {
+			this.postedHelloMessage = true;
+			this._received({
+				authAddress: "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
+				certUserId: "/HelloBot",
+				message: {
+					date: Date.now(),
+					text: `
+						Hi, I'm /HelloBot! I'll help you start using our IRC.
+						Please, tell me something! ^_^
+					`,
+					id: this.generateId(1)
+				}
+			});
 		}
 	}
 
