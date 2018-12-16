@@ -2,7 +2,7 @@
 	<aside>
 		<div class="channels">
 			<template
-				v-for="channel in channels"
+				v-for="channel in visibleChannels"
 			>
 				<div
 					v-if="(channel.object instanceof User) && channel.object.theyInvited && !channel.object.wasTheirInviteHandled"
@@ -12,11 +12,13 @@
 					<!-- Show invite -->
 					<Avatar :channel="channel.visibleName" />
 
-					<div class="invite">
-						{{channel.visibleName.substr(0, 18)}}<br>
-						<div class="invite-status">
-							<button class="accept" @click="acceptInvite(channel)">Accept</button>
-							<button class="dismiss" @click="dismissInvite(channel)">Dismiss</button>
+					<div class="content">
+						<div class="invite">
+							<div class="name">{{channel.visibleName}}</div>
+							<div class="invite-status">
+								<button class="accept" @click="acceptInvite(channel)">Accept</button>
+								<button class="dismiss" @click="dismissInvite(channel)">Dismiss</button>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -29,10 +31,12 @@
 					<!-- Show invite -->
 					<Avatar :channel="channel.visibleName" />
 
-					<div class="invite">
-						{{channel.visibleName.substr(0, 18)}}<br>
-						<div class="invite-status">
-							<button class="accept" @click="invite(channel)">Invite</button>
+					<div class="content">
+						<div class="invite">
+							<div class="name">{{channel.visibleName}}</div>
+							<div class="invite-status">
+								<button class="accept" @click="invite(channel)">Invite</button>
+							</div>
 						</div>
 					</div>
 
@@ -49,10 +53,12 @@
 					<!-- Show invite -->
 					<Avatar :channel="channel.visibleName" />
 
-					<div class="invite">
-						{{channel.visibleName.substr(0, 18)}}<br>
-						<div v-if="!channel.object.wasOurInviteHandled" class="invite-status">Invited</div>
-						<div v-else class="invite-status">Dismissed :(</div>
+					<div class="content">
+						<div class="invite">
+							<div class="name">{{channel.visibleName}}</div>
+							<div v-if="!channel.object.wasOurInviteHandled" class="invite-status">Invited</div>
+							<div v-else class="invite-status">Dismissed :(</div>
+						</div>
 					</div>
 
 					<span class="close" @click.stop="cancelInvite(channel)">
@@ -69,7 +75,18 @@
 					<!-- Show user/channel/group badge -->
 					<Avatar :channel="channel.visibleName" />
 
-					{{channel.visibleName.substr(0, 18)}}
+					<div class="content">
+						<div class="name">{{channel.visibleName}}</div>
+
+						<SmallMessage
+							v-if="(channel.object.history || []).length"
+							v-bind="(channel.object.history || []).slice(-1)[0]"
+						/>
+					</div>
+
+					<span class="unread" v-if="channel.object.countUnread">
+						{{channel.object.countUnread}}
+					</span>
 
 					<span class="close" @click.stop="removeChannel(channel.visibleName)">
 						&times;
@@ -103,30 +120,49 @@
 				font-family: "Courier New", monospace
 				cursor: pointer
 
-				.invite
-					display: inline-block
-					vertical-align: middle
+				display: flex
+				flex-direction: row
 
-					.invite-status
-						color: #F28
-
-						button
-							border: none
-							border-radius: 4px
-							padding: 4px 8px
-							border: 1px solid #F28
-							cursor: pointer
-							background-color: #000
-							color: #FFF
-
-							&.accept
-								background-color: #F28
+				.avatar
+					flex: 0 0 64px
+					margin-right: 16px
 
 				&.current, &:hover
 					background-color: #444
 
+				.content
+					flex: 1 1 0
+					min-width: 0
+
+					display: flex
+					flex-direction: column
+					justify-content: center
+					align-items: stretch
+
+					.name
+						overflow: hidden
+						white-space: nowrap
+						text-overflow: ellipsis
+
+					.invite
+						display: inline-block
+
+						.invite-status
+							color: #F28
+
+							button
+								border: none
+								border-radius: 4px
+								padding: 4px 8px
+								border: 1px solid #F28
+								cursor: pointer
+								background-color: #000
+								color: #FFF
+
+								&.accept
+									background-color: #F28
+
 				.close
-					float: right
 					margin: 16px 0
 					padding: 8px
 					border-radius: 50%
@@ -134,6 +170,16 @@
 
 					&:hover
 						background-color: #000
+
+				.unread
+					width: 32px
+					height: 32px
+					text-align: center
+
+					margin: 16px 8px
+					padding: 8px
+					border-radius: 50%
+					background-color: #F28
 
 		.footer
 			flex: 0 0 48px
@@ -341,6 +387,26 @@
 		computed: {
 			current() {
 				return this.$store.state.currentChannel;
+			},
+			visibleChannels() {
+				// I know that sort() has side effects -- actually it doesn't
+				// matter
+				return this.channels.sort((a, b) => {
+					const aMessage = (a.object.history || []).slice(-1)[0];
+					const bMessage = (b.object.history || []).slice(-1)[0];
+
+					const aDate = aMessage ? aMessage.receiveDate || aMessage.message.date : null;
+					const bDate = bMessage ? bMessage.receiveDate || bMessage.message.date : null;
+
+					if(aDate === null && bDate === null) {
+						return 0;
+					} else if(aDate === null) {
+						return 1;
+					} else if(bDate === null) {
+						return -1;
+					}
+					return bDate - aDate;
+				});
 			}
 		}
 	};

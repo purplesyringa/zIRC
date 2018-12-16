@@ -14,6 +14,8 @@ import Sidebar from "vue_components/sidebar/sidebar.vue";
 Vue.component("Sidebar", Sidebar);
 import Message from "vue_components/message/message.vue";
 Vue.component("Message", Message);
+import SmallMessage from "vue_components/message/smallmessage.vue";
+Vue.component("SmallMessage", SmallMessage);
 import ClearFix from "vue_components/clearfix.vue";
 Vue.component("ClearFix", ClearFix);
 

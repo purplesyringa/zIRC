@@ -1,6 +1,7 @@
 import PeerTransport from "libs/irc/transport/peer";
 import FileTransport from "libs/irc/transport/file";
 import Storage from "libs/irc/storage";
+import UserStorage from "libs/irc/userstorage";
 import EventEmitter from "wolfy87-eventemitter";
 import Lock from "libs/lock";
 import {zeroPage} from "zero";
@@ -14,12 +15,36 @@ export default class Speakable extends EventEmitter {
 
 		this.historyLock = new Lock();
 
+		this.lastRead = null;
+		this.countUnread = 0;
+
 		setTimeout(() => {
 			// Listen from peers
 			this._listen(PeerTransport);
 			// Listen from files
 			this._listen(FileTransport);
 		}, 0);
+
+		(async () => {
+			// Wait for init (e.g. in User)
+			if(this.initLock) {
+				await this.initLock.acquire();
+				this.initLock.release();
+			}
+
+			const storage = await UserStorage.get();
+			if(!storage.lastRead || !storage.lastRead[this.name]) {
+				return;
+			}
+			this.lastRead = storage.lastRead[this.name];
+
+			await this.loadHistory();
+
+			this.countUnread = this.history.filter(message => {
+				const date = message.receiveDate || message.message.date;
+				return date > this.lastRead;
+			}).length;
+		})();
 	}
 
 	async loadHistory() {
@@ -53,6 +78,13 @@ export default class Speakable extends EventEmitter {
 			this.history.sort((a, b) => {
 				return a.message.date - b.message.date;
 			});
+
+			if(this.lastRead) {
+				this.countUnread = this.history.filter(message => {
+					const date = message.receiveDate || message.message.date;
+					return date > this.lastRead;
+				}).length;
+			}
 		}
 
 		this.historyLock.release();
@@ -104,11 +136,27 @@ export default class Speakable extends EventEmitter {
 				message
 			};
 
+			this.countUnread++;
+
 			await this.loadHistory();
 			this.history.push(object);
 
 			Storage.save(this.name, object);
 			this.emit("received", object);
 		}
+	}
+
+	async markRead() {
+		this.lastRead = this.history.reduce((a, message) => {
+			const date = message.receiveDate || message.message.date;
+			return Math.max(a, date);
+		}, 0);
+		this.countUnread = 0;
+
+		// Save lastRead
+		const storage = await UserStorage.get();
+		storage.lastRead = storage.lastRead || {};
+		storage.lastRead[this.name] = this.lastRead;
+		await UserStorage.set(storage);
 	}
 }
