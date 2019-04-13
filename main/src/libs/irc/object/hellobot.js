@@ -34,6 +34,7 @@ export default class HelloBot extends Speakable {
 					}
 				];
 				this.state = "tour";
+				this.postedHelloMessage = true; // Get rid of "Hello" message
 
 				let content = await zeroFS.readFile(`merged-IRC/${address}/content.json`);
 				content = JSON.parse(content);
