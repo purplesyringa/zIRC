@@ -10,7 +10,7 @@ export default new class Storage extends EventEmitter {
 		let permanentStorages = [];
 		for(const address of Object.keys(mergedSites)) {
 			const content = mergedSites[address].content;
-			if(content.permanent_storage && content.setup) {
+			if(content && content.permanent_storage && content.setup) {
 				const currentSize = mergedSites[address].settings.size;
 				const maxSize = mergedSites[address].size_limit * 1024 * 1024;
 				permanentStorages.push({
@@ -65,7 +65,7 @@ export default new class Storage extends EventEmitter {
 		let permanentStorages = [];
 		for(const address of Object.keys(mergedSites)) {
 			const content = mergedSites[address].content;
-			if(content.permanent_storage && content.setup) {
+			if(content && content.permanent_storage && content.setup) {
 				permanentStorages.push(address);
 			}
 		}
@@ -103,7 +103,7 @@ export default new class Storage extends EventEmitter {
 		let permanentStorages = [];
 		for(const address of Object.keys(mergedSites)) {
 			const content = mergedSites[address].content;
-			if(content.permanent_storage && content.setup) {
+			if(content && content.permanent_storage && content.setup) {
 				permanentStorages.push(address);
 			}
 		}

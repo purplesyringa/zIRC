@@ -14,7 +14,7 @@ export default class HelloBot extends Speakable {
 		const mergedSites = await zeroPage.cmd("mergerSiteList", [true]);
 		for(const address of Object.keys(mergedSites)) {
 			const content = mergedSites[address].content;
-			if(content.permanent_storage && !content.setup) {
+			if(content && content.permanent_storage && !content.setup) {
 				// Yay, we've found an unset hub!
 				const messages = [
 					{
