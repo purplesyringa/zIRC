@@ -1,5 +1,5 @@
 {
- "address": "19Ruw8j8YVq2W3Snkm6rKyWN1gmFBKUBay",
+ "address": "1BdN9PbGxqnZ8X9egY664rPCNVWNPQTAVT",
  "address_index": 54299380,
  "background-color": "#FFF",
  "clone_root": "template-new",
@@ -7,25 +7,25 @@
  "description": "Check out IRC at /17qgX9dzSLfSuBJCeH28mAqqstB9bX2VkT/",
  "files": {
   "index.html": {
-   "sha512": "23d2c38d7fa8a2fcde7aa42494db82889308c118ce15a89b725ac13886d785fb",
-   "size": 501
+   "sha512": "aa731cb493e0fd525d2ae7bf16026cf7a60f70e7343784203c7f7570f975db34",
+   "size": 502
   },
   "p2p.json": {
-   "sha512": "6b5fd70cd5b83a5954c7c931f64d1a1f10c3dd481704537de157f3dd6ba7ab23",
-   "size": 180
+   "sha512": "77fd150ad97196b8bb519092a73ce618e704545f8506183c354b3d0b33246615",
+   "size": 229
   }
  },
  "ignore": "",
  "inner_path": "content.json",
  "merged_type": "IRC",
- "modified": 1538579392,
+ "modified": 1555268358,
  "postmessage_nonce_security": true,
- "signers_sign": "HGvw6EhdWm+eGXTeMYJBVvkUR1ml84MRF/H6Sr/arJCtDwwR5ONh29uMMpuptgUPegkVnvzzU91cPl7POyvZt5k=",
+ "signers_sign": "HAgJxbLckxkhRdK8Q9EiFWCoFzuzv6cXLq1KJOug8OqpMwnTzzyTDWfNM8URGHubG/G3pVHdbDUF3dhF2g91TYc=",
  "signs": {
-  "19Ruw8j8YVq2W3Snkm6rKyWN1gmFBKUBay": "HJK04QYytWkh9Ebdicd03W29K6faCUn6MGWvohY9G3n8LIJExAmbwbdVCVU9BTwwVwxF0ZQGOUezNjIJ7hgZRAQ="
+  "1BdN9PbGxqnZ8X9egY664rPCNVWNPQTAVT": "G5g9PdmkFFeGBMl+JqypbydiDCU3WPDrvFXg9KZpZXoaJMCMCf+w/Wb/eSpien3NvW/p/upBG6FmCsICM8GeYGM="
  },
  "signs_required": 1,
  "title": "PeerMessage hub",
  "translate": ["js/all.js"],
- "zeronet_version": "0.6.3"
+ "zeronet_version": "0.7.0"
 }
