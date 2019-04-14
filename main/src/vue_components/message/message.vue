@@ -11,6 +11,13 @@
 			<div class="messages">
 				<div v-for="message in messages" class="message-item">
 					{{message.text}}
+					<div class="buttons" v-if="message.buttons">
+						<div v-for="row in message.buttons" class="button-row">
+							<div v-for="button in row" :class="['button', `button-${button.color}`]" :style="{width: `${100 / row.length}%`}" @click="sendButton(button.text)">
+								{{button.text}}
+							</div>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -45,8 +52,53 @@
 			.messages
 				float: left
 				margin: -8px 0
+
 				.message-item
 					margin: 8px 0
+
+					.buttons
+						display: flex
+						flex-direction: column
+						margin-top: 8px
+
+						.button-row
+							display: flex
+							flex-direction: row
+							margin: 4px -4px
+
+							.button
+								display: block
+								text-align: center
+								padding: 12px 16px
+								margin: 0 4px
+								border-radius: 12px
+								cursor: pointer
+
+								border: 1px solid rgba(220, 220, 255, 0.3)
+								opacity: 0.8
+
+								&.button-red, &.button-green, &.button-cyan,
+								&.button-blue, &.button-yellow, &.button-orange,
+								&.button-purple
+									border: none
+
+								&.button-red
+									background-color: #B24523
+								&.button-green
+									background-color: #60B223
+								&.button-cyan
+									background-color: #22A18A
+								&.button-blue
+									background-color: #3A64A8
+								&.button-yellow
+									background-color: #A0A323
+								&.button-orange
+									background-color: #A26D22
+								&.button-purple
+									background-color: #9621A0
+
+								&:hover
+									opacity: 1
 </style>
 
 <script type="text/javascript">
@@ -72,6 +124,12 @@
 				} else {
 					return "";
 				}
+			}
+		},
+
+		methods: {
+			sendButton(button) {
+				this.$emit("sendButton", button);
 			}
 		}
 	};

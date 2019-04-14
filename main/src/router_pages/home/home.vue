@@ -30,6 +30,7 @@
 				:key="message.messages[0].id"
 
 				v-bind="message"
+				@sendButton="sendButton"
 			/>
 		</div>
 	</main>
@@ -113,6 +114,14 @@
 				}
 			},
 
+			async sendButton(button) {
+				try {
+					await this.currentObject.send(button);
+				} catch(e) {
+					zeroPage.error(`Error while sending message: ${e}`);
+				}
+			},
+
 			login() {
 				zeroPage.cmd("certSelect", {
 					accepted_domains: zeroAuth.acceptedDomains
@@ -152,6 +161,8 @@
 							prevPost &&
 							prevPost.authAddress === curPost.authAddress &&
 							prevPost.certUserId === curPost.certUserId &&
+							!prevPost.message.buttons &&
+							!curPost.message.buttons &&
 							prevDate - prevPost.message.date < 2 * 60 * 1000 // 2 min
 						) {
 							prevDate = prevPost.message.date;

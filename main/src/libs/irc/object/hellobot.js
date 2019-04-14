@@ -29,6 +29,13 @@ export default class HelloBot extends Speakable {
 								lost now! When you're ready to start using IRC,
 								tell me.
 							`,
+							buttons: [
+								[
+									{
+										text: "Ok, I'm ready"
+									}
+								]
+							],
 							id: this.generateId(0)
 						}
 					}
@@ -147,6 +154,13 @@ export default class HelloBot extends Speakable {
 									clicking the [Change] button ^^ and tell me
 									when you're ready.
 								`,
+								buttons: [
+									[
+										{
+											text: "I'm done"
+										}
+									]
+								],
 								id: this.generateId(4)
 							}
 						});
@@ -170,13 +184,25 @@ export default class HelloBot extends Speakable {
 							answer "yes"/"no", whether you want to set up a
 							permanent storage.
 						`,
+						buttons: [
+							[
+								{
+									text: "Yes",
+									color: "green"
+								},
+								{
+									text: "No",
+									color: "red"
+								}
+							]
+						],
 						id: this.generateId(5)
 					}
 				});
 				this.state = "storage";
 			}, 1000);
 		} else if(this.state === "storage") {
-			if(message.text === "yes") {
+			if(message.text.toLowerCase() === "yes") {
 				setTimeout(() => {
 					this._received({
 						authAddress: "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
@@ -197,7 +223,7 @@ export default class HelloBot extends Speakable {
 						zeroPage.cmd("siteClone", [siteInfo.address, "storage"]);
 					}, 1000);
 				}, 1000);
-			} else if(message.text === "no") {
+			} else if(message.text.toLowerCase() === "no") {
 				setTimeout(() => {
 					this._received({
 						authAddress: "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
@@ -211,6 +237,13 @@ export default class HelloBot extends Speakable {
 								typing "/storage". When you're ready to start
 								using IRC, tell me.
 							`,
+							buttons: [
+								[
+									{
+										text: "I'm ready!!"
+									}
+								]
+							],
 							id: this.generateId(7)
 						}
 					});
@@ -265,8 +298,24 @@ export default class HelloBot extends Speakable {
 					date: Date.now(),
 					text: `
 						Hi, I'm /HelloBot! I'll help you start using our IRC.
-						Please, tell me something! ^_^
+						Please, tell me something or press the button below! ^_^
 					`,
+					buttons: [
+						[
+							{
+								text: "Continue!!",
+								color: "green"
+							}
+						],
+						[
+							{
+								text: "/help"
+							},
+							{
+								text: "/storage"
+							}
+						]
+					],
 					id: this.generateId(1)
 				}
 			});
