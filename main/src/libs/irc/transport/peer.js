@@ -1,7 +1,7 @@
 import EventEmitter from "wolfy87-eventemitter";
 import {zeroPage, zeroFS} from "zero";
 
-const PEERMESSAGE_HUB = "19Ruw8j8YVq2W3Snkm6rKyWN1gmFBKUBay";
+const PEERMESSAGE_HUB = "1BdN9PbGxqnZ8X9egY664rPCNVWNPQTAVT";
 
 export default new class PeerTransport extends EventEmitter {
 	constructor() {
