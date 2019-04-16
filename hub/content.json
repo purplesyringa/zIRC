@@ -11,18 +11,18 @@
    "size": 502
   },
   "p2p.json": {
-   "sha512": "77fd150ad97196b8bb519092a73ce618e704545f8506183c354b3d0b33246615",
-   "size": 229
+   "sha512": "6bcc0890dff0184ebc6818f1ab609b2077a063e42e517e26f7db20d998f1ec31",
+   "size": 287
   }
  },
  "ignore": "",
  "inner_path": "content.json",
  "merged_type": "IRC",
- "modified": 1555268358,
+ "modified": 1555427783,
  "postmessage_nonce_security": true,
  "signers_sign": "HAgJxbLckxkhRdK8Q9EiFWCoFzuzv6cXLq1KJOug8OqpMwnTzzyTDWfNM8URGHubG/G3pVHdbDUF3dhF2g91TYc=",
  "signs": {
-  "1BdN9PbGxqnZ8X9egY664rPCNVWNPQTAVT": "G5g9PdmkFFeGBMl+JqypbydiDCU3WPDrvFXg9KZpZXoaJMCMCf+w/Wb/eSpien3NvW/p/upBG6FmCsICM8GeYGM="
+  "1BdN9PbGxqnZ8X9egY664rPCNVWNPQTAVT": "HGAR9sipe1KT3PHisrLjAURboiCriNiufxWEzXBt1bw+Tf1bmKby+nTwc5U8xDwAl9nDCvkguhTIVnjkHE39CEo="
  },
  "signs_required": 1,
  "title": "PeerMessage hub",

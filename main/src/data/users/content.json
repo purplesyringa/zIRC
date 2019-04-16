@@ -6,7 +6,8 @@
 		"cert_signers": {
 			"zeroid.bit": ["1iD5ZQJMNXu43w1qLB8sfdHVKppVMduGz"],
 			"kxoid.bit": ["12F5SvxoPR128aiudte78h8pY7mobroG6V"],
-			"kaffie.bit": ["1KH5BdNnqxh2KRWMMT8wUXzUgz4vVQ4S8p"]
+			"kaffie.bit": ["1KH5BdNnqxh2KRWMMT8wUXzUgz4vVQ4S8p"],
+			"cryptoid.bit": ["18143WPue3rQykNaopx5KJKzYmaYhCjqhv"]
 		},
 		"permission_rules": {
 			".*": {
