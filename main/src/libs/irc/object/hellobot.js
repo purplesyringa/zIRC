@@ -1,4 +1,4 @@
-import Speakable from "libs/irc/speakable";
+import Bot from "libs/irc/object/bot";
 import {zeroPage, zeroFS} from "zero";
 
 function sleep(ms) {
@@ -16,47 +16,41 @@ const SLASH_COMMANDS = [
 	]
 ];
 
-export default class HelloBot extends Speakable {
+export default class HelloBot extends Bot {
 	constructor() {
-		super("/HelloBot");
+		super("/HelloBot", "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D");
 		this.state = "start";
-		this.postedHelloMessage = false;
-		this._readMessages = {};
+		this.showHelloMessage = true;
+
+		this.on("start", this.onStart);
+		this.on("received", this.onReceived);
+		this.on("tabOpened", this.onTabOpened);
 	}
 
-	async _loadHistory() {
+	async onStart() {
 		// Let's check whether there's a storage we haven't setup yet
 		const mergedSites = await zeroPage.cmd("mergerSiteList", [true]);
 		for(const address of Object.keys(mergedSites)) {
 			const content = mergedSites[address].content;
 			if(content && content.permanent_storage && !content.setup) {
 				// Yay, we've found an unset hub!
-				const messages = [
-					{
-						authAddress: "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
-						certUserId: "/HelloBot",
-						message: {
-							date: Date.now(),
-							text: `
-								Okay, so you've just made a permanent storage!
-								It has address "${address}", but you don't have
-								to remember that. Just know that nothing will be
-								lost now! When you're ready to start using IRC,
-								tell me.
-							`,
-							buttons: [
-								[
-									{
-										text: "Ok, I'm ready"
-									}
-								]
-							],
-							id: this.generateId()
-						}
-					}
-				];
+				this.send(
+					`
+						Okay, so you've just made a permanent storage! It has
+						address "${address}", but you don't have to remember
+						that. Just know that nothing will be lost now! When
+						you're ready to start using IRC, tell me.
+					`,
+					[
+						[
+							{
+								text: "Ok, I'm ready"
+							}
+						]
+					],
+				);
 				this.state = "tour";
-				this.postedHelloMessage = true; // Get rid of "Hello" message
+				this.showHelloMessage = false; // Get rid of "Hello" message
 
 				let content = await zeroFS.readFile(`merged-IRC/${address}/content.json`);
 				content = JSON.parse(content);
@@ -64,40 +58,19 @@ export default class HelloBot extends Speakable {
 				content = JSON.stringify(content, null, 1);
 				await zeroFS.writeFile(`merged-IRC/${address}/content.json`, content);
 
-				return messages;
+				return;
 			}
 		}
-
-		return [];
 	}
 
-	_listen() {
-		return;
-	}
-
-	async _transfer(message) {
-		if(this._readMessages[message.id]) {
-			return;
-		}
-		this._readMessages[message.id] = true;
-
-
+	async onReceived(message) {
 		// First, handle commands
 		if(message.text === "/storage") {
 			await sleep(1000);
 
-			this._received({
-				authAddress: "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
-				certUserId: "/HelloBot",
-				message: {
-					date: Date.now(),
-					text: `
-						You'll see a message inviting to clone a site, please do
-						it! ^_^
-					`,
-					id: this.generateId()
-				}
-			});
+			this.send(`
+				You'll see a message inviting to clone a site, please do it! ^_^
+			`);
 			this.state = "clone";
 
 			await sleep(1000);
@@ -108,133 +81,87 @@ export default class HelloBot extends Speakable {
 		} else if(message.text === "/help") {
 			await sleep(1000);
 
-			this._received({
-				authAddress: "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
-				certUserId: "/HelloBot",
-				message: {
-					date: Date.now(),
-					text: `
-						Help: /storage -- create a new permanent storage
-					`,
-					id: this.generateId()
-				}
-			});
+			this.send(`
+				Help: /storage -- create a new permanent storage
+			`);
 			return;
 		}
 
 		if(this.state === "start") {
 			await sleep(1000);
 
-			this._received({
-				authAddress: "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
-				certUserId: "/HelloBot",
-				message: {
-					date: Date.now(),
-					text: `
-						First, let me briefly explain what's going on. ZeroNet
-						has a plugin called "PeerMessage". Unfortunately, it's
-						not included to the standard package. It will let you
-						send and receive messages very fast. If you don't have
-						the plugin, you'll still be able to receive and send
-						messages, but with 30-second limit. So, if you need fast
-						communication, we recommend you to install the plugin
-						at: [https://github.com/HelloZeroNet/Plugin-PeerMessage]
-						.
-					`,
-					id: this.generateId()
-				}
-			});
+			this.send(`
+				First, let me briefly explain what's going on. ZeroNet has a
+				plugin called "PeerMessage". Unfortunately, it's not included to
+				the standard package. It will let you send and receive messages
+				very fast. If you don't have the plugin, you'll still be able to
+				receive and send messages, but with 30-second limit. So, if you
+				need fast communication, we recommend you to install the plugin
+				at: [https://github.com/HelloZeroNet/Plugin-PeerMessage] .
+			`);
 			this.state = "plugin";
 
 			await sleep(5000);
 
-			this._received({
-				authAddress: "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
-				certUserId: "/HelloBot",
-				message: {
-					date: Date.now(),
-					text: `
-						Aah, yet another thing. On our IRC, you can log in as
-						"Anonymous". You may find this feature useful -- but!
-						You'll only be able to use "Anonymous" if you use
-						PeerMessage plugin, and others will only be able to read
-						"Anonymous" messages if they have PeerMessage plugin.
-					`,
-					id: this.generateId()
-				}
-			});
+			this.send(`
+				Aah, yet another thing. On our IRC, you can log in as
+				"Anonymous". You may find this feature useful -- but! You'll
+				only be able to use "Anonymous" if you use PeerMessage plugin,
+				and others will only be able to read "Anonymous" messages if
+				they have PeerMessage plugin.
+			`);
 			this.state = "anonymous";
 
 			await sleep(1000);
 
-			this._received({
-				authAddress: "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
-				certUserId: "/HelloBot",
-				message: {
-					date: Date.now(),
-					text: `
-						After that, please login (if you want to) by clicking
-						the [Change] button ^^ and tell me when you're ready.
-					`,
-					buttons: [
-						[
-							{
-								text: "I'm done"
-							}
-						]
-					],
-					id: this.generateId()
-				}
-			});
+			this.send(
+				`
+					After that, please login (if you want to) by clicking the
+					[Change] button ^^ and tell me when you're ready.
+				`,
+				[
+					[
+						{
+							text: "I'm done"
+						}
+					]
+				]
+			);
 			this.state = "login";
 		} else if(this.state === "login") {
 			await sleep(1000);
 
-			this._received({
-				authAddress: "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
-				certUserId: "/HelloBot",
-				message: {
-					date: Date.now(),
-					text: `
-						Nice! Now another question: would you like to save the
-						messages you receive and send to a permanent storage?
-						This means that Anonymous messages will be saved (not
-						deleted, as usual), and if someone deletes his message,
-						you'll still have it. Please answer "yes"/"no", whether
-						you want to set up a permanent storage.
-					`,
-					buttons: [
-						[
-							{
-								text: "Yes",
-								color: "green"
-							},
-							{
-								text: "No",
-								color: "red"
-							}
-						]
-					],
-					id: this.generateId()
-				}
-			});
+			this.send(
+				`
+					Nice! Now another question: would you like to save the
+					messages you receive and send to a permanent storage? This
+					means that Anonymous messages will be saved (not deleted, as
+					usual), and if someone deletes his message, you'll still
+					have it. Please answer "yes"/"no", whether you want to set
+					up a permanent storage.
+				`,
+				[
+					[
+						{
+							text: "Yes",
+							color: "green"
+						},
+						{
+							text: "No",
+							color: "red"
+						}
+					]
+				]
+			);
 			this.state = "storage";
 		} else if(this.state === "storage") {
 			if(message.text.toLowerCase() === "yes") {
 				await sleep(1000);
 
-				this._received({
-					authAddress: "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
-					certUserId: "/HelloBot",
-					message: {
-						date: Date.now(),
-						text: `
-							Niiice! So, you'll see a message inviting to clone a
-							site, please do it! ^_^
-						`,
-						id: this.generateId()
-					}
-				});
+				this.send(`
+					Niiice! So, you'll see a message inviting to clone a site,
+					please do it! ^_^
+				`);
 				this.state = "clone";
 
 				await sleep(1000);
@@ -244,112 +171,67 @@ export default class HelloBot extends Speakable {
 			} else if(message.text.toLowerCase() === "no") {
 				await sleep(1000);
 
-				this._received({
-					authAddress: "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
-					certUserId: "/HelloBot",
-					message: {
-						date: Date.now(),
-						text: `
-							Oh. Okaay, you can always setup the permanent
-							storage any time later by accessing me (reminder:
-							press "+", then "/HelloBot" ^_^) and pressing
-							"/storage" button. When you're ready to start using
-							IRC, tell me.
-						`,
-						buttons: [
-							[
-								{
-									text: "I'm ready!!"
-								}
-							]
-						],
-						id: this.generateId()
-					}
-				});
+				this.send(
+					`
+						Oh. Okaay, you can always setup the permanent storage
+						any time later by accessing me (reminder: press "+",
+						then "/HelloBot" ^_^) and pressing "/storage" button.
+						When you're ready to start using IRC, tell me.
+					`,
+					[
+						[
+							{
+								text: "I'm ready!!"
+							}
+						]
+					]
+				);
 				this.state = "tour";
 			} else {
 				await sleep(1000);
 
-				this._received({
-					authAddress: "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
-					certUserId: "/HelloBot",
-					message: {
-						date: Date.now(),
-						text: `
-							Please answer "yes" or "no".
-						`,
-						id: this.generateId()
-					}
-				});
+				this.send(`Please answer "yes" or "no".`);
 			}
 		} else if(this.state === "tour") {
 			await sleep(1000);
 
-			this._received({
-				authAddress: "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
-				certUserId: "/HelloBot",
-				message: {
-					date: Date.now(),
-					text: `
-						Okay. Now, look at the sidebar at the left << Right now,
-						you only see /HelloBot (that's me!!) here. Let's start
-						our tour by opening #lobby. Press the + at the
-						bottom-left corner and type in "#lobby". Now, enjoy
-						using the IRC! ^_^
-					`,
-					id: this.generateId()
-				}
-			});
+			this.send(`
+				Okay. Now, look at the sidebar at the left << Right now, you
+				only see /HelloBot (that's me!!) here. Let's start our tour by
+				opening #lobby. Press the + at the bottom-left corner and type
+				in "#lobby". Now, enjoy using the IRC! ^_^
+			`);
 			await sleep(1000);
 
-			this._received({
-				authAddress: "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
-				certUserId: "/HelloBot",
-				message: {
-					date: Date.now(),
-					text: `
-						By the way, I have some interesting features you might
-						want to learn about. Press "/help" button if you want to
-						learn about them!
-					`,
-					buttons: SLASH_COMMANDS.slice(),
-					id: this.generateId()
-				}
-			});
+			this.send(
+				`
+					By the way, I have some interesting features you might
+					want to learn about. Press "/help" button if you want to
+					learn about them!
+				`,
+				SLASH_COMMANDS
+			);
 
 			this.state = "done";
 		}
 	}
 
-	markRead() {
-		super.markRead();
-
-		if(!this.postedHelloMessage) {
-			this.postedHelloMessage = true;
-			this._received({
-				authAddress: "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
-				certUserId: "/HelloBot",
-				message: {
-					date: Date.now(),
-					text: `
-						Hi, I'm /HelloBot! I'll help you start using our IRC.
-						Please, tell me something or press the button below! ^_^
-					`,
-					buttons: [
-						[
-							{
-								text: "Continue!!",
-								color: "green"
-							}
-						]
-					].concat(SLASH_COMMANDS),
-					id: this.generateId()
-				}
-			});
+	onTabOpened() {
+		if(this.showHelloMessage) {
+			this.send(
+				`
+					Hi, I'm /HelloBot! I'll help you start using our IRC.
+					Please, tell me something or press the button below! ^_^
+				`,
+				[
+					[
+						{
+							text: "Continue!!",
+							color: "green"
+						}
+					]
+				].concat(SLASH_COMMANDS)
+			);
 		}
-	}
-
-	generateId() {
-		return Math.random().toString(36).substr(2);
 	}
 }

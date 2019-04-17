@@ -22,7 +22,7 @@ export default new class IRC {
 		} else if(id[0] === "@") {
 			this.objectCache[id] = new User(`auth_address:${id.substr(1)}`);
 		} else if(id === "/HelloBot") {
-			this.objectCache[id] = new HelloBot();
+			this.objectCache[id] = (new HelloBot()).speakable;
 		} else if(id.indexOf("@") > -1) {
 			this.objectCache[id] = new User(`cert_user_id:${id}`);
 		} else {
