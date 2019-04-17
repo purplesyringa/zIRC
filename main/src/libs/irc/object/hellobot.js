@@ -10,7 +10,8 @@ const SLASH_COMMANDS = [
 	[
 		{text: "/help"},
 		{text: "/storage"},
-		{text: "/notifications"}
+		{text: "/notifications"},
+		{text: "/newbot"}
 	]
 ];
 
@@ -66,7 +67,8 @@ export default class HelloBot extends Bot {
 
 			this.send(`
 				Help: /storage -- create a new permanent storage; /notifications
-				-- enable or disable push notifications
+				-- enable or disable push notifications; /newbot -- create a new
+				bot (like me!)
 			`);
 			return;
 		} else if(message.text === "/storage") {
@@ -104,6 +106,30 @@ export default class HelloBot extends Bot {
 			);
 
 			this.state = "notifications";
+			return;
+		} else if(message.text === "/newbot") {
+			await sleep(1000);
+
+			this.send(
+				`
+					Creating a new bot, right? Make up a good and memorizable
+					name for it. Good examples are "/Calculator" and "/QuizBot".
+					You should avoid snake-case, underscore_case or camelCase,
+					use PascalCase instead (i.e. "/QuizBot", not "/quiz_bot").
+					The name must start with "/" and only contain digits and
+					English letters.
+				`,
+				[
+					[
+						{
+							text: "Wait wait I didn't want to register a bot",
+							color: "red"
+						},
+					]
+				]
+			);
+
+			this.state = "newbot";
 			return;
 		}
 
@@ -248,6 +274,93 @@ export default class HelloBot extends Bot {
 
 				this.send("Done.");
 			}
+		} else if(this.state === "newbot") {
+			await sleep(1000);
+
+			if(
+				message.text === "Wait wait I didn't want to register a bot" ||
+				message.text === "I give up"
+			) {
+				this.send("Ah, ok, try again next time :)")
+				this.state = "done";
+				return;
+			}
+
+			if(
+				message.text[0] !== "/" ||
+				!/^[A-Za-z0-9]+$/.test(message.text.substr(1))
+			) {
+				this.send(`
+					Nope, that's an invalid name. Please make up a name that
+					starts with "/" (slash) and only contains digits and English
+					letters.
+				`);
+				return;
+			}
+
+			let bots = (await zeroFS.readDirectory("data/bots"))
+				.filter(file => file.endsWith(".js"))
+				.map(file => "/" + file.replace(/\.js$/, "").toLowerCase());
+
+			if(bots.indexOf(message.text[0].toLowerCase()) > -1) {
+				this.send(
+					`
+						Um, There's a small problem. ${message.text} is a
+						registered bot name, so you won't even be able to
+						publish your own bot to the network. I'd recommend you
+						to choose another name. Ideas?
+					`,
+					[
+						[
+							{text: "I give up"}
+						]
+					]
+				);
+				return;
+			}
+
+
+			const siteInfo = await zeroPage.getSiteInfo();
+			const authAddress = siteInfo.auth_address;
+
+			bots = (await zeroFS.readDirectory(`data/users/${authAddress}/bots`))
+				.filter(file => file.endsWith(".js"))
+				.map(file => "/" + file.replace(/\.js$/, "").toLowerCase());
+
+			if(bots.indexOf(message.text[0].toLowerCase()) > -1) {
+				this.send(
+					`
+						Um, There's a small problem. ${message.text} is already
+						your bot. (Are you okay?) Try to come up with another
+						name.
+					`,
+					[
+						[
+							{text: "I give up"}
+						]
+					]
+				);
+				return;
+			}
+
+			const name = message.text.substr(1);
+			const path = `data/users/${authAddress}/bots/${name}.js`;
+			let botContent = await zeroFS.readFile("DefaultBot.js");
+			botContent = botContent.replace(/{{BotName}}/g, name);
+			await zeroFS.writeFile(path, botContent);
+
+			this.send(
+				`
+					There, done! You can now change your bot code by changing
+					the following file:
+					PATH_TO_ZERONET_DATA/${siteInfo.address}/data/users/${authAddress}/bots/${name}.js .
+					When you are ready to test your bot, open a chat with
+					/${name}@${authAddress}. To refresh the bot, just type
+					"/HelloBot debug" in your bot's chat, and you'll get some
+					useful controls.
+				`
+			);
+			this.state = "done";
 		}
 	}
 

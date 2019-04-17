@@ -153,6 +153,12 @@ module.exports = {
 				to: "./storage"
 			}
 		]),
+		new CopyWebpackPlugin([
+			{
+				from: "./DefaultBot.js",
+				to: "./DefaultBot.js"
+			}
+		]),
 		new CircularDependencyPlugin({
 			exclude: /node_modules/,
 			failOnError: true,
