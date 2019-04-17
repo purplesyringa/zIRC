@@ -7,6 +7,13 @@ function sleep(ms) {
 }
 
 
+const DEBUGGING_BUTTONS = [
+	[
+		{text: "/HelloBot restart", color: "yellow"},
+		{text: "/HelloBot undebug", color: "yellow"}
+	]
+];
+
 function webWorker(name, code) {
 	try {
 		eval(code);
@@ -163,9 +170,7 @@ export default class JSBot extends Bot {
 						if(!buttons) {
 							buttons = [];
 						}
-						buttons.push([
-							{text: "/HelloBot restart", color: "yellow"}
-						]);
+						buttons = buttons.concat(DEBUGGING_BUTTONS);
 					}
 					this.send(e.data.message, buttons);
 				}
@@ -211,15 +216,23 @@ export default class JSBot extends Bot {
 				this.debugging = true;
 				this._sendAs(
 					"/HelloBot", "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
-					"Debugging mode enabled."
+					"Debugging mode enabled.",
+					DEBUGGING_BUTTONS
+				);
+			} else if(message.text === "/HelloBot undebug") {
+				this.debugging = false;
+				this._sendAs(
+					"/HelloBot", "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
+					"Debugging mode disabled."
 				);
 			} else {
 				this._sendAs(
 					"/HelloBot", "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
 					`
 						The supported commands are '/HelloBot restart' (reloads
-						the source and restarts the bot) and '/HelloBot debug'
-						(adds /HelloBot buttons under each message).
+						the source and restarts the bot), '/HelloBot debug'
+						(adds /HelloBot buttons under each message) and
+						'/HelloBot undebug'.
 					`
 				);
 			}
