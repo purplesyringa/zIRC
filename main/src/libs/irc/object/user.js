@@ -29,7 +29,7 @@ export default class User extends Speakable {
 		this.on("received", async message => {
 			await this._spreadMessage(message);
 		});
-		zeroPage.on("setSiteInfo", async siteInfo => {
+		zeroPage.on("setSiteInfo", async () => {
 			await this.init();
 		})
 	}
