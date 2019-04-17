@@ -206,6 +206,7 @@
 	import InviteStorage from "libs/irc/invitestorage";
 	import UserStorage from "libs/irc/userstorage";
 	import User from "libs/irc/object/user";
+	import EventEmitter from "wolfy87-eventemitter";
 
 	export default {
 		name: "Sidebar",
@@ -245,6 +246,7 @@
 				});
 
 				this.renderInvites();
+				this.bindEvents();
 			},
 
 			open(name) {
@@ -293,6 +295,7 @@
 						fromInviteStorage: false
 					});
 					this.channels = this.channels.slice();
+					this.bindEvents();
 
 					await this.saveChannels();
 				}
@@ -328,6 +331,7 @@
 					fromInviteStorage: false
 				});
 				this.renderInvites();
+				this.bindEvents();
 
 				await this.saveChannels();
 			},
@@ -352,6 +356,7 @@
 					fromInviteStorage: false
 				});
 				this.renderInvites();
+				this.bindEvents();
 
 				await this.saveChannels();
 			},
@@ -396,6 +401,73 @@
 					await zeroPage.cmd("wrapperSetTitle", `(${this.totalCountUnread}) ${title} - ZeroNet`);
 				} else {
 					await zeroPage.cmd("wrapperSetTitle", `${title} - ZeroNet`);
+				}
+			},
+
+			bindEvents() {
+				// (Re)bind message event listeners
+				for(const channel of this.channels) {
+					if(channel.eventListener) {
+						channel.object.off("received", channel.eventListener);
+					}
+					channel.eventListener = message => {
+						this.showNotification(message, channel);
+					};
+					channel.object.on("received", channel.eventListener);
+				}
+			},
+
+			async showNotification(message, channel) {
+				// First, check whether notifications are enabled
+				if(!(await UserStorage.get()).notificationsEnabled) {
+					return;
+				}
+
+				// Only show the notification if the user is on another tab, or
+				// if the user is on another channel
+				if(
+					channel.visibleName !== this.current ||
+					document.hidden
+				) {
+					// Generate random notification ID
+					const id = Math.random().toString(36).substr(2);
+					// Send the notification
+					let title = message.certUserId;
+					if(channel.visibleName !== message.certUserId) {
+						title += ` (${channel.visibleName})`;
+					}
+					// Body
+					let body = message.message.text.replace(/\s+/g, " ").trim();
+					// Buttons
+					if(message.message.buttons) {
+						body += "\n";
+						for(const row of message.message.buttons) {
+							body += "\n";
+							body += row.map(button => `[${button.text}]`).join(" ");
+						}
+					}
+					const options = {
+						body,
+						renotify: true,
+						tag: `zIRC:${channel.visibleName}`,
+						focus_tab: true
+					};
+					zeroPage.cmd("wrapperPushNotification", [title, id, options]);
+
+					// Add event handlers
+					const onClick = e => {
+						if(e.params.id === id) {
+							this.open(channel.visibleName);
+						}
+					};
+					zeroPage.on("pushNotificationClick", onClick);
+					const onClose = e => {
+						if(e.params.id === id) {
+							zeroPage.off("pushNotificationClick", onClick);
+							zeroPage.off("pushNotificationClose", onClose);
+						}
+					};
+					zeroPage.on("pushNotificationClose", onClose);
 				}
 			}
 		},
