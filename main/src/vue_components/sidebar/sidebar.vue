@@ -81,6 +81,7 @@
 						<SmallMessage
 							v-if="(channel.object.history || []).length"
 							v-bind="(channel.object.history || []).slice(-1)[0]"
+							:channelName="channel.visibleName"
 						/>
 					</div>
 

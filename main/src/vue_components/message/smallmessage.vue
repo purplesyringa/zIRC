@@ -1,9 +1,12 @@
 <template>
 	<div class="message">
-		<template>
-			<span class="user" v-if="certUserId">{{certUserId.split("@")[0]}}</span>
-			<span class="user anonymous" v-else>Anonymous</span>
-		</template>: {{message.text}}
+		<template v-if="certUserId !== channelName">
+			<template>
+				<span class="user" v-if="certUserId">{{certUserId.split("@")[0]}}</span>
+				<span class="user anonymous" v-else>Anonymous</span>
+			</template>:
+		</template>
+		{{message.text}}
 	</div>
 </template>
 
@@ -27,7 +30,7 @@
 <script type="text/javascript">
 	export default {
 		name: "SmallMessage",
-		props: ["authAddress", "certUserId", "receiveDate", "message"],
+		props: ["authAddress", "certUserId", "receiveDate", "message", "channelName"],
 		data() {
 			return {
 				authAddress: "",
@@ -35,7 +38,8 @@
 				receiveDate: 0,
 				message: {
 					date: 0
-				}
+				},
+				channelName: ""
 			};
 		},
 
