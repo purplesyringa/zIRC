@@ -454,6 +454,10 @@
 					};
 					zeroPage.cmd("wrapperPushNotification", [title, id, options]);
 
+					setTimeout(() => {
+						zeroPage.cmd("wrapperClosePushNotification", [id]);
+					}, 5000);
+
 					// Add event handlers
 					const onClick = e => {
 						if(e.params.id === id) {
