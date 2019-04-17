@@ -28,7 +28,7 @@ export default new class UserStorage extends EventEmitter {
 	}
 
 	async get() {
-		return ((await zeroPage.cmd("userGetSettings")) || {})[await this.getAuthAddress()];
+		return ((await zeroPage.cmd("userGetSettings")) || {})[await this.getAuthAddress()] || {};
 	}
 	async set(settings) {
 		const globalSettings = (await zeroPage.cmd("userGetSettings")) || {};

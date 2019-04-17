@@ -377,11 +377,12 @@
 					.filter((val, idx, arr) => {
 						return arr.findIndex(o => o.visibleName === val.visibleName) === idx;
 					});
+				this.bindEvents();
 			},
 
 			async saveChannels() {
 				// Save
-				let userSettings = (await UserStorage.get()) || {};
+				let userSettings = await UserStorage.get();
 				userSettings.channels = this.channels
 					.filter(o => !o.fromInviteStorage)
 					.map(o => o.visibleName);
