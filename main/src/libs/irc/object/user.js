@@ -380,7 +380,7 @@ export default class User extends Speakable {
 		this.emit("inviteHandled");
 		this.history = null;
 		await this.loadHistory();
-		this.spreadUpdate();
+		await this.spreadUpdate();
 	}
 
 

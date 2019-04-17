@@ -81,7 +81,7 @@ export default new class InviteStorage extends EventEmitter {
 			await user.initLock.acquire();
 			user.initLock.release();
 			user.theyInvited = true;
-			user.spreadUpdate();
+			await user.spreadUpdate();
 
 			this.invites.push({authAddress, certUserId});
 			this.emit("invitesUpdated");
@@ -100,7 +100,7 @@ export default new class InviteStorage extends EventEmitter {
 			user.wasOurInviteHandled = true;
 			user.ourInviteState = result;
 			user.encId = encId;
-			user.spreadUpdate();
+			await user.spreadUpdate();
 
 			if(oldSize !== this.invites.length) {
 				this.emit("invitesUpdated");

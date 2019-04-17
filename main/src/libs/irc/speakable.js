@@ -174,4 +174,7 @@ export default class Speakable extends EventEmitter {
 		storage.lastRead[this.name] = this.lastRead;
 		await UserStorage.set(storage);
 	}
+
+	async spreadUpdate() {
+	}
 }
