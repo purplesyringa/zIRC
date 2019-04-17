@@ -1,4 +1,5 @@
 import Bot from "libs/irc/object/bot";
+import UserStorage from "libs/irc/userstorage";
 import {zeroPage, zeroFS} from "zero";
 
 function sleep(ms) {
@@ -7,12 +8,9 @@ function sleep(ms) {
 
 const SLASH_COMMANDS = [
 	[
-		{
-			text: "/help"
-		},
-		{
-			text: "/storage"
-		}
+		{text: "/help"},
+		{text: "/storage"},
+		{text: "/notifications"}
 	]
 ];
 
@@ -43,9 +41,7 @@ export default class HelloBot extends Bot {
 					`,
 					[
 						[
-							{
-								text: "Ok, I'm ready"
-							}
+							{text: "Ok, I'm ready"}
 						]
 					],
 				);
@@ -65,7 +61,15 @@ export default class HelloBot extends Bot {
 
 	async onReceived(message) {
 		// First, handle commands
-		if(message.text === "/storage") {
+		if(message.text === "/help") {
+			await sleep(1000);
+
+			this.send(`
+				Help: /storage -- create a new permanent storage; /notifications
+				-- enable or disable push notifications
+			`);
+			return;
+		} else if(message.text === "/storage") {
 			await sleep(1000);
 
 			this.send(`
@@ -78,12 +82,28 @@ export default class HelloBot extends Bot {
 			const siteInfo = await zeroPage.getSiteInfo();
 			zeroPage.cmd("siteClone", [siteInfo.address, "storage"]);
 			return;
-		} else if(message.text === "/help") {
+		} else if(message.text === "/notifications") {
 			await sleep(1000);
 
-			this.send(`
-				Help: /storage -- create a new permanent storage
-			`);
+			const storage = await UserStorage.get();
+			const notificationsEnabled = storage.notificationsEnabled;
+
+			this.send(
+				`
+					Do you want to enable or to disable push notifications?
+					(they are currently
+					${notificationsEnabled ? "enabled" : "disabled"})
+				`,
+				[
+					[
+						{text: "Enable", color: "green"},
+						{text: "Disable", color: "red"},
+						{text: "Nothing"}
+					]
+				]
+			);
+
+			this.state = "notifications";
 			return;
 		}
 
@@ -121,9 +141,7 @@ export default class HelloBot extends Bot {
 				`,
 				[
 					[
-						{
-							text: "I'm done"
-						}
+						{text: "I'm done"}
 					]
 				]
 			);
@@ -142,14 +160,8 @@ export default class HelloBot extends Bot {
 				`,
 				[
 					[
-						{
-							text: "Yes",
-							color: "green"
-						},
-						{
-							text: "No",
-							color: "red"
-						}
+						{text: "Yes", color: "green"},
+						{text: "No", color: "red"}
 					]
 				]
 			);
@@ -180,9 +192,7 @@ export default class HelloBot extends Bot {
 					`,
 					[
 						[
-							{
-								text: "I'm ready!!"
-							}
+							{text: "I'm ready!!"}
 						]
 					]
 				);
@@ -213,6 +223,31 @@ export default class HelloBot extends Bot {
 			);
 
 			this.state = "done";
+		} else if(this.state === "notifications") {
+			this.state = "done";
+
+			if(message.text.toLowerCase() === "enable") {
+				this.send("Ok, I'm enabling notifications!");
+
+				await zeroPage.cmd("wrapperPermissionAdd", ["PushNotifications"]);
+
+				const storage = await UserStorage.get();
+				storage.notificationsEnabled = true;
+				await UserStorage.set(storage);
+
+				this.send(`
+					Done. You will now get a notification when someone sends a
+					message.
+				`);
+			} else if(message.text.toLowerCase() === "disable") {
+				this.send("Ok, I'm disabling notifications :(");
+
+				const storage = await UserStorage.get();
+				storage.notificationsEnabled = false;
+				await UserStorage.set(storage);
+
+				this.send("Done.");
+			}
 		}
 	}
 
@@ -225,10 +260,7 @@ export default class HelloBot extends Bot {
 				`,
 				[
 					[
-						{
-							text: "Continue!!",
-							color: "green"
-						}
+						{text: "Continue!!", color: "green"}
 					]
 				].concat(SLASH_COMMANDS)
 			);
