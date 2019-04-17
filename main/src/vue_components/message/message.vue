@@ -38,6 +38,8 @@
 			flex: 0 0 64px
 
 		.content
+			flex: 1 1 0
+
 			.header
 				padding: 8px 0
 			.user
@@ -52,6 +54,7 @@
 			.messages
 				float: left
 				margin: -8px 0
+				width: 100%
 
 				.message-item
 					margin: 8px 0
