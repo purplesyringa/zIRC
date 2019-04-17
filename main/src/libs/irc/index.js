@@ -24,8 +24,11 @@ export default new class IRC {
 			this.objectCache[id] = new User(`auth_address:${id.substr(1)}`);
 		} else if(id === "/HelloBot") {
 			this.objectCache[id] = (new HelloBot()).speakable;
+		} else if(id[0] === "/" && id.indexOf("@") > -1) {
+			let [botName, authAddress] = id.split("@");
+			this.objectCache[id] = (new JSBot(botName, `data/users/${authAddress}/bots/${botName.substr(1)}.js`)).speakable;
 		} else if(id[0] === "/") {
-			this.objectCache[id] = (new JSBot(id)).speakable;
+			this.objectCache[id] = (new JSBot(id, `data/bots/${id.substr(1)}.js`)).speakable;
 		} else if(id.indexOf("@") > -1) {
 			this.objectCache[id] = new User(`cert_user_id:${id}`);
 		} else {

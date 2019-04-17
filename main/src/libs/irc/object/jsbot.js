@@ -92,10 +92,11 @@ function webWorker(name, code) {
 }
 
 export default class JSBot extends Bot {
-	constructor(name) {
-		super(name, name);
+	constructor(name, path) {
+		super(name, path);
 
 		this.name = name;
+		this.path = path;
 
 		this.on("start", this.onStart);
 		this.on("received", this.onReceived);
@@ -122,7 +123,7 @@ export default class JSBot extends Bot {
 			// Check that the bot exists
 			let botCode;
 			try {
-				botCode = await zeroFS.readFile(`data/bots/${this.name.substr(1)}.js`);
+				botCode = await zeroFS.readFile(this.path);
 			} catch(e) {
 				// Bot doesn't exist
 				this.botExists = false;
