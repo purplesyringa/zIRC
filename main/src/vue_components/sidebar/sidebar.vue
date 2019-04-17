@@ -212,6 +212,8 @@
 			return {
 				channels: [],
 				invites: [],
+				unreadInterval: null,
+				unreadIntervalParity: false, 
 				User
 			};
 		},
@@ -220,10 +222,12 @@
 			await this.reloadAll();
 			InviteStorage.on("invitesUpdated", this.renderInvites);
 			UserStorage.on("changeUser", this.reloadAll);
+			this.unreadInterval = setInterval(this.updateTitle.bind(this), 1000);
 		},
 		destroyed() {
 			InviteStorage.off("invitesUpdated", this.renderInvites);
 			UserStorage.off("changeUser", this.reloadAll);
+			clearInterval(this.unreadInterval);
 		},
 
 		methods: {
@@ -381,6 +385,16 @@
 					.filter(o => !o.fromInviteStorage)
 					.map(o => o.visibleName);
 				await UserStorage.set(userSettings);
+			},
+
+			async updateTitle() {
+				this.unreadIntervalParity = !this.unreadIntervalParity;
+				const title = this.$store.state.siteInfo.content.title;
+				if(this.unreadIntervalParity && this.totalCountUnread > 0) {
+					await zeroPage.cmd("wrapperSetTitle", `(${this.totalCountUnread}) ${title} - ZeroNet`);
+				} else {
+					await zeroPage.cmd("wrapperSetTitle", `${title} - ZeroNet`);
+				}
 			}
 		},
 
@@ -407,6 +421,11 @@
 					}
 					return bDate - aDate;
 				});
+			},
+			totalCountUnread() {
+				return this.channels
+					.map(channel => channel.object.countUnread || 0)
+					.reduce((a, b) => a + b);
 			}
 		}
 	};
