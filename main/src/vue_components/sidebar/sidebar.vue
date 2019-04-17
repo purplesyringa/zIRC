@@ -423,7 +423,12 @@
 					return;
 				}
 
-				if(channel.visibleName !== this.current) {
+				// Only show the notification if the user is on another tab, or
+				// if the user is on another channel
+				if(
+					channel.visibleName !== this.current ||
+					document.hidden
+				) {
 					// Generate random notification ID
 					const id = Math.random().toString(36).substr(2);
 					// Send the notification
