@@ -449,12 +449,20 @@
 					};
 					zeroPage.cmd("wrapperPushNotification", [title, id, options]);
 
+					// Add event handlers
 					const onClick = e => {
 						if(e.params.id === id) {
 							this.open(channel.visibleName);
 						}
 					};
 					zeroPage.on("pushNotificationClick", onClick);
+					const onClose = e => {
+						if(e.params.id === id) {
+							zeroPage.off("pushNotificationClick", onClick);
+							zeroPage.off("pushNotificationClose", onClose);
+						}
+					};
+					zeroPage.on("pushNotificationClose", onClose);
 				}
 			}
 		},
