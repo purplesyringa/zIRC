@@ -157,8 +157,11 @@ export default class JSBot extends Bot {
 						`${e.data.text}\n${e.data.error}`
 					);
 				} else if(e.data.cmd === "send") {
-					let buttons = e.data.buttons || [];
-					if(this.debugging && Array.isArray(buttons)) {
+					let buttons = e.data.buttons;
+					if(this.debugging) {
+						if(!buttons) {
+							buttons = [];
+						}
 						buttons.push([
 							{text: "/HelloBot restart", color: "yellow"}
 						]);
