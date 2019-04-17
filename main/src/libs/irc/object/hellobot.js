@@ -5,12 +5,23 @@ function sleep(ms) {
 	return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+const SLASH_COMMANDS = [
+	[
+		{
+			text: "/help"
+		},
+		{
+			text: "/storage"
+		}
+	]
+];
+
 export default class HelloBot extends Speakable {
 	constructor() {
 		super("/HelloBot");
 		this.state = "start";
-		this.currentId = Math.random().toString(16).substr(2);
 		this.postedHelloMessage = false;
+		this._readMessages = {};
 	}
 
 	async _loadHistory() {
@@ -40,7 +51,7 @@ export default class HelloBot extends Speakable {
 									}
 								]
 							],
-							id: this.generateId(0)
+							id: this.generateId()
 						}
 					}
 				];
@@ -65,6 +76,12 @@ export default class HelloBot extends Speakable {
 	}
 
 	async _transfer(message) {
+		if(this._readMessages[message.id]) {
+			return;
+		}
+		this._readMessages[message.id] = true;
+
+
 		// First, handle commands
 		if(message.text === "/storage") {
 			await sleep(1000);
@@ -75,10 +92,10 @@ export default class HelloBot extends Speakable {
 				message: {
 					date: Date.now(),
 					text: `
-						You'll see a message inviting to clone a site,
-						please do it! ^_^
+						You'll see a message inviting to clone a site, please do
+						it! ^_^
 					`,
-					id: this.generateId(10)
+					id: this.generateId()
 				}
 			});
 			this.state = "clone";
@@ -99,7 +116,7 @@ export default class HelloBot extends Speakable {
 					text: `
 						Help: /storage -- create a new permanent storage
 					`,
-					id: this.generateId(11)
+					id: this.generateId()
 				}
 			});
 			return;
@@ -114,18 +131,17 @@ export default class HelloBot extends Speakable {
 				message: {
 					date: Date.now(),
 					text: `
-						First, let me briefly explain what's going on.
-						ZeroNet has a plugin called "PeerMessage".
-						Unfortunately, it's not included to the standard
-						package. It will let you send and receive messages
-						very fast. If you don't have the plugin, you'll
-						still be able to receive and send messages, but with
-						30-second limit. So, if you need fast communication,
-						we recommend you to install the plugin at:
-						[https://github.com/HelloZeroNet/Plugin-PeerMessage]
+						First, let me briefly explain what's going on. ZeroNet
+						has a plugin called "PeerMessage". Unfortunately, it's
+						not included to the standard package. It will let you
+						send and receive messages very fast. If you don't have
+						the plugin, you'll still be able to receive and send
+						messages, but with 30-second limit. So, if you need fast
+						communication, we recommend you to install the plugin
+						at: [https://github.com/HelloZeroNet/Plugin-PeerMessage]
 						.
 					`,
-					id: this.generateId(2)
+					id: this.generateId()
 				}
 			});
 			this.state = "plugin";
@@ -138,14 +154,13 @@ export default class HelloBot extends Speakable {
 				message: {
 					date: Date.now(),
 					text: `
-						Aah, yet another thing. On our IRC, you can log
-						in as "Anonymous". You may find this feature
-						useful -- but! You'll only be able to use
-						"Anonymous" if you use PeerMessage plugin, and
-						others will only be able to read "Anonymous"
-						messages if they have PeerMessage plugin.
+						Aah, yet another thing. On our IRC, you can log in as
+						"Anonymous". You may find this feature useful -- but!
+						You'll only be able to use "Anonymous" if you use
+						PeerMessage plugin, and others will only be able to read
+						"Anonymous" messages if they have PeerMessage plugin.
 					`,
-					id: this.generateId(3)
+					id: this.generateId()
 				}
 			});
 			this.state = "anonymous";
@@ -158,9 +173,8 @@ export default class HelloBot extends Speakable {
 				message: {
 					date: Date.now(),
 					text: `
-						After that, please login (if you want to) by
-						clicking the [Change] button ^^ and tell me
-						when you're ready.
+						After that, please login (if you want to) by clicking
+						the [Change] button ^^ and tell me when you're ready.
 					`,
 					buttons: [
 						[
@@ -169,7 +183,7 @@ export default class HelloBot extends Speakable {
 							}
 						]
 					],
-					id: this.generateId(4)
+					id: this.generateId()
 				}
 			});
 			this.state = "login";
@@ -182,13 +196,12 @@ export default class HelloBot extends Speakable {
 				message: {
 					date: Date.now(),
 					text: `
-						Nice! Now another question: would you like to save
-						the messages you receive and send to a permanent
-						storage? This means that Anonymous messages will be
-						saved (not deleted, as usual), and if someone
-						deletes his message, you'll still have it. Please
-						answer "yes"/"no", whether you want to set up a
-						permanent storage.
+						Nice! Now another question: would you like to save the
+						messages you receive and send to a permanent storage?
+						This means that Anonymous messages will be saved (not
+						deleted, as usual), and if someone deletes his message,
+						you'll still have it. Please answer "yes"/"no", whether
+						you want to set up a permanent storage.
 					`,
 					buttons: [
 						[
@@ -202,7 +215,7 @@ export default class HelloBot extends Speakable {
 							}
 						]
 					],
-					id: this.generateId(5)
+					id: this.generateId()
 				}
 			});
 			this.state = "storage";
@@ -216,10 +229,10 @@ export default class HelloBot extends Speakable {
 					message: {
 						date: Date.now(),
 						text: `
-							Niiice! So, you'll see a message inviting to
-							clone a site, please do it! ^_^
+							Niiice! So, you'll see a message inviting to clone a
+							site, please do it! ^_^
 						`,
-						id: this.generateId(6)
+						id: this.generateId()
 					}
 				});
 				this.state = "clone";
@@ -238,10 +251,10 @@ export default class HelloBot extends Speakable {
 						date: Date.now(),
 						text: `
 							Oh. Okaay, you can always setup the permanent
-							storage any time later by accessing me
-							(reminder: press "+", then "/HelloBot" ^_^) and
-							typing "/storage". When you're ready to start
-							using IRC, tell me.
+							storage any time later by accessing me (reminder:
+							press "+", then "/HelloBot" ^_^) and pressing
+							"/storage" button. When you're ready to start using
+							IRC, tell me.
 						`,
 						buttons: [
 							[
@@ -250,7 +263,7 @@ export default class HelloBot extends Speakable {
 								}
 							]
 						],
-						id: this.generateId(7)
+						id: this.generateId()
 					}
 				});
 				this.state = "tour";
@@ -265,7 +278,7 @@ export default class HelloBot extends Speakable {
 						text: `
 							Please answer "yes" or "no".
 						`,
-						id: this.generateId(8)
+						id: this.generateId()
 					}
 				});
 			}
@@ -278,15 +291,32 @@ export default class HelloBot extends Speakable {
 				message: {
 					date: Date.now(),
 					text: `
-						Okay. Now, look at the sidebar at the left << Right
-						now, you only see /HelloBot (that's me!!) here.
-						Let's start our tour by opening #lobby. Press the +
-						at the bottom-left corner and type in "#lobby". Now,
-						enjoy using the IRC! ^_^
+						Okay. Now, look at the sidebar at the left << Right now,
+						you only see /HelloBot (that's me!!) here. Let's start
+						our tour by opening #lobby. Press the + at the
+						bottom-left corner and type in "#lobby". Now, enjoy
+						using the IRC! ^_^
 					`,
-					id: this.generateId(9)
+					id: this.generateId()
 				}
 			});
+			await sleep(1000);
+
+			this._received({
+				authAddress: "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
+				certUserId: "/HelloBot",
+				message: {
+					date: Date.now(),
+					text: `
+						By the way, I have some interesting features you might
+						want to learn about. Press "/help" button if you want to
+						learn about them!
+					`,
+					buttons: SLASH_COMMANDS.slice(),
+					id: this.generateId()
+				}
+			});
+
 			this.state = "done";
 		}
 	}
@@ -311,23 +341,15 @@ export default class HelloBot extends Speakable {
 								text: "Continue!!",
 								color: "green"
 							}
-						],
-						[
-							{
-								text: "/help"
-							},
-							{
-								text: "/storage"
-							}
 						]
-					],
-					id: this.generateId(1)
+					].concat(SLASH_COMMANDS),
+					id: this.generateId()
 				}
 			});
 		}
 	}
 
-	generateId(id) {
-		return this.currentId + "/" + id;
+	generateId() {
+		return Math.random().toString(36).substr(2);
 	}
 }
