@@ -26,6 +26,12 @@ export default class User extends Speakable {
 			this.name = this.id;
 			this.init();
 		});
+		this.on("received", async message => {
+			await this._spreadMessage(message);
+		});
+		zeroPage.on("setSiteInfo", async siteInfo => {
+			await this.init();
+		})
 	}
 	async init() {
 		await this.initLock.acquire();
@@ -137,9 +143,7 @@ export default class User extends Speakable {
 
 		this.initLock.release();
 
-		if(this.theirInviteState === "accept" || this.ourInviteState === "accept") {
-			this.loadHistory();
-		}
+		await this.loadHistory();
 	}
 
 	async _loadHistory() {
@@ -192,6 +196,10 @@ export default class User extends Speakable {
 			});
 		}
 		return history;
+	}
+
+	async _doesNeedToLoadHistory() {
+		return this.theirInviteState === "accept" || this.ourInviteState === "accept";
 	}
 
 	_listen(transport) {
@@ -370,10 +378,13 @@ export default class User extends Speakable {
 
 		this.wasTheirInviteHandled = true;
 		this.emit("inviteHandled");
+		this.history = null;
+		await this.loadHistory();
 		this.spreadUpdate();
 	}
 
-	async spreadUpdate() {
+
+	async _getAliasObjects() {
 		const IRC = (await import("libs/irc")).default;
 
 		// First, update by auth address
@@ -389,7 +400,11 @@ export default class User extends Speakable {
 			objects.push(IRC.getObjectById(certUserId));
 		}
 
-		for(const object of objects) {
+		return objects;
+	}
+
+	async spreadUpdate() {
+		for(const object of await this._getAliasObjects()) {
 			object.theyInvited = this.theyInvited;
 			object.weInvited = this.weInvited;
 			object.wasTheirInviteHandled = this.wasTheirInviteHandled;
@@ -397,6 +412,22 @@ export default class User extends Speakable {
 			object.theirInviteState = this.theirInviteState;
 			object.ourInviteState = this.ourInviteState;
 			object.encId = this.encId;
+		}
+	}
+
+	async _spreadMessage(message) {
+		for(const object of await this._getAliasObjects()) {
+			if(object !== this) {
+				object._received(message);
+			}
+		}
+	}
+
+
+
+	async markRead() {
+		for(const object of await this._getAliasObjects()) {
+			await object._markRead();
 		}
 	}
 }

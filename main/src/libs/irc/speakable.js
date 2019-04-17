@@ -54,6 +54,10 @@ export default class Speakable extends EventEmitter {
 			this.initLock.release();
 		}
 
+		if(!await this._doesNeedToLoadHistory()) {
+			return;
+		}
+
 		await this.historyLock.acquire();
 
 		if(!this.history) {
@@ -89,6 +93,10 @@ export default class Speakable extends EventEmitter {
 
 		this.historyLock.release();
 		return this.history;
+	}
+
+	async _doesNeedToLoadHistory() {
+		return true;
 	}
 
 	async deleteHistory() {
@@ -147,6 +155,13 @@ export default class Speakable extends EventEmitter {
 	}
 
 	async markRead() {
+		await this._markRead();
+	}
+	async _markRead() {
+		if(!this.history) {
+			await this.loadHistory();
+		}
+
 		this.lastRead = this.history.reduce((a, message) => {
 			const date = message.receiveDate || message.message.date;
 			return Math.max(a, date);
