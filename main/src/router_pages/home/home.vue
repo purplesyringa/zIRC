@@ -14,6 +14,7 @@
 				v-model="message"
 				ref="message"
 				class="input"
+				placeholder="Type here..."
 				@keypress.enter="submit"
 			/>
 		</div>
