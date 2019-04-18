@@ -10,7 +10,10 @@
 					:class="['channel', {current: current === channel.visibleName}]"
 				>
 					<!-- Show invite -->
-					<Avatar :channel="channel.visibleName" />
+					<Avatar
+						:channel="channel.visibleName"
+						:authAddress="channel.object.name"
+					/>
 
 					<div class="content">
 						<div class="invite">
@@ -29,7 +32,10 @@
 					:class="['channel', {current: current === channel.visibleName}]"
 				>
 					<!-- Show invite -->
-					<Avatar :channel="channel.visibleName" />
+					<Avatar
+						:channel="channel.visibleName"
+						:authAddress="channel.object.name"
+					/>
 
 					<div class="content">
 						<div class="invite">
@@ -51,7 +57,10 @@
 					:class="['channel', {current: current === channel.visibleName}]"
 				>
 					<!-- Show invite -->
-					<Avatar :channel="channel.visibleName" />
+					<Avatar
+						:channel="channel.visibleName"
+						:authAddress="channel.object.name"
+					/>
 
 					<div class="content">
 						<div class="invite">
@@ -73,7 +82,10 @@
 					@click="open(channel.visibleName)"
 				>
 					<!-- Show user/channel/group badge -->
-					<Avatar :channel="channel.visibleName" />
+					<Avatar
+						:channel="channel.visibleName"
+						:authAddress="channel.object.name"
+					/>
 
 					<div class="content">
 						<div class="name">{{channel.visibleName}}</div>

@@ -43,10 +43,11 @@
 
 	export default {
 		name: "Avatar",
-		props: ["channel"],
+		props: ["channel", "authAddress"],
 		data() {
 			return {
-				channel: ""
+				channel: "",
+				authAddress: ""
 			};
 		},
 
@@ -90,7 +91,7 @@
 			},
 
 			jdenticon() {
-				return jdenticon.toSvg(this.channel, 48);
+				return jdenticon.toSvg(this.authAddress.replace("@", ""), 48);
 			},
 
 			useJdenticon() {
