@@ -1,6 +1,10 @@
 <template>
 	<div class="message">
-		<Avatar class="avatar" :channel="certUserId || `@${authAddress}`" />
+		<Avatar
+			class="avatar"
+			:channel="certUserId || `@${authAddress}`"
+			:authAddress="`@${authAddress}`"
+		/>
 
 		<div class="content">
 			<div class="header">
