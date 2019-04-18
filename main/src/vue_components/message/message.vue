@@ -14,7 +14,7 @@
 			</div>
 			<div class="messages">
 				<div v-for="message in messages" class="message-item">
-					{{message.text}}
+					<div class="markdown" v-html="renderMarkdown(message.text)" />
 					<div class="buttons" v-if="message.buttons">
 						<div v-for="row in message.buttons" class="button-row">
 							<div v-for="button in row" :class="['button', `button-${button.color}`]" :style="{width: `${100 / row.length}%`}" @click="sendButton(button.text)">
@@ -63,6 +63,11 @@
 				.message-item
 					margin: 8px 0
 
+					.markdown
+						margin: -8px 0
+						p
+							margin: 8px 0
+
 					.buttons
 						display: flex
 						flex-direction: column
@@ -109,6 +114,10 @@
 </style>
 
 <script type="text/javascript">
+	import marked from "marked";
+	import sanitizeHtml from "sanitize-html";
+	import hljs from "highlight.js";
+
 	export default {
 		name: "Message",
 		props: ["authAddress", "certUserId", "receiveDate", "messages"],
@@ -137,6 +146,40 @@
 		methods: {
 			sendButton(button) {
 				this.$emit("sendButton", button);
+			},
+			renderMarkdown(text) {
+				return sanitizeHtml(
+					marked(text, {
+						gfm: true,
+						silent: true,
+						tables: true,
+						highlight(code, lang) {
+							if(lang) {
+								return hljs.highlight(lang, code).value;
+							} else {
+								return hljs.highlightAuto(code).value;
+							}
+						}
+					}),
+					{
+						allowedTags: [
+							"h1", "h2", "h3", "h4", "h5", "h6", "blockquote",
+							"p", "a", "ul", "ol", "nl", "li", "b", "i",
+							"strong", "em", "strike", "code", "hr", "br", "div",
+							"table", "thead", "caption", "tbody", "tr", "th",
+							"td", "pre", "img"
+						],
+						allowedAttributes: {
+							a: ["href", "name", "target"],
+							img: ["src"]
+						},
+						selfClosing: ["img", "br", "hr"],
+						allowedSchemes: ["http", "https", "ftp", "mailto"],
+						allowedSchemesByTag: {},
+						allowedSchemesAppliedToAttributes: ["href", "src"],
+						allowProtocolRelative: true
+					}
+				);
 			}
 		}
 	};
