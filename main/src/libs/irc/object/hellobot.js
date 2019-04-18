@@ -1,6 +1,10 @@
 import Bot from "libs/irc/object/bot";
 import UserStorage from "libs/irc/userstorage";
 import {zeroPage, zeroFS} from "zero";
+import {
+	isValidName, getBotMetadata, getDeployedBotList, getUserBotList, createBot,
+	deployBot
+} from "libs/irc/bots";
 
 function sleep(ms) {
 	return new Promise(resolve => setTimeout(resolve, ms));
@@ -10,8 +14,16 @@ const SLASH_COMMANDS = [
 	[
 		{text: "/help"},
 		{text: "/storage"},
-		{text: "/notifications"},
-		{text: "/newbot"}
+		{text: "/notifications"}
+	],
+	[
+		{text: "/newbot"},
+		{text: "/deploybot"}
+	],
+	[
+		{text: "/initdeployer", color: "yellow"},
+		{text: "/restartdeployer", color: "yellow"},
+		{text: "/publish", color: "yellow"}
 	]
 ];
 
@@ -68,7 +80,11 @@ export default class HelloBot extends Bot {
 			this.send(`
 				Help: /storage -- create a new permanent storage; /notifications
 				-- enable or disable push notifications; /newbot -- create a new
-				bot (like me!)
+				bot (like me!); /deploybot -- make your bot available under a
+				short name; /initdeployer -- [admin-only command] init a
+				deployer to handle bot deployment; /restartdeployer --
+				[admin-only command] restart the bot deployer; /publish --
+				[admin-only command] publish zIRC site
 			`);
 			return;
 		} else if(message.text === "/storage") {
@@ -130,6 +146,45 @@ export default class HelloBot extends Bot {
 			);
 
 			this.state = "newbot";
+			return;
+		} else if(message.text === "/deploybot") {
+			await sleep(1000);
+
+			this.send("Send the name of the bot that you want to deploy.");
+			this.state = "deploybot";
+			return;
+		} else if(message.text === "/initdeployer") {
+			// Get private key
+			const privatekey = await zeroPage.prompt("Input deployer private key:", "password");
+
+			// Save private key
+			let settings = await zeroPage.cmd("userGetSettings");
+			settings.deploy_privatekey = privatekey;
+			await zeroPage.cmd("userSetSettings", [settings]);
+
+			// Start BackgroundProcessing
+			await zeroPage.cmd("wrapperPermissionAdd", ["BACKGROUND"]);
+
+			await zeroPage.cmd("restartBackgroundScripts");
+
+			this.send(`
+				Deployer initialized. Check the logs in ZeroNet console.
+			`);
+			this.state = "done";
+			return;
+		} else if(message.text === "/restartdeployer") {
+			await zeroPage.cmd("restartBackgroundScripts");
+
+			this.send(`
+				Deployer restarted. Check the logs in ZeroNet console.
+			`);
+			this.state = "done";
+			return;
+		} else if(message.text === "/publish") {
+			await zeroPage.cmd("sitePublish", ["stored"]);
+
+			this.send("Published content.json.");
+			this.state = "done";
 			return;
 		}
 
@@ -286,10 +341,7 @@ export default class HelloBot extends Bot {
 				return;
 			}
 
-			if(
-				message.text[0] !== "/" ||
-				!/^[A-Za-z0-9]+$/.test(message.text.substr(1))
-			) {
+			if(!isValidName(message.text)) {
 				this.send(`
 					Nope, that's an invalid name. Please make up a name that
 					starts with "/" (slash) and only contains digits and English
@@ -298,14 +350,11 @@ export default class HelloBot extends Bot {
 				return;
 			}
 
-			let bots = (await zeroFS.readDirectory("data/bots"))
-				.filter(file => file.endsWith(".js"))
-				.map(file => "/" + file.replace(/\.js$/, "").toLowerCase());
-
-			if(bots.indexOf(message.text[0].toLowerCase()) > -1) {
+			let bots = await getDeployedBotList();
+			if(bots.indexOf(message.text.toLowerCase()) > -1) {
 				this.send(
 					`
-						Um, There's a small problem. ${message.text} is a
+						Um, there's a small problem. ${message.text} is a
 						registered bot name, so you won't even be able to
 						publish your own bot to the network. I'd recommend you
 						to choose another name. Ideas?
@@ -322,15 +371,17 @@ export default class HelloBot extends Bot {
 
 			const siteInfo = await zeroPage.getSiteInfo();
 			const authAddress = siteInfo.auth_address;
+			if(!siteInfo.cert_user_id) {
+				this.send("Sorry, but you have to be logged in to make a bot.");
+				this.state = "done";
+				return;
+			}
 
-			bots = (await zeroFS.readDirectory(`data/users/${authAddress}/bots`))
-				.filter(file => file.endsWith(".js"))
-				.map(file => "/" + file.replace(/\.js$/, "").toLowerCase());
-
-			if(bots.indexOf(message.text[0].toLowerCase()) > -1) {
+			bots = await getUserBotList(authAddress);
+			if(bots.indexOf(message.text.toLowerCase()) > -1) {
 				this.send(
 					`
-						Um, There's a small problem. ${message.text} is already
+						Um, there's a small problem. ${message.text} is already
 						your bot. (Are you okay?) Try to come up with another
 						name.
 					`,
@@ -343,12 +394,7 @@ export default class HelloBot extends Bot {
 				return;
 			}
 
-			const name = message.text.substr(1);
-			const path = `data/users/${authAddress}/bots/${name}.js`;
-			let botContent = await zeroFS.readFile("DefaultBot.js");
-			botContent = botContent.replace(/{{BotName}}/g, name);
-			await zeroFS.writeFile(path, botContent);
-
+			await createBot(message.text);
 			this.send(
 				`
 					There, done! You can now change your bot code by changing
@@ -357,9 +403,85 @@ export default class HelloBot extends Bot {
 					When you are ready to test your bot, open a chat with
 					/${name}@${authAddress}. To refresh the bot, just type
 					"/HelloBot debug" in your bot's chat, and you'll get some
-					useful controls.
+					useful controls. When you are ready to publish your bot,
+					come here and run /deploybot
 				`
 			);
+			this.state = "done";
+		} else if(this.state === "deploybot") {
+			await sleep(1000);
+
+			if(message.text === "I give up") {
+				this.send("That's a pity.");
+				this.state = "done";
+				return;
+			}
+
+
+			if(!isValidName(message.text)) {
+				this.send(`
+					Nope, that's an invalid name. Try to /deploybot again when
+					you remember the name.
+				`);
+				this.state = "done";
+				return;
+			}
+
+			const siteInfo = await zeroPage.getSiteInfo();
+			const authAddress = siteInfo.auth_address;
+			if(!siteInfo.cert_user_id) {
+				this.send(`
+					Sorry, but you have to be logged in to deploy a bot.
+				`);
+				this.state = "done";
+				return;
+			}
+
+			let bots = await getUserBotList(authAddress);
+			if(bots.indexOf(message.text.toLowerCase()) === -1) {
+				this.send(
+					`
+						Um, there's a small problem. You don't have a bot called
+						${message.text}. Are you sure you created the bot from
+						*this* account? Try to remember.
+					`,
+					[
+						[
+							{text: "I give up"}
+						]
+					]
+				);
+				return;
+			}
+
+			bots = await getDeployedBotList();
+			if(bots.indexOf(message.text.toLowerCase()) > -1) {
+				// Check that the bot is owned by us
+				const metadata = await getBotMetadata(message.text);
+				if(metadata.author.authAddress !== authAddress) {
+					this.send(
+						`
+							Um, there's a small problem. ${message.text} is
+							occupied by another user. Either rename your bot
+							(use /renamebot) and publish it with a new name, or
+							ask the holder of the package
+							(${metadata.author.certUserId}) to undeploy/rename
+							the package.
+						`
+					);
+					this.state = "done";
+					return;
+				}
+			}
+
+			await deployBot(message.text);
+
+			this.send(`
+				The request was sent. The latest version of your bot will be
+				available in a few minutes as ${message.text}. However, you can
+				access it right now at ${message.text}@${authAddress} if you
+				don't care about a long name.
+			`);
 			this.state = "done";
 		}
 	}

@@ -11,7 +11,7 @@
 		},
 		"permission_rules": {
 			".*": {
-				"files_allowed": "23_.*\\.json|bots/.*\\.js",
+				"files_allowed": "23_.*\\.json|bots/.*\\.js|control\\.json",
 				"max_size": 100000,
 				"files_allowed_optional": "(2b|40)_.*\\.json"
 			}

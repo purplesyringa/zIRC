@@ -159,6 +159,12 @@ module.exports = {
 				to: "./DefaultBot.js"
 			}
 		]),
+		new CopyWebpackPlugin([
+			{
+				from: "./0background.py",
+				to: "./0background.py"
+			}
+		]),
 		new CircularDependencyPlugin({
 			exclude: /node_modules/,
 			failOnError: true,
