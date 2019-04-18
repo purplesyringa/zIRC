@@ -194,10 +194,6 @@ export default class JSBot extends Bot {
 	}
 	async onReceived(message) {
 		await this.initBot();
-		if(!this.botExists) {
-			return;
-		}
-
 		await sleep(100); // doesn't make sense to receive a message that fast
 
 		if(message.text.startsWith("/HelloBot ")) {
@@ -239,7 +235,9 @@ export default class JSBot extends Bot {
 			return;
 		}
 
-		await this._cmd("onReceived", {message});
+		if(this.botExists) {
+			await this._cmd("onReceived", {message});
+		}
 	}
 	async onTabOpened() {
 		await this._cmd("onTabOpened");
