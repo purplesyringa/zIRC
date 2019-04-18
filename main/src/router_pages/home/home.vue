@@ -68,7 +68,7 @@
 				font-size: 16px
 
 		.messages
-			margin-top: 16px
+			margin-top: 32px
 </style>
 
 <script type="text/javascript">

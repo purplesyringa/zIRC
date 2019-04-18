@@ -13,7 +13,9 @@
 				<span class="date" :title="title">[{{dateText}}]</span>
 			</div>
 			<div class="messages">
-				<div v-for="message in messages" class="message-item">
+				<div v-for="message, i in messages" class="message-item">
+					<div class="message-splitter" v-if="i > 0" />
+
 					<div class="markdown" v-html="renderMarkdown(message.text)" />
 					<div class="buttons" v-if="message.buttons">
 						<div v-for="row in message.buttons" class="button-row">
@@ -63,10 +65,26 @@
 				.message-item
 					margin: 8px 0
 
+					.message-splitter
+						height: 1px
+						background-color: rgba(255, 255, 255, 0.2)
+						margin: 8px 0
+
 					.markdown
 						margin: -8px 0
-						p
-							margin: 8px 0
+
+						/deep/
+							p
+								margin: 16px 0
+							pre
+								color: #FFC
+								padding: 16px
+								background-color: rgba(0, 0, 0, 0.5)
+							hr
+								color: #FFA
+								background-color: #FFA
+								border-color: #FFA
+
 
 					.buttons
 						display: flex
@@ -117,6 +135,7 @@
 	import marked from "marked";
 	import sanitizeHtml from "sanitize-html";
 	import hljs from "highlight.js";
+	import "highlight.js/styles/monokai-sublime.css";
 
 	export default {
 		name: "Message",
