@@ -1,8 +1,13 @@
 <template>
-	<div class="avatar" :style="{backgroundColor}">
-		<span class="small">{{icon[0] || ""}}</span>
-		<span class="big">{{icon[1] || ""}}</span>
-		<span class="small">{{icon[0] ? "&nbsp;" : ""}}</span>
+	<div class="avatar" :style="{backgroundColor: useJdenticon ? '#002' : backgroundColor}">
+		<template v-if="useJdenticon">
+			<div class="jdenticon" v-html="jdenticon" />
+		</template>
+		<template v-else>
+			<span class="small">{{icon[0] || ""}}</span>
+			<span class="big">{{icon[1] || ""}}</span>
+			<span class="small">{{icon[0] ? "&nbsp;" : ""}}</span>
+		</template>
 	</div>
 </template>
 
@@ -20,6 +25,9 @@
 		line-height: 60px
 		color: #000
 
+		.jdenticon
+			margin-top: 8px
+
 		.small
 			font-family: "Courier New", monospace
 			font-size: 18px
@@ -31,6 +39,8 @@
 </style>
 
 <script type="text/javascript">
+	import jdenticon from "jdenticon";
+
 	export default {
 		name: "Avatar",
 		props: ["channel"],
@@ -77,6 +87,14 @@
 				} else {
 					return "?";
 				}
+			},
+
+			jdenticon() {
+				return jdenticon.toSvg(this.channel, 48);
+			},
+
+			useJdenticon() {
+				return this.type === "user-id" || this.type === "user-name";
 			},
 
 			backgroundColor() {
