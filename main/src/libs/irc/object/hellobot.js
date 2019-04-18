@@ -3,7 +3,7 @@ import UserStorage from "libs/irc/userstorage";
 import {zeroPage, zeroFS} from "zero";
 import {
 	isValidName, getBotMetadata, getDeployedBotList, getUserBotList, createBot,
-	deployBot
+	renameBot, deployBot
 } from "libs/irc/bots";
 
 function sleep(ms) {
@@ -18,7 +18,8 @@ const SLASH_COMMANDS = [
 	],
 	[
 		{text: "/newbot"},
-		{text: "/deploybot"}
+		{text: "/deploybot"},
+		{text: "/renamebot"}
 	],
 	[
 		{text: "/initdeployer", color: "yellow"},
@@ -82,11 +83,11 @@ export default class HelloBot extends Bot {
 					Help: /storage -- create a new permanent storage;
 					/notifications -- enable or disable push notifications;
 					/newbot -- create a new bot (like me!); /deploybot -- make
-					your bot available under a short name; /initdeployer --
-					[admin-only command] init a deployer to handle bot
-					deployment; /restartdeployer -- [admin-only command] restart
-					the bot deployer; /publish -- [admin-only command] publish
-					zIRC site
+					your bot available under a short name; /renamebot -- rename
+					your bot, /initdeployer -- [admin-only command] init a
+					deployer to handle bot deployment; /restartdeployer --
+					[admin-only command] restart the bot deployer; /publish --
+					[admin-only command] publish zIRC site
 				`,
 				SLASH_COMMANDS
 			);
@@ -156,6 +157,12 @@ export default class HelloBot extends Bot {
 
 			this.send("Send the name of the bot that you want to deploy.");
 			this.state = "deploybot";
+			return;
+		} else if(message.text === "/renamebot") {
+			await sleep(1000);
+
+			this.send("Send the name of the bot that you want to rename.");
+			this.state = "renamebot";
 			return;
 		} else if(message.text === "/initdeployer") {
 			// Get private key
@@ -486,6 +493,96 @@ export default class HelloBot extends Bot {
 				access it right now at ${message.text}@${authAddress} if you
 				don't care about a long name.
 			`);
+			this.state = "done";
+		} else if(this.state === "renamebot") {
+			await sleep(1000);
+
+			if(message.text === "I give up") {
+				this.send("That's a pity.");
+				this.state = "done";
+				return;
+			}
+
+
+			const siteInfo = await zeroPage.getSiteInfo();
+			const authAddress = siteInfo.auth_address;
+
+			let bots = await getUserBotList(authAddress);
+			if(bots.indexOf(message.text.toLowerCase()) === -1) {
+				this.send(
+					`
+						Um, there's a small problem. You don't have a bot called
+						${message.text}. Are you sure you created the bot from
+						*this* account? Try to remember.
+					`,
+					[
+						[
+							{text: "I give up"}
+						]
+					]
+				);
+				return;
+			}
+
+			this._renamebotOriginalName = message.text;
+
+			this.send("And what do you want to rename it to?");
+			this.state = "renamebotTo";
+		} else if(this.state === "renamebotTo") {
+			await sleep(1000);
+
+			if(message.text === "I give up") {
+				this.send("Ah, ok, try again next time :)")
+				this.state = "done";
+				return;
+			}
+
+			if(!isValidName(message.text)) {
+				this.send(`
+					Nope, that's an invalid name. Please make up a name that
+					starts with "/" (slash) and only contains digits and English
+					letters.
+				`);
+				return;
+			}
+
+			let bots = await getDeployedBotList();
+			if(bots.indexOf(message.text.toLowerCase()) > -1) {
+				this.send(
+					`
+						Um, there's a small problem. ${message.text} is a
+						registered bot name, so you won't even be able to
+						publish your own bot to the network. I'd recommend you
+						to choose another name. Ideas?
+					`,
+					[
+						[
+							{text: "I give up"}
+						]
+					]
+				);
+				return;
+			}
+
+
+			const siteInfo = await zeroPage.getSiteInfo();
+			const authAddress = siteInfo.auth_address;
+
+			await renameBot(this._renamebotOriginalName, message.text);
+
+			const name = message.text.substr(1);
+			this.send(
+				`
+					There, done! You can now change your bot code by changing
+					the following file:
+					PATH_TO_ZERONET_DATA/${siteInfo.address}/data/users/${authAddress}/bots/${name}.js .
+					When you are ready to test your bot, open a chat with
+					/${name}@${authAddress}. To refresh the bot, just type
+					"/HelloBot debug" in your bot's chat, and you'll get some
+					useful controls. When you are ready to publish your bot,
+					come here and run /deploybot
+				`
+			);
 			this.state = "done";
 		}
 	}

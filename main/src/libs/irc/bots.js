@@ -37,6 +37,24 @@ export async function createBot(name) {
 	await zeroFS.writeFile(path, botContent);
 }
 
+export async function renameBot(from, to) {
+	const siteInfo = await zeroPage.getSiteInfo();
+	const authAddress = siteInfo.auth_address;
+
+	from = from.substr(1);
+	to = to.substr(1);
+
+	const fromPath = `data/users/${authAddress}/bots/${from}.js`;
+	const toPath = `data/users/${authAddress}/bots/${to}.js`;
+
+	let botContent = await zeroFS.readFile(fromPath);
+	// Fix self.OldName -> self.NewName
+	botContent = botContent.replace(`self.${from}`, `self.${to}`);
+
+	await zeroFS.writeFile(toPath, botContent);
+	await zeroFS.deleteFile(fromPath);
+}
+
 
 export async function deployBot(name) {
 	const siteInfo = await zeroPage.getSiteInfo();
