@@ -58,6 +58,7 @@
     "eslint": "^4.19.1",
     "eslint-loader": "^2.0.0",
     "hoek": "4.2.1",
+    "jdenticon": "^2.1.1",
     "material-icons": "^0.2.3",
     "node-sass": "^4.7.2",
     "singleton-js": "^1.0.0",
