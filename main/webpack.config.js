@@ -4,6 +4,7 @@ const webpack = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const CircularDependencyPlugin = require("circular-dependency-plugin");
+const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
 const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin;
 
 
@@ -191,6 +192,10 @@ module.exports = {
 					compilation.errors.push(new Error(paths.join(" -> ")));
 				}
 			}
+		}),
+		new UglifyJsPlugin({
+			parallel: true,
+			cache: true
 		}),
 		new BundleAnalyzerPlugin({
 			analyzerPort: 8080
