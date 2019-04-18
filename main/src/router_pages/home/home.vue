@@ -9,13 +9,12 @@
 		</div>
 
 		<div>
-			<input
-				type="text"
+			<textarea
 				v-model="message"
 				ref="message"
 				class="input"
 				placeholder="Type here..."
-				@keypress.enter="submit"
+				@keypress.enter.exact.prevent="submit"
 			/>
 		</div>
 
@@ -52,6 +51,8 @@
 
 		.input
 			width: 100%
+			resize: none
+			height: 1em
 		button
 			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2)
 
@@ -73,6 +74,7 @@
 <script type="text/javascript">
 	import IRC from "libs/irc";
 	import {zeroPage, zeroAuth} from "zero";
+	import autosize from "autosize";
 	import "vue-awesome/icons/trash";
 
 	export default {
@@ -86,6 +88,8 @@
 		},
 
 		async mounted() {
+			autosize(this.$refs.message);
+
 			this.currentObject = IRC.getObjectById(this.current);
 			this.history = await this.currentObject.loadHistory();
 			this.currentObject.on("received", this.onReceived);
@@ -107,6 +111,9 @@
 				const message = this.message.trim();
 				this.message = "";
 				this.$refs.message.focus();
+				setTimeout(() => {
+					autosize.update(this.$refs.message);
+				}, 0);
 
 				try {
 					await this.currentObject.send(message);
