@@ -230,7 +230,7 @@
 						allowedAttributes: {
 							a: ["href", "name", "target"],
 							img: ["src"],
-							"*": ["class"]
+							"*": ["class", "align"]
 						},
 						selfClosing: ["img", "br", "hr"],
 						allowedSchemes: ["http", "https", "ftp", "mailto"],
