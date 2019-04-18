@@ -51,7 +51,8 @@
     "vue-style-loader": "^3.0.3",
     "vue-svg-loader": "^0.4.0",
     "vue-template-compiler": "^2.5.13",
-    "webpack": "^3.10.0"
+    "webpack": "^3.10.0",
+    "webpack-bundle-analyzer": "^3.3.2"
   },
   "dependencies": {
     "autosize": "^4.0.2",

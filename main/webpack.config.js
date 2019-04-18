@@ -4,6 +4,7 @@ const webpack = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const CircularDependencyPlugin = require("circular-dependency-plugin");
+const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin;
 
 
 function genSass(indentedSyntax) {
@@ -190,6 +191,7 @@ module.exports = {
 					compilation.errors.push(new Error(paths.join(" -> ")));
 				}
 			}
-		})
+		}),
+		new BundleAnalyzerPlugin()
 	]
 };
