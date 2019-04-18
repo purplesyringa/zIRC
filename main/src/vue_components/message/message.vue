@@ -142,8 +142,19 @@
 <script type="text/javascript">
 	import marked from "marked";
 	import sanitizeHtml from "sanitize-html";
-	import hljs from "highlight.js";
+	import hljs from "highlight.js/lib/highlight";
 	import "highlight.js/styles/monokai-sublime.css";
+
+	// Do not optimize the lines below using a for loop, this will break WebPack
+	// optimizations
+	const context = require.context(
+		"highlight.js/lib/languages", false,
+		/\b(apache|asp|brainfuck|c|cfm|clojure|cmake|cpp|cs|csharp|css|csv|bash|diff|elixir|go|haml|http|java|javascript|json|jsx|less|make|markdown|matlab|nginx|objectivec|pascal|php|perl|python|rust|shell|sql|scss|sql|svg|swift|ruby|vim|vue|xml|yaml)\b/
+	);
+	for(const name of context.keys()) {
+		const language = name.replace("./", "").replace(".js", "");
+		hljs.registerLanguage(language, context(name));
+	}
 
 	export default {
 		name: "Message",

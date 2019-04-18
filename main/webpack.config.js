@@ -40,6 +40,18 @@ const BABEL = {
 		]
 	}
 };
+const CHUNKS = [
+	["vue", /vue\.min\.js/],
+	["core-js", /core-js/],
+	["sanitize-html", /sanitize-html/],
+	["elliptic-crypto", /elliptic|bn|ecies|hmac|public-encrypt|ecdh/],
+	["highlight", /highlight/],
+	["dom", /dom-serializer|entities|htmlparser2/],
+	["crypto", /crypto|des|aes|hash|diffie-hellman|pbkdf2|ripemd160|sha|md5|cipher-base|rand|evp|miller-rabin/],
+	["polyfill", /readable-stream|buffer|lodash|regenerator-runtime|browserify|babel-polyfill|process|setimmediate/],
+	["vue-util", /vue|style-loader/],
+	["vendor", /node_modules/]
+];
 
 
 let circularErrors;
@@ -49,7 +61,7 @@ module.exports = {
 		modules: [path.resolve(__dirname, "./src"), "node_modules"]
 	},
 	entry: {
-		main: ["babel-polyfill", "./main.js"]
+		[CHUNKS[0][0]]: ["babel-polyfill", "./main.js"]
 	},
 	output: {
 		path: path.resolve(__dirname, "./dist"),
@@ -192,7 +204,14 @@ module.exports = {
 					compilation.errors.push(new Error(paths.join(" -> ")));
 				}
 			}
-		}),
+		})
+	].concat(CHUNKS.map(([_, regexp], i, arr) => {
+		// Thank you for wonderful CommonsChunkPlugin usage
+		return new webpack.optimize.CommonsChunkPlugin({
+			name: arr[i + 1] ? arr[i + 1][0] : "main",
+			minChunks: module => !regexp.test(module.resource || "")
+		});
+	})).concat([
 		new UglifyJsPlugin({
 			parallel: true,
 			cache: true
@@ -200,5 +219,5 @@ module.exports = {
 		new BundleAnalyzerPlugin({
 			analyzerPort: 8080
 		})
-	]
+	])
 };
