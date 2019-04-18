@@ -524,6 +524,20 @@ export default class HelloBot extends Bot {
 				return;
 			}
 
+			bots = await getDeployedBotList();
+			if(bots.indexOf(message.text.toLowerCase()) > -1) {
+				const metadata = await getBotMetadata(message.text);
+				if(metadata.author.authAddress === authAddress) {
+					this.send(`
+						You can't rename a bot that you have deployed already.
+						Undeploy the bot first via /undeploy command, or create
+						a new bot from scratch.
+					`);
+					this.state = "done";
+					return;
+				}
+			}
+
 			this._renamebotOriginalName = message.text;
 
 			this.send("And what do you want to rename it to?");
