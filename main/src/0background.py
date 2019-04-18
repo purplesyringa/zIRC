@@ -39,7 +39,7 @@ def start():
 				SELECT
 					deploy_bot.*,
 					REPLACE(json.directory, "users/", "") AS auth_address,
-					json.cert_user_id AS cert_user_id
+					json2.cert_user_id AS cert_user_id
 
 				FROM (
 					SELECT
@@ -59,6 +59,11 @@ def start():
 
 				INNER JOIN json ON (
 					deploy_bot.json_id = json.json_id
+				)
+
+				INNER JOIN json AS json2 ON (
+					json2.directory = json.directory AND
+					json2.file_name = "content.json"
 				)
 			""",
 			wait=True
