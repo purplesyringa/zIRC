@@ -21,7 +21,8 @@ const SLASH_COMMANDS = [
 		{text: "/deploybot"},
 		{text: "/undeploybot"},
 		{text: "/renamebot"},
-		{text: "/deletebot"}
+		{text: "/deletebot"},
+		{text: "/mybots"}
 	],
 	[
 		{text: "/initdeployer", color: "yellow"},
@@ -87,11 +88,11 @@ export default class HelloBot extends Bot {
 					/newbot -- create a new bot (like me!); /deploybot -- make
 					your bot available under a short name; /undeploybot -- take
 					your bot off the public storage; /renamebot -- rename your
-					bot, /deletebot -- delete your bot completely, /initdeployer
-					-- [admin-only command] init a deployer to handle bot
-					deployment; /restartdeployer -- [admin-only command] restart
-					the bot deployer; /publish -- [admin-only command] publish
-					zIRC site
+					bot; /deletebot -- delete your bot completely; /mybots --
+					get a list of my bots; /initdeployer -- [admin-only command]
+					init a deployer to handle bot deployment; /restartdeployer
+					-- [admin-only command] restart the bot deployer; /publish
+					-- [admin-only command] publish zIRC site
 				`,
 				SLASH_COMMANDS
 			);
@@ -179,6 +180,13 @@ export default class HelloBot extends Bot {
 
 			this.send("Send the name of the bot that you want to delete.");
 			this.state = "deletebot";
+			return;
+		} else if(message.text === "/mybots") {
+			const siteInfo = await zeroPage.getSiteInfo();
+			const authAddress = siteInfo.auth_address;
+			const bots = await getUserBotList(authAddress, false);
+			this.send(`Your bots: ${bots.join(" ")}`);
+			this.state = "done";
 			return;
 		} else if(message.text === "/initdeployer") {
 			// Get private key

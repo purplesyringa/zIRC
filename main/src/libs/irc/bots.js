@@ -21,10 +21,11 @@ export async function getDeployedBotList() {
 		.filter(file => file.endsWith(".js"))
 		.map(file => "/" + file.replace(/\.js$/, "").toLowerCase());
 }
-export async function getUserBotList(authAddress) {
+export async function getUserBotList(authAddress, lowerCase=true) {
 	return (await zeroFS.readDirectory(`data/users/${authAddress}/bots`))
 		.filter(file => file.endsWith(".js"))
-		.map(file => "/" + file.replace(/\.js$/, "").toLowerCase());
+		.map(file => "/" + file.replace(/\.js$/, ""))
+		.map(name => lowerCase ? name.toLowerCase() : name);
 }
 
 export async function createBot(name) {
