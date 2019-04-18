@@ -503,7 +503,7 @@
 			totalCountUnread() {
 				return this.channels
 					.map(channel => channel.object.countUnread || 0)
-					.reduce((a, b) => a + b);
+					.reduce((a, b) => a + b, 0);
 			}
 		}
 	};
