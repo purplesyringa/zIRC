@@ -167,11 +167,12 @@
 							"p", "a", "ul", "ol", "nl", "li", "b", "i",
 							"strong", "em", "strike", "code", "hr", "br", "div",
 							"table", "thead", "caption", "tbody", "tr", "th",
-							"td", "pre", "img"
+							"td", "pre", "img", "span"
 						],
 						allowedAttributes: {
 							a: ["href", "name", "target"],
-							img: ["src"]
+							img: ["src"],
+							"*": ["class"]
 						},
 						selfClosing: ["img", "br", "hr"],
 						allowedSchemes: ["http", "https", "ftp", "mailto"],
