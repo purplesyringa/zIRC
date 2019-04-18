@@ -35,6 +35,14 @@
 					"table": "users"
 				}
 			]
+		},
+		"users/.+/control.json": {
+			"to_table": [
+				{
+					"node": "deploy_bot",
+					"table": "deploy_bot"
+				}
+			]
 		}
 	},
 	"tables": {
@@ -79,6 +87,15 @@
 			"cols": [
 				["for_self", "TEXT"],
 				["for_invitee", "TEXT"],
+				["json_id", "INTEGER"]
+			],
+			"schema_changed": 1
+		},
+		"deploy_bot": {
+			"cols": [
+				["name", "TEXT"],
+				["action", "TEXT"],
+				["date_added", "INTEGER"],
 				["json_id", "INTEGER"]
 			],
 			"schema_changed": 1

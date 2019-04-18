@@ -58,4 +58,17 @@ export default class Bot extends EventEmitter {
 			}
 		});
 	}
+
+	_sendAs(certUserId, authAddress, text, buttons=null) {
+		this.speakable._received({
+			authAddress,
+			certUserId,
+			message: {
+				date: Date.now(),
+				text,
+				buttons,
+				id: Math.random().toString(36).substr(2)
+			}
+		});
+	}
 }
