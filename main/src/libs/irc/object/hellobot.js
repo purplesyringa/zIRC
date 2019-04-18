@@ -3,7 +3,7 @@ import UserStorage from "libs/irc/userstorage";
 import {zeroPage, zeroFS} from "zero";
 import {
 	isValidName, getBotMetadata, getDeployedBotList, getUserBotList, createBot,
-	renameBot, deployBot, undeployBot
+	renameBot, deleteBot, deployBot, undeployBot
 } from "libs/irc/bots";
 
 function sleep(ms) {
@@ -20,7 +20,8 @@ const SLASH_COMMANDS = [
 		{text: "/newbot"},
 		{text: "/deploybot"},
 		{text: "/undeploybot"},
-		{text: "/renamebot"}
+		{text: "/renamebot"},
+		{text: "/deletebot"}
 	],
 	[
 		{text: "/initdeployer", color: "yellow"},
@@ -86,10 +87,11 @@ export default class HelloBot extends Bot {
 					/newbot -- create a new bot (like me!); /deploybot -- make
 					your bot available under a short name; /undeploybot -- take
 					your bot off the public storage; /renamebot -- rename your
-					bot, /initdeployer -- [admin-only command] init a deployer
-					to handle bot deployment; /restartdeployer -- [admin-only
-					command] restart the bot deployer; /publish -- [admin-only
-					command] publish zIRC site
+					bot, /deletebot -- delete your bot completely, /initdeployer
+					-- [admin-only command] init a deployer to handle bot
+					deployment; /restartdeployer -- [admin-only command] restart
+					the bot deployer; /publish -- [admin-only command] publish
+					zIRC site
 				`,
 				SLASH_COMMANDS
 			);
@@ -171,6 +173,12 @@ export default class HelloBot extends Bot {
 
 			this.send("Send the name of the bot that you want to rename.");
 			this.state = "renamebot";
+			return;
+		} else if(message.text === "/deletebot") {
+			await sleep(1000);
+
+			this.send("Send the name of the bot that you want to delete.");
+			this.state = "deletebot";
 			return;
 		} else if(message.text === "/initdeployer") {
 			// Get private key
@@ -414,18 +422,16 @@ export default class HelloBot extends Bot {
 			}
 
 			await createBot(message.text);
-			this.send(
-				`
-					There, done! You can now change your bot code by changing
-					the following file:
-					PATH_TO_ZERONET_DATA/${siteInfo.address}/data/users/${authAddress}/bots/${name}.js .
-					When you are ready to test your bot, open a chat with
-					/${name}@${authAddress}. To refresh the bot, just type
-					"/HelloBot debug" in your bot's chat, and you'll get some
-					useful controls. When you are ready to publish your bot,
-					come here and run /deploybot
-				`
-			);
+			this.send(`
+				There, done! You can now change your bot code by changing the
+				following file:
+				PATH_TO_ZERONET_DATA/${siteInfo.address}/data/users/${authAddress}/bots/${name}.js .
+				When you are ready to test your bot, open a chat with
+				/${name}@${authAddress}. To refresh the bot, just type
+				"/HelloBot debug" in your bot's chat, and you'll get some useful
+				controls. When you are ready to publish your bot, come here and
+				run /deploybot .
+			`);
 			this.state = "done";
 		} else if(this.state === "deploybot") {
 			await sleep(1000);
@@ -478,16 +484,13 @@ export default class HelloBot extends Bot {
 				// Check that the bot is owned by us
 				const metadata = await getBotMetadata(message.text);
 				if(metadata.author.auth_address !== authAddress) {
-					this.send(
-						`
-							Um, there's a small problem. ${message.text} is
-							occupied by another user. Either rename your bot
-							(use /renamebot) and publish it with a new name, or
-							ask the holder of the bot
-							(${metadata.author.cert_user_id}) to undeploy/rename
-							the bot.
-						`
-					);
+					this.send(`
+						Um, there's a small problem. ${message.text} is owned
+						by another user. Either rename your bot (use /renamebot)
+						and publish it with a new name, or ask the holder of the
+						bot (${metadata.author.cert_user_id}) to undeploy/rename
+						the bot.
+					`);
 					this.state = "done";
 					return;
 				}
@@ -550,13 +553,11 @@ export default class HelloBot extends Bot {
 			// Check that the bot is owned by us
 			const metadata = await getBotMetadata(message.text);
 			if(metadata.author.auth_address !== authAddress) {
-				this.send(
-					`
-						Um, there's a small problem. ${message.text} is owned by
-						another user, and you can't undeploy another user's bot.
-						Ask ${metadata.author.cert_user_id} to do it.
-					`
-				);
+				this.send(`
+					Um, there's a small problem. ${message.text} is owned by
+					another user, and you can't undeploy another user's bot. Ask
+					${metadata.author.cert_user_id} to do it.
+				`);
 				this.state = "done";
 				return;
 			}
@@ -619,6 +620,56 @@ export default class HelloBot extends Bot {
 
 			this.send("And what do you want to rename it to?");
 			this.state = "renamebotTo";
+		} else if(this.state === "deletebot") {
+			await sleep(1000);
+
+			if(message.text === "I give up") {
+				this.send("That's a pity.");
+				this.state = "done";
+				return;
+			}
+
+			const siteInfo = await zeroPage.getSiteInfo();
+			const authAddress = siteInfo.auth_address;
+
+			let bots = await getUserBotList(authAddress);
+			if(bots.indexOf(message.text.toLowerCase()) === -1) {
+				this.send(
+					`
+						Um, there's a small problem. You don't have a bot called
+						${message.text}. Are you sure you created the bot from
+						*this* account? Try to remember.
+					`,
+					[
+						[
+							{text: "I give up"}
+						]
+					]
+				);
+				return;
+			}
+
+			bots = await getDeployedBotList();
+			if(bots.indexOf(message.text.toLowerCase()) > -1) {
+				// Check that the bot is not owned by us
+				const metadata = await getBotMetadata(message.text);
+				if(metadata.author.auth_address === authAddress) {
+					this.send(`
+						Um, there's a small problem. ${message.text} is
+						deployed. You can't delete a bot that has been deployed
+						-- use /undeploybot first.
+					`);
+					this.state = "done";
+					return;
+				}
+			}
+
+			await deleteBot(message.text);
+
+			this.send(`
+				There, done! You don't own ${message.text} anymore.
+			`);
+			this.state = "done";
 		} else if(this.state === "renamebotTo") {
 			await sleep(1000);
 
@@ -662,18 +713,16 @@ export default class HelloBot extends Bot {
 			await renameBot(this._renamebotOriginalName, message.text);
 
 			const name = message.text.substr(1);
-			this.send(
-				`
-					There, done! You can now change your bot code by changing
-					the following file:
-					PATH_TO_ZERONET_DATA/${siteInfo.address}/data/users/${authAddress}/bots/${name}.js .
-					When you are ready to test your bot, open a chat with
-					/${name}@${authAddress}. To refresh the bot, just type
-					"/HelloBot debug" in your bot's chat, and you'll get some
-					useful controls. When you are ready to publish your bot,
-					come here and run /deploybot
-				`
-			);
+			this.send(`
+				There, done! You can now change your bot code by changing the
+				following file:
+				PATH_TO_ZERONET_DATA/${siteInfo.address}/data/users/${authAddress}/bots/${name}.js .
+				When you are ready to test your bot, open a chat with
+				/${name}@${authAddress}. To refresh the bot, just type
+				"/HelloBot debug" in your bot's chat, and you'll get some useful
+				controls. When you are ready to publish your bot, come here and
+				run /deploybot .
+			`);
 			this.state = "done";
 		}
 	}

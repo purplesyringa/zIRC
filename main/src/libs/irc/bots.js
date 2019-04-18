@@ -55,6 +55,14 @@ export async function renameBot(from, to) {
 	await zeroFS.deleteFile(fromPath);
 }
 
+export async function deleteBot(name) {
+	const siteInfo = await zeroPage.getSiteInfo();
+	const authAddress = siteInfo.auth_address;
+
+	const path = `data/users/${authAddress}/bots/${name.substr(1)}.js`;
+	await zeroFS.deleteFile(path);
+}
+
 
 export async function deployBot(name) {
 	const siteInfo = await zeroPage.getSiteInfo();
