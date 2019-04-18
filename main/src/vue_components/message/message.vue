@@ -80,6 +80,14 @@
 								color: #FFC
 								padding: 16px
 								background-color: rgba(0, 0, 0, 0.5)
+								code
+									padding: 0
+									background: none
+									border-radius: 0
+							code
+								padding: 4px 8px
+								background-color: rgba(0, 0, 0, 0.5)
+								border-radius: 4px
 							blockquote
 								padding: 16px
 								background-color: rgba(0, 0, 0, 0.5)
@@ -92,6 +100,18 @@
 								color: #FFA
 								background-color: #FFA
 								border-color: #FFA
+							h1
+								font-size: 2em
+							h2
+								font-size: 1.8em
+							h3
+								font-size: 1.5em
+							h4
+								font-size: 1.3em
+							h5
+								font-size: 1.2em
+							h6
+								font-size: 1.1em
 
 
 					.buttons
