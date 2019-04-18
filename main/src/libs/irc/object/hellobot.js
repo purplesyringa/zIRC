@@ -77,15 +77,19 @@ export default class HelloBot extends Bot {
 		if(message.text === "/help") {
 			await sleep(1000);
 
-			this.send(`
-				Help: /storage -- create a new permanent storage; /notifications
-				-- enable or disable push notifications; /newbot -- create a new
-				bot (like me!); /deploybot -- make your bot available under a
-				short name; /initdeployer -- [admin-only command] init a
-				deployer to handle bot deployment; /restartdeployer --
-				[admin-only command] restart the bot deployer; /publish --
-				[admin-only command] publish zIRC site
-			`);
+			this.send(
+				`
+					Help: /storage -- create a new permanent storage;
+					/notifications -- enable or disable push notifications;
+					/newbot -- create a new bot (like me!); /deploybot -- make
+					your bot available under a short name; /initdeployer --
+					[admin-only command] init a deployer to handle bot
+					deployment; /restartdeployer -- [admin-only command] restart
+					the bot deployer; /publish -- [admin-only command] publish
+					zIRC site
+				`,
+				SLASH_COMMANDS
+			);
 			return;
 		} else if(message.text === "/storage") {
 			await sleep(1000);
