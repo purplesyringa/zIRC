@@ -148,8 +148,8 @@ def start():
 			)
 
 
-		# Sleep for a minute
-		Util.sleep(60)
+		# Sleep for a few seconds
+		Util.sleep(5)
 
 
 def getBotMetadata(name):
