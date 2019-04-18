@@ -750,4 +750,11 @@ export default class HelloBot extends Bot {
 			);
 		}
 	}
+
+
+
+	send(text, buttons=null) {
+		text = text.replace(/^\t+/gm, "");
+		super.send(text, buttons);
+	}
 }
