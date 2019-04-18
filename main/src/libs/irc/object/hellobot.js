@@ -3,7 +3,7 @@ import UserStorage from "libs/irc/userstorage";
 import {zeroPage, zeroFS} from "zero";
 import {
 	isValidName, getBotMetadata, getDeployedBotList, getUserBotList, createBot,
-	renameBot, deployBot
+	renameBot, deployBot, undeployBot
 } from "libs/irc/bots";
 
 function sleep(ms) {
@@ -19,6 +19,7 @@ const SLASH_COMMANDS = [
 	[
 		{text: "/newbot"},
 		{text: "/deploybot"},
+		{text: "/undeploybot"},
 		{text: "/renamebot"}
 	],
 	[
@@ -83,11 +84,12 @@ export default class HelloBot extends Bot {
 					Help: /storage -- create a new permanent storage;
 					/notifications -- enable or disable push notifications;
 					/newbot -- create a new bot (like me!); /deploybot -- make
-					your bot available under a short name; /renamebot -- rename
-					your bot, /initdeployer -- [admin-only command] init a
-					deployer to handle bot deployment; /restartdeployer --
-					[admin-only command] restart the bot deployer; /publish --
-					[admin-only command] publish zIRC site
+					your bot available under a short name; /undeploybot -- take
+					your bot off the public storage; /renamebot -- rename your
+					bot, /initdeployer -- [admin-only command] init a deployer
+					to handle bot deployment; /restartdeployer -- [admin-only
+					command] restart the bot deployer; /publish -- [admin-only
+					command] publish zIRC site
 				`,
 				SLASH_COMMANDS
 			);
@@ -157,6 +159,12 @@ export default class HelloBot extends Bot {
 
 			this.send("Send the name of the bot that you want to deploy.");
 			this.state = "deploybot";
+			return;
+		} else if(message.text === "/undeploybot") {
+			await sleep(1000);
+
+			this.send("Send the name of the bot that you want to undeploybot.");
+			this.state = "undeploybot";
 			return;
 		} else if(message.text === "/renamebot") {
 			await sleep(1000);
@@ -469,15 +477,15 @@ export default class HelloBot extends Bot {
 			if(bots.indexOf(message.text.toLowerCase()) > -1) {
 				// Check that the bot is owned by us
 				const metadata = await getBotMetadata(message.text);
-				if(metadata.author.authAddress !== authAddress) {
+				if(metadata.author.auth_address !== authAddress) {
 					this.send(
 						`
 							Um, there's a small problem. ${message.text} is
 							occupied by another user. Either rename your bot
 							(use /renamebot) and publish it with a new name, or
-							ask the holder of the package
-							(${metadata.author.certUserId}) to undeploy/rename
-							the package.
+							ask the holder of the bot
+							(${metadata.author.cert_user_id}) to undeploy/rename
+							the bot.
 						`
 					);
 					this.state = "done";
@@ -492,6 +500,75 @@ export default class HelloBot extends Bot {
 				available in a few minutes as ${message.text}. However, you can
 				access it right now at ${message.text}@${authAddress} if you
 				don't care about a long name.
+			`);
+			this.state = "done";
+		} else if(this.state === "undeploybot") {
+			await sleep(1000);
+
+			if(message.text === "I give up") {
+				this.send("That's a pity.");
+				this.state = "done";
+				return;
+			}
+
+			const siteInfo = await zeroPage.getSiteInfo();
+			const authAddress = siteInfo.auth_address;
+
+			let bots = await getUserBotList(authAddress);
+			if(bots.indexOf(message.text.toLowerCase()) === -1) {
+				this.send(
+					`
+						Um, there's a small problem. You don't have a bot called
+						${message.text}. Are you sure you created the bot from
+						*this* account? Try to remember.
+					`,
+					[
+						[
+							{text: "I give up"}
+						]
+					]
+				);
+				return;
+			}
+
+			bots = await getDeployedBotList();
+			if(bots.indexOf(message.text.toLowerCase()) === -1) {
+				this.send(
+					`
+						Um, there's a small problem. There is no bot called
+						${message.text} at all.
+					`,
+					[
+						[
+							{text: "I give up"}
+						]
+					]
+				);
+				return;
+			}
+
+			// Check that the bot is owned by us
+			const metadata = await getBotMetadata(message.text);
+			if(metadata.author.auth_address !== authAddress) {
+				this.send(
+					`
+						Um, there's a small problem. ${message.text} is owned by
+						another user, and you can't undeploy another user's bot.
+						Ask ${metadata.author.cert_user_id} to do it.
+					`
+				);
+				this.state = "done";
+				return;
+			}
+
+			await undeployBot(message.text);
+
+			this.send(`
+				The request was sent to the deployer and will be handled in a
+				few minutes. However, remember that even if the bot is
+				undeployed, you (and others) will be able to access it at
+				${message.text}@${authAddress}. If you want to disable this as
+				well, use /deletebot.
 			`);
 			this.state = "done";
 		} else if(this.state === "renamebot") {

@@ -71,3 +71,19 @@ export async function deployBot(name) {
 		}
 	);
 }
+
+export async function undeployBot(name) {
+	const siteInfo = await zeroPage.getSiteInfo();
+	const authAddress = siteInfo.auth_address;
+
+	await zeroDB.insertRow(
+		`data/users/${authAddress}/control.json`,
+		`data/users/${authAddress}/content.json`,
+		"deploy_bot",
+		{
+			name,
+			action: "undeploy",
+			date_added: Date.now()
+		}
+	);
+}

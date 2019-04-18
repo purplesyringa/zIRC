@@ -82,12 +82,17 @@ def start():
 					# Already deployed
 					handled_deploys.add(row_id)
 					continue
+				# Check that the bot is owned by the user
+				if metadata and metadata["author"]["auth_address"] != auth_address:
+					print(f"[zIRC] {name} is not owned by {auth_address}")
+					handled_deploys.add(row_id)
+					continue
 				# Check that the bot code exists and load it
 				code = getUserBotCode(name, auth_address)
 				if not code:
 					# Bot doesn't exist
 					print(f"[zIRC] {name}@{auth_address} code doesn't exist, will check on the next iteration")
-					return
+					continue
 				# Deploy the bot
 				res = deployBot(name, code, metadata={
 					"name": name,
@@ -108,6 +113,27 @@ def start():
 					continue
 				else:
 					print(f"[zIRC] Error while deploying {name}@{auth_address}: {res}")
+			elif action == "undeploy":
+				# Undeploy an old bot, check that it hasn't been undeployed yet
+				metadata = getBotMetadata(name)
+				if not metadata:
+					# Already undeployed
+					handled_deploys.add(row_id)
+					continue
+				# Check that the bot is owned by the user
+				if metadata["author"]["auth_address"] != auth_address:
+					print(f"[zIRC] {name} is not owned by {auth_address}")
+					handled_deploys.add(row_id)
+					continue
+				# Remove the bot
+				res = undeployBot(name)
+				if res == "ok":
+					print(f"[zIRC] Undeployed bot {name}")
+					handled_deploys.add(row_id)
+					changed = True
+					continue
+				else:
+					print(f"[zIRC] Error while undeploying {name}@{auth_address}: {res}")
 
 		if changed:
 			# Makes sense to sign & publish
@@ -152,6 +178,13 @@ def deployBot(name, code, metadata):
 		f"data/bots/{name}.js",
 		base64.b64encode(code.encode("utf8")).decode("utf8"),
 		True,
+		wait=True
+	)
+
+def undeployBot(name):
+	name = name[1:]
+	return ZeroFrame.fileDelete(
+		f"data/bots/{name}.js",
 		wait=True
 	)
 
