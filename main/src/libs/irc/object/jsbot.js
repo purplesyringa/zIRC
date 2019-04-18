@@ -203,7 +203,9 @@ export default class JSBot extends Bot {
 					"/HelloBot", "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
 					`Restarting ${this.name}...`
 				);
-				this.worker.terminate();
+				if(this.worker) {
+					this.worker.terminate();
+				}
 				this.botInitted = false;
 				await this.initBot();
 				await this._cmd("onStart");
