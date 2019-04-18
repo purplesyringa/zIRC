@@ -11,6 +11,7 @@ export default class Speakable extends EventEmitter {
 		super();
 		this.name = name;
 		this.history = null;
+		this.historyLoaded = false;
 		this.received = {};
 
 		this.historyLock = new Lock();
@@ -55,12 +56,13 @@ export default class Speakable extends EventEmitter {
 		}
 
 		if(!await this._doesNeedToLoadHistory()) {
-			return;
+			this.history = [];
+			return this.history;
 		}
 
 		await this.historyLock.acquire();
 
-		if(!this.history) {
+		if(!this.history || !this.historyLoaded) {
 			this.history = [];
 
 			// First load history from permanent storage
@@ -91,6 +93,7 @@ export default class Speakable extends EventEmitter {
 			}
 		}
 
+		this.historyLoaded = true;
 		this.historyLock.release();
 		return this.history;
 	}
