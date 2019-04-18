@@ -74,12 +74,20 @@
 						margin: -8px 0
 
 						/deep/
-							p
+							p, pre, blockquote
 								margin: 16px 0
 							pre
 								color: #FFC
 								padding: 16px
 								background-color: rgba(0, 0, 0, 0.5)
+							blockquote
+								padding: 16px
+								background-color: rgba(0, 0, 0, 0.5)
+								border-left: 4px solid #000
+								> :first-child
+									margin-top: 0
+								> :last-child
+									margin-bottom: 0
 							hr
 								color: #FFA
 								background-color: #FFA
