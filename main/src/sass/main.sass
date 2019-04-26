@@ -4,8 +4,12 @@ html, body
 	height: 100%
 	overflow: hidden
 
-	background-color: #334
-	color: #FFF
+	[theme=dark] &
+		background-color: #334
+		color: #FFF
+	[theme=light] &
+		background-color: #FFF
+		color: #000
 
 	font-family: Verdana, Arial, sans-serif
 	font-size: 16px
@@ -25,6 +29,10 @@ html, body
 
 
 a
-	color: #F28
 	text-decoration: underline
 	cursor: pointer
+
+	[theme=dark] &
+		color: #F28
+	[theme=light] &
+		color: #C04

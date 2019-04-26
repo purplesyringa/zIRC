@@ -72,10 +72,14 @@ Vue.prototype.$zeroPage = zeroPage;
 
 (async function() {
 	zeroPage.cmd("wrapperInnerLoaded");
+
 	const siteInfo = await zeroPage.getSiteInfo();
 	store.commit("forceSetSiteInfo", siteInfo);
 	route(app);
 	app.$eventBus.$emit("setSiteInfo", siteInfo);
+
+	const settings = await zeroPage.cmd("userGetGlobalSettings");
+	document.documentElement.setAttribute("theme", settings.theme);
 })();
 zeroPage.on("setSiteInfo", msg => {
 	store.commit("setSiteInfo", msg.params);

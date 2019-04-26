@@ -1,5 +1,9 @@
 <template>
-	<div class="avatar" :style="{backgroundColor: useJdenticon ? '#002' : backgroundColor}">
+	<div
+		class="avatar"
+		:class="[useJdenticon ? 'jdenticon' : 'text']"
+		:style="{'--dark': darkBackgroundColor, '--light': lightBackgroundColor}"
+	>
 		<template v-if="useJdenticon">
 			<div class="jdenticon" v-html="jdenticon" />
 		</template>
@@ -23,7 +27,20 @@
 		font-family: Verdana, Arial, sans-serif
 		font-size: 0
 		line-height: 60px
-		color: #000
+
+		[theme=dark] &
+			color: #000
+			&.jdenticon
+				background-color: #002
+			&.text
+				background-color: var(--dark)
+		[theme=light] &
+			color: #FFF
+			&.jdenticon
+				background-color: #002
+			&.text
+				background-color: var(--light)
+
 
 		.jdenticon
 			margin-top: 8px
@@ -98,26 +115,32 @@
 				return this.type === "user-id" || this.type === "user-name";
 			},
 
-			backgroundColor() {
+			rgbHash() {
 				let hash = 0;
-				for(let i = 0; i < this.channel.length; i++) {
-					hash = this.channel.charCodeAt(i) + ((hash << 5) - hash);
-				}
-				for(let i = 0; i < this.channel.length; i++) {
-					hash = this.channel.charCodeAt(i) + ((hash << 5) - hash);
-				}
-				for(let i = 0; i < this.channel.length; i++) {
-					hash = this.channel.charCodeAt(i) + ((hash << 5) - hash);
+				for(let j = 0; j < 3; j++) {
+					for(let i = 0; i < this.channel.length; i++) {
+						hash = this.channel.charCodeAt(i) + ((hash << 5) - hash);
+					}
 				}
 
-				let r = ((((hash      ) & 0xFF) >> 1) + 128).toString(16);
-				let g = ((((hash >> 8 ) & 0xFF) >> 1) + 128).toString(16);
-				let b = ((((hash >> 16) & 0xFF) >> 1) + 128).toString(16);
+				const r = (((hash      ) & 0xFF) >> 1);
+				const g = (((hash >> 8 ) & 0xFF) >> 1);
+				const b = (((hash >> 16) & 0xFF) >> 1);
+				return [r, g, b];
+			},
 
-				r = "0".repeat(2 - r.length) + r;
-				g = "0".repeat(2 - g.length) + g;
-				b = "0".repeat(2 - b.length) + b;
-
+			darkBackgroundColor() {
+				let [r, g, b] = this.rgbHash;
+				r = ("0" + (r + 128).toString(16)).slice(-2);
+				g = ("0" + (g + 128).toString(16)).slice(-2);
+				b = ("0" + (b + 128).toString(16)).slice(-2);
+				return "#" + r + g + b;
+			},
+			lightBackgroundColor() {
+				let [r, g, b] = this.rgbHash;
+				r = ("0" + (r + 64).toString(16)).slice(-2);
+				g = ("0" + (g + 64).toString(16)).slice(-2);
+				b = ("0" + (b + 64).toString(16)).slice(-2);
 				return "#" + r + g + b;
 			}
 		}

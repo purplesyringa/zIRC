@@ -13,18 +13,26 @@
 <style lang="sass" scoped>
 	.message
 		font-family: "Courier New", monospace
-		color: #AAA
 		height: 16px
 
 		overflow: hidden
 		white-space: nowrap
 		text-overflow: ellipsis
 
+		[theme=dark] &
+			color: #AAA
+		[theme=light] &
+			color: #666
+
 		.user
 			font-weight: bold
 		.anonymous
 			font-style: italic
-			color: #FCC
+
+			[theme=dark] &
+				color: #FCC
+			[theme=light] &
+				color: #F22
 </style>
 
 <script type="text/javascript">

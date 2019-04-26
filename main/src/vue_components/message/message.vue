@@ -52,7 +52,10 @@
 				font-weight: bold
 			.anonymous
 				font-style: italic
-				color: #FCC
+				[theme=dark] &
+					color: #FCC
+				[theme=light] &
+					color: #F22
 			.date
 				font-style: italic
 				color: #888
@@ -67,8 +70,11 @@
 
 					.message-splitter
 						height: 1px
-						background-color: rgba(255, 255, 255, 0.2)
 						margin: 8px 0
+						[theme=dark] &
+							background-color: rgba(255, 255, 255, 0.2)
+						[theme=light] &
+							background-color: rgba(0, 0, 0, 0.2)
 
 					.markdown
 						margin: -8px 0
@@ -76,30 +82,49 @@
 						/deep/
 							p, pre, blockquote
 								margin: 16px 0
-							pre
-								color: #FFC
-								padding: 16px
-								background-color: rgba(0, 0, 0, 0.5)
-								code
-									padding: 0
-									background: none
-									border-radius: 0
 							code
 								padding: 4px 8px
-								background-color: rgba(0, 0, 0, 0.5)
 								border-radius: 4px
+								[theme=dark] &
+									background-color: rgba(0, 0, 0, 0.5)
+								[theme=light] &
+									background-color: rgba(255, 0, 0, 0.1)
+							pre
+								padding: 16px
+								[theme=dark] &
+									color: #FFC
+									background-color: rgba(0, 0, 0, 0.5)
+									@import "~highlight.js/styles/monokai-sublime"
+								[theme=light] &
+									color: #200
+									background-color: rgba(255, 0, 0, 0.1)
+									@import "~highlight.js/styles/a11y-light"
+								code
+									padding: 0
+									border-radius: 0
+									[theme] &
+										background: none
 							blockquote
 								padding: 16px
-								background-color: rgba(0, 0, 0, 0.5)
-								border-left: 4px solid #000
+								[theme=dark] &
+									background-color: rgba(0, 0, 0, 0.5)
+									border-left: 4px solid #000
+								[theme=light] &
+									background-color: rgba(255, 0, 0, 0.1)
+									border-left: 4px solid #FCC
 								> :first-child
 									margin-top: 0
 								> :last-child
 									margin-bottom: 0
 							hr
-								color: #FFA
-								background-color: #FFA
-								border-color: #FFA
+								[theme=dark] &
+									color: #FFA
+									background-color: #FFA
+									border-color: #FFA
+								[theme=light] &
+									color: #FAA
+									background-color: #FAA
+									border-color: #FAA
 							h1
 								font-size: 2em
 							h2
@@ -132,38 +157,58 @@
 								border-radius: 12px
 								cursor: pointer
 
-								border: 1px solid rgba(220, 220, 255, 0.3)
-								opacity: 0.8
+								[theme] &
+									&.button-red, &.button-green, &.button-cyan,
+									&.button-blue, &.button-yellow, &.button-orange,
+									&.button-purple
+										border: none
 
-								&.button-red, &.button-green, &.button-cyan,
-								&.button-blue, &.button-yellow, &.button-orange,
-								&.button-purple
-									border: none
+								[theme=dark] &
+									border: 1px solid rgba(220, 220, 255, 0.3)
+									opacity: 0.8
+									&:hover
+										opacity: 1
 
-								&.button-red
-									background-color: #B24523
-								&.button-green
-									background-color: #60B223
-								&.button-cyan
-									background-color: #22A18A
-								&.button-blue
-									background-color: #3A64A8
-								&.button-yellow
-									background-color: #A0A323
-								&.button-orange
-									background-color: #A26D22
-								&.button-purple
-									background-color: #9621A0
-
-								&:hover
+									&.button-red
+										background-color: #B24523
+									&.button-green
+										background-color: #60B223
+									&.button-cyan
+										background-color: #22A18A
+									&.button-blue
+										background-color: #3A64A8
+									&.button-yellow
+										background-color: #A0A323
+									&.button-orange
+										background-color: #A26D22
+									&.button-purple
+										background-color: #9621A0
+								[theme=light] &
+									border: 1px solid rgba(40, 0, 0, 0.3)
 									opacity: 1
+									&:hover
+										opacity: 0.8
+
+									&.button-red
+										background-color: #F97F66
+									&.button-green
+										background-color: #8AF966
+									&.button-cyan
+										background-color: #79E5E1
+									&.button-blue
+										background-color: #859CF2
+									&.button-yellow
+										background-color: #E2E847
+									&.button-orange
+										background-color: #EFAE34
+									&.button-purple
+										background-color: #F185D4
 </style>
 
 <script type="text/javascript">
 	import marked from "marked";
 	import sanitizeHtml from "sanitize-html";
 	import hljs from "highlight.js/lib/highlight";
-	import "highlight.js/styles/monokai-sublime.css";
 
 	// Do not optimize the lines below using a for loop, this will break WebPack
 	// optimizations

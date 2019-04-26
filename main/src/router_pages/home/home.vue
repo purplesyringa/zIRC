@@ -47,8 +47,12 @@
 			font-family: "Courier New", monospace
 			font-size: 16px
 			padding: 8px 12px
-			background-color: #444
 			border: none
+
+			[theme=dark] &
+				background-color: #444
+			[theme=light] &
+				background-color: #FDD
 
 		.input
 			width: 100%

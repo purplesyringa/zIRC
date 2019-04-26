@@ -118,12 +118,16 @@
 	aside
 		width: 320px
 		height: 100%
-		background-color: #223
 		overflow-y: auto
 		overflow-x: hidden
 
 		display: flex
 		flex-direction: column
+
+		[theme=dark] &
+			background-color: #223
+		[theme=light] &
+			background-color: #FDD
 
 		.channels
 			flex: 1 1 0
@@ -141,7 +145,10 @@
 					margin-right: 16px
 
 				&.current, &:hover
-					background-color: #444
+					[theme=dark] &
+						background-color: #444
+					[theme=light] &
+						background-color: #FFF
 
 				.content
 					flex: 1 1 0
@@ -169,11 +176,17 @@
 								padding: 4px 8px
 								border: 1px solid #F28
 								cursor: pointer
-								background-color: #000
-								color: #FFF
 
+								&.dismiss
+									[theme=dark] &
+										background-color: #000
+										color: #FFF
+									[theme=light] &
+										background-color: #FFF
+										color: #000
 								&.accept
 									background-color: #F28
+									color: #FFF
 
 				.close
 					margin: 16px 0
@@ -182,7 +195,10 @@
 					font-size: 32px
 
 					&:hover
-						background-color: #000
+						[theme=dark] &
+							background-color: #000
+						[theme=light] &
+							background-color: #BDB
 
 				.unread
 					width: 32px
@@ -192,7 +208,11 @@
 					margin: 16px 8px
 					padding: 8px
 					border-radius: 50%
-					background-color: #F28
+
+					[theme=dark] &
+						background-color: #F28
+					[theme=light] &
+						background-color: #F5C
 
 		.footer
 			flex: 0 0 48px
@@ -209,7 +229,10 @@
 				padding-top: 12px
 
 				&:hover
-					background-color: #000
+					[theme=dark] &
+						background-color: #000
+					[theme=light] &
+						background-color: #FFF
 </style>
 
 <script type="text/javascript">
