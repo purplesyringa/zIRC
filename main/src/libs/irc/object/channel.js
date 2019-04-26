@@ -3,11 +3,6 @@ import {zeroDB} from "zero";
 import crypto from "crypto";
 
 export default class Channel extends Speakable {
-	constructor(...args) {
-		super(...args);
-		this.loadHistory();
-	}
-
 	async _loadHistory() {
 		const hash = crypto.createHash("sha256").update(this.name).digest("hex");
 
