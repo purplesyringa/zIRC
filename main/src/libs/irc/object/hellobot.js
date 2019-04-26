@@ -84,7 +84,7 @@ export default class HelloBot extends Bot {
 			this.send(
 				`
 					Help: /storage -- create a new permanent storage;
-					/notifications -- enable or disable push notifications;
+					/notifications -- enable or disable web notifications;
 					/newbot -- create a new bot (like me!); /deploybot -- make
 					your bot available under a short name; /undeploybot -- take
 					your bot off the public storage; /renamebot -- rename your
@@ -118,7 +118,7 @@ export default class HelloBot extends Bot {
 
 			this.send(
 				`
-					Do you want to enable or to disable push notifications?
+					Do you want to enable or to disable web notifications?
 					(they are currently
 					${notificationsEnabled ? "enabled" : "disabled"})
 				`,
@@ -344,8 +344,6 @@ export default class HelloBot extends Bot {
 
 			if(message.text.toLowerCase() === "enable") {
 				this.send("Ok, I'm enabling notifications!");
-
-				await zeroPage.cmd("wrapperPermissionAdd", ["PushNotifications"]);
 
 				const storage = await UserStorage.get();
 				storage.notificationsEnabled = true;

@@ -464,10 +464,10 @@
 						tag: `zIRC:${channel.visibleName}`,
 						focus_tab: true
 					};
-					zeroPage.cmd("wrapperPushNotification", [title, id, options]);
+					zeroPage.cmd("wrapperWebNotification", [title, id, options]);
 
 					setTimeout(() => {
-						zeroPage.cmd("wrapperClosePushNotification", [id]);
+						zeroPage.cmd("wrapperCloseWebNotification", [id]);
 					}, 5000);
 
 					// Add event handlers
@@ -476,14 +476,14 @@
 							this.open(channel.visibleName);
 						}
 					};
-					zeroPage.on("pushNotificationClick", onClick);
+					zeroPage.on("webNotificationClick", onClick);
 					const onClose = e => {
 						if(e.params.id === id) {
-							zeroPage.off("pushNotificationClick", onClick);
-							zeroPage.off("pushNotificationClose", onClose);
+							zeroPage.off("webNotificationClick", onClick);
+							zeroPage.off("webNotificationClose", onClose);
 						}
 					};
-					zeroPage.on("pushNotificationClose", onClose);
+					zeroPage.on("webNotificationClose", onClose);
 				}
 			}
 		},
