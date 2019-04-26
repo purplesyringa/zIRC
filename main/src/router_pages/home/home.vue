@@ -81,7 +81,7 @@
 	import {zeroPage, zeroAuth} from "zero";
 	import autosize from "autosize";
 	import "vue-awesome/icons/trash";
-	import emojis from "emojis/characters";
+	import emojis from "./emojis";
 
 	export default {
 		name: "Home",
@@ -168,6 +168,9 @@
 							const emojiName = newValue.slice(emojiStart + 1, -1);
 							// Replace emoji
 							const emoji = emojis[emojiName];
+							if(!emoji) {
+								continue;
+							}
 							newValue = newValue.substr(0, emojiStart) + emoji;
 							// Check whether we're breaking the selection
 							const d = emoji.length - (emojiName.length + 2);

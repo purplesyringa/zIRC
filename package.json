@@ -58,7 +58,6 @@
   "dependencies": {
     "autosize": "^4.0.2",
     "crypto": "^1.0.1",
-    "emojis": "^1.0.10",
     "eslint": "^4.19.1",
     "eslint-loader": "^2.0.0",
     "highlight.js": "^9.15.6",
