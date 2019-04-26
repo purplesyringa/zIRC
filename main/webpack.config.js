@@ -50,6 +50,7 @@ const CHUNKS = [
 	["crypto", /crypto|des|aes|hash|diffie-hellman|pbkdf2|ripemd160|sha|md5|cipher-base|rand|evp|miller-rabin/],
 	["polyfill", /readable-stream|buffer|lodash|regenerator-runtime|browserify|babel-polyfill|process|setimmediate/],
 	["vue-util", /vue|style-loader/],
+	["vendor-ui", /marked|emojis|jdenticon|autosize|dom/],
 	["vendor", /node_modules/]
 ];
 

@@ -15,6 +15,7 @@
 				class="input"
 				placeholder="Type here..."
 				@keypress.enter.exact.prevent="submit"
+				@input="autoreplace"
 			/>
 		</div>
 
@@ -76,6 +77,7 @@
 	import {zeroPage, zeroAuth} from "zero";
 	import autosize from "autosize";
 	import "vue-awesome/icons/trash";
+	import emojis from "emojis/characters";
 
 	export default {
 		name: "Home",
@@ -143,6 +145,67 @@
 			async deleteHistory() {
 				await this.currentObject.deleteHistory();
 				this.history = await this.currentObject.refreshHistory();
+			},
+
+			autoreplace() {
+				const textarea = this.$refs.message;
+
+				let cursorStart = textarea.selectionStart;
+				let cursorEnd = textarea.selectionEnd;
+
+				let newValue = "";
+				for(let i = 0; i < this.message.length; i++) {
+					newValue += this.message[i];
+					if(newValue.endsWith(":")) {
+						// Probably emoji
+						let emojiStart = newValue.lastIndexOf(":", newValue.length - 2);
+						if(emojiStart !== -1) {
+							// It's most likely an emoji
+							const emojiName = newValue.slice(emojiStart + 1, -1);
+							// Replace emoji
+							const emoji = emojis[emojiName];
+							newValue = newValue.substr(0, emojiStart) + emoji;
+							// Check whether we're breaking the selection
+							const d = emoji.length - (emojiName.length + 2);
+							if(cursorStart > i) {
+								// After emoji
+								//     :heart:
+								//            |___|
+								cursorStart += d;
+								cursorEnd += d;
+							} else if(cursorStart > emojiStart) {
+								// Start is inside emoji
+								if(cursorEnd <= i) {
+									//     :heart:
+									//       |__|
+									cursorStart = emojiStart;
+									cursorEnd = emojiStart;
+								} else {
+									//     :heart:
+									//        |_____|
+									cursorStart = emojiStart;
+									cursorEnd -= d;
+								}
+							} else if(cursorEnd > emojiStart) {
+								// End is inside emoji
+								//     :heart:
+								//   |____|
+								cursorEnd = emojiStart;
+							}
+						}
+					}
+				}
+
+				// Update textarea
+				if(newValue !== this.message) {
+					setTimeout(() => {
+						this.message = newValue;
+						setTimeout(() => {
+							textarea.selectionStart = cursorStart;
+							textarea.selectionEnd = cursorEnd;
+						}, 0);
+					}, 0);
+				}
 			}
 		},
 
