@@ -190,7 +190,7 @@ export default class HelloBot extends Bot {
 			return;
 		} else if(message.text === "/initdeployer") {
 			// Get private key
-			const privatekey = await zeroPage.prompt("Input deployer private key:", "password");
+			const privatekey = await zeroPage.prompt("Enter deployer private key:", "password");
 
 			// Save private key
 			let settings = await zeroPage.cmd("userGetSettings");
