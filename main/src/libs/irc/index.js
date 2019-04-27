@@ -10,29 +10,28 @@ export default new class IRC {
 		this.objectCache = {};
 	}
 
-	getObjectById(id) {
+	async getObjectById(id) {
 		if(this.objectCache[id]) {
 			return this.objectCache[id];
 		}
 
-
 		if(id[0] === "#") {
-			this.objectCache[id] = new Channel(id);
+			this.objectCache[id] = await Channel.get(id);
 		// } else if(id[0] === "+") {
-		// 	this.objectCache[id] = new Group(id);
+		// 	this.objectCache[id] = Group(id);
 		} else if(id[0] === "@") {
-			this.objectCache[id] = new User(`auth_address:${id.substr(1)}`);
+			this.objectCache[id] = await User.get(`auth_address:${id.substr(1)}`);
 		} else if(id === "/HelloBot") {
-			this.objectCache[id] = (new HelloBot()).speakable;
+			this.objectCache[id] = (await HelloBot.get()).speakable;
 		} else if(id[0] === "/" && id.indexOf("@") > -1) {
 			let [botName, authAddress] = id.split("@");
-			this.objectCache[id] = (new JSBot(botName, `data/users/${authAddress}/bots/${botName.substr(1)}.js`)).speakable;
+			this.objectCache[id] = (await JSBot.get(botName, `data/users/${authAddress}/bots/${botName.substr(1)}.js`)).speakable;
 		} else if(id[0] === "/") {
-			this.objectCache[id] = (new JSBot(id, `data/bots/${id.substr(1)}.js`)).speakable;
+			this.objectCache[id] = (await JSBot.get(id, `data/bots/${id.substr(1)}.js`)).speakable;
 		} else if(id.indexOf("@") > -1) {
-			this.objectCache[id] = new User(`cert_user_id:${id}`);
+			this.objectCache[id] = await User.get(`cert_user_id:${id}`);
 		} else {
-			this.objectCache[id] = new Unknown(id);
+			this.objectCache[id] = await Unknown.get(id);
 		}
 
 		return this.objectCache[id];

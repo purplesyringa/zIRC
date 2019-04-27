@@ -55,7 +55,7 @@ export default new class InviteStorage extends EventEmitter {
 			}
 
 			// We are invited. Check whether we have dismissed/accepted the invite before
-			const user = IRC.getObjectById(`@${authAddress}`);
+			const user = await IRC.getObjectById(`@${authAddress}`);
 			await user.initLock.acquire();
 			user.initLock.release();
 			user.theyInvited = true;
@@ -77,11 +77,10 @@ export default new class InviteStorage extends EventEmitter {
 			}
 
 			const IRC = (await import("libs/irc")).default;
-			const user = IRC.getObjectById(`@${authAddress}`);
+			const user = await IRC.getObjectById(`@${authAddress}`);
 			await user.initLock.acquire();
 			user.initLock.release();
 			user.theyInvited = true;
-			await user.spreadUpdate();
 
 			this.invites.push({authAddress, certUserId});
 			this.emit("invitesUpdated");
@@ -94,13 +93,12 @@ export default new class InviteStorage extends EventEmitter {
 			});
 
 			const IRC = (await import("libs/irc")).default;
-			const user = IRC.getObjectById(`@${authAddress}`);
+			const user = await IRC.getObjectById(`@${authAddress}`);
 			await user.initLock.acquire();
 			user.initLock.release();
 			user.wasOurInviteHandled = true;
 			user.ourInviteState = result;
 			user.encId = encId;
-			await user.spreadUpdate();
 
 			if(oldSize !== this.invites.length) {
 				this.emit("invitesUpdated");

@@ -96,7 +96,7 @@
 		async mounted() {
 			autosize(this.$refs.message);
 
-			this.currentObject = IRC.getObjectById(this.current);
+			this.currentObject = await IRC.getObjectById(this.current);
 			this.history = await this.currentObject.loadHistory();
 			this.currentObject.on("received", this.onReceived);
 			this.currentObject.markRead();

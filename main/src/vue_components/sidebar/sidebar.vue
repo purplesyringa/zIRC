@@ -270,17 +270,19 @@
 		methods: {
 			async reloadAll() {
 				const userSettings = await UserStorage.get();
-				this.channels = ((userSettings || {}).channels || [
-					"/HelloBot"
-				]).map(name => {
-					return {
-						visibleName: name,
-						object: IRC.getObjectById(name),
-						fromInviteStorage: false
-					};
-				});
+				this.channels = await Promise.all(
+					((userSettings || {}).channels || [
+						"/HelloBot"
+					]).map(async name => {
+						return {
+							visibleName: name,
+							object: await IRC.getObjectById(name),
+							fromInviteStorage: false
+						};
+					})
+				);
 
-				this.renderInvites();
+				await this.renderInvites();
 				this.bindEvents();
 			},
 
@@ -297,7 +299,7 @@
 					"Which channel (user, group) are you going to join?"
 				);
 
-				const object = IRC.getObjectById(channel);
+				const object = await IRC.getObjectById(channel);
 				let doOpen = true;
 
 				// Invite user (in case they weren't invited before)
@@ -365,7 +367,7 @@
 					object: channel.object,
 					fromInviteStorage: false
 				});
-				this.renderInvites();
+				await this.renderInvites();
 				this.bindEvents();
 
 				await this.saveChannels();
@@ -390,7 +392,7 @@
 					object: channel.object,
 					fromInviteStorage: false
 				});
-				this.renderInvites();
+				await this.renderInvites();
 				this.bindEvents();
 
 				await this.saveChannels();
@@ -401,17 +403,19 @@
 				await this.removeChannel(channel.visibleName);
 			},
 
-			renderInvites() {
+			async renderInvites() {
 				this.channels = this.channels.filter(o => !o.fromInviteStorage);
 
-				const inviteChannels = InviteStorage.invites.map(invite => {
-					const user = IRC.getObjectById(`@${invite.authAddress}`);
-					return {
-						visibleName: invite.certUserId || `@${invite.authAddress}`,
-						object: user,
-						fromInviteStorage: true
-					};
-				});
+				const inviteChannels = await Promise.all(
+					InviteStorage.invites.map(async invite => {
+						const user = await IRC.getObjectById(`@${invite.authAddress}`);
+						return {
+							visibleName: invite.certUserId || `@${invite.authAddress}`,
+							object: user,
+							fromInviteStorage: true
+						};
+					})
+				);
 
 				this.channels = inviteChannels.concat(this.channels)
 					.filter((val, idx, arr) => {

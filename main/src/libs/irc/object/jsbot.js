@@ -99,6 +99,11 @@ function webWorker(name, code) {
 }
 
 export default class JSBot extends Bot {
+	static async get(...args) {
+		return new this(...args);
+	}
+
+
 	constructor(name, path) {
 		super(name, path);
 

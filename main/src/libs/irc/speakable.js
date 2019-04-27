@@ -7,6 +7,10 @@ import Lock from "libs/lock";
 import {zeroPage} from "zero";
 
 export default class Speakable extends EventEmitter {
+	static async get(...args) {
+		return new this(...args);
+	}
+
 	constructor(name) {
 		super();
 		this.name = name;
@@ -158,9 +162,6 @@ export default class Speakable extends EventEmitter {
 	}
 
 	async markRead() {
-		await this._markRead();
-	}
-	async _markRead() {
 		if(!this.history) {
 			await this.loadHistory();
 		}
@@ -176,8 +177,5 @@ export default class Speakable extends EventEmitter {
 		storage.lastRead = storage.lastRead || {};
 		storage.lastRead[this.name] = this.lastRead;
 		await UserStorage.set(storage);
-	}
-
-	async spreadUpdate() {
 	}
 }

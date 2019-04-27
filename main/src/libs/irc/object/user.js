@@ -7,9 +7,45 @@ import UserStorage from "libs/irc/userstorage";
 import Lock from "libs/lock";
 
 export default class User extends Speakable {
+	static async get(name) {
+		// Set correct name
+		let authAddress;
+		if(name.startsWith("auth_address:")) {
+			authAddress = name.replace("auth_address:", "");
+			name = `@${authAddress}`;
+		} else if(name.startsWith("cert_user_id:")) {
+			// Find auth address via DB
+			const certUserId = name.replace("cert_user_id:", "");
+			const directory = ((await zeroDB.query(`
+				SELECT directory FROM json WHERE cert_user_id = :cert_user_id
+			`, {
+				cert_user_id: certUserId
+			}))[0] || {}).directory;
+			if(!directory) {
+				name = "@unknown";
+				this._received({
+					authAddress: "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
+					certUserId: "/HelloBot",
+					message: {
+						date: Date.now(),
+						text: "Error getting auth address of the user.",
+						id: Math.random().toString(36).substr(2) + "/" + Date.now()
+					}
+				});
+			} else {
+				name = "@" + directory.replace("users/", "");
+			}
+		} else {
+			// Should never happen
+			name = "@unknown";
+		}
+
+		return new this(name);
+	}
+
+
 	constructor(name) {
 		super(name);
-		this.id = name;
 		this.theyInvited = false;
 		this.weInvited = false;
 		this.wasTheirInviteHandled = false;
@@ -22,46 +58,13 @@ export default class User extends Speakable {
 		this.encId = null;
 		this.init();
 		InviteStorage.bindUser(this);
-		UserStorage.on("changeUser", () => {
-			this.name = this.id;
-			this.init();
-		});
-		this.on("received", async message => {
-			await this._spreadMessage(message);
-		});
+		UserStorage.on("changeUser", () => this.init());
 		zeroPage.on("setSiteInfo", async () => {
 			await this.init();
 		})
 	}
 	async init() {
 		await this.initLock.acquire();
-
-		// Set correct name
-		if(this.name.startsWith("auth_address:")) {
-			this.name = "@" + this.name.replace("auth_address:", "");
-		} else if(this.name.startsWith("cert_user_id:")) {
-			// Find auth address via DB
-			const certUserId = this.name.replace("cert_user_id:", "");
-			const directory = ((await zeroDB.query(`
-				SELECT directory FROM json WHERE cert_user_id = :cert_user_id
-			`, {
-				cert_user_id: certUserId
-			}))[0] || {}).directory;
-			if(!directory) {
-				this.name = "@unknown";
-				this._received({
-					authAddress: "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
-					certUserId: "/HelloBot",
-					message: {
-						date: Date.now(),
-						text: "Error getting auth address of the user.",
-						id: Math.random().toString(36).substr(2) + "/" + Date.now()
-					}
-				});
-			} else {
-				this.name = "@" + directory.replace("users/", "");
-			}
-		}
 
 		// Check whether a user invited us, and we have handled the result (i.e. accepted or dismissed)
 		const siteInfo = await zeroPage.getSiteInfo();
@@ -381,54 +384,5 @@ export default class User extends Speakable {
 
 		this.history = null;
 		await this.loadHistory();
-		await this.spreadUpdate();
-	}
-
-
-	async _getAliasObjects() {
-		const IRC = (await import("libs/irc")).default;
-
-		// First, update by auth address
-		let objects = [IRC.getObjectById(this.name)];
-
-		// Second, update by cert user id
-		const certUserId = ((await zeroDB.query(`
-			SELECT cert_user_id FROM json WHERE directory = :directory AND file_name = "content.json"
-		`, {
-			directory: `users/${this.name.substr(1)}`
-		}))[0] || {}).cert_user_id;
-		if(certUserId) {
-			objects.push(IRC.getObjectById(certUserId));
-		}
-
-		return objects;
-	}
-
-	async spreadUpdate() {
-		for(const object of await this._getAliasObjects()) {
-			object.theyInvited = this.theyInvited;
-			object.weInvited = this.weInvited;
-			object.wasTheirInviteHandled = this.wasTheirInviteHandled;
-			object.wasOurInviteHandled = this.wasOurInviteHandled;
-			object.theirInviteState = this.theirInviteState;
-			object.ourInviteState = this.ourInviteState;
-			object.encId = this.encId;
-		}
-	}
-
-	async _spreadMessage(message) {
-		for(const object of await this._getAliasObjects()) {
-			if(object !== this) {
-				object._received(message);
-			}
-		}
-	}
-
-
-
-	async markRead() {
-		for(const object of await this._getAliasObjects()) {
-			await object._markRead();
-		}
 	}
 }
