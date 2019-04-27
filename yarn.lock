@@ -6801,10 +6801,6 @@ ssri@^5.2.4:
   dependencies:
     safe-buffer "^5.1.1"
 
-standard-ecies@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/standard-ecies/-/standard-ecies-1.0.0.tgz#95f73c90cf5348c91e2f11d7dae7b89d0b914f61"
-
 stat-mode@^0.2.0:
   version "0.2.2"
   resolved "https://registry.yarnpkg.com/stat-mode/-/stat-mode-0.2.2.tgz#e6c80b623123d7d80cf132ce538f346289072502"

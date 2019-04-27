@@ -245,7 +245,7 @@ export default class User extends Speakable {
 
 		transport.send(`@${this.encId}`, {
 			cmd: "user",
-			message: CryptMessage.encrypt(message, publicKey)
+			message: await CryptMessage.encrypt(message, publicKey)
 		});
 	}
 
@@ -378,6 +378,7 @@ export default class User extends Speakable {
 
 		this.wasTheirInviteHandled = true;
 		this.emit("inviteHandled");
+
 		this.history = null;
 		await this.loadHistory();
 		await this.spreadUpdate();
