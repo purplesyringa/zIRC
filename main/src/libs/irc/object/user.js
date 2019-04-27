@@ -1,6 +1,6 @@
 import Speakable from "libs/irc/speakable";
 import {zeroPage, zeroFS, zeroDB} from "zero";
-import crypto from "crypto";
+import {sha256} from "libs/crypto";
 import CryptMessage from "libs/irc/cryptmessage";
 import InviteStorage from "libs/irc/invitestorage";
 import UserStorage from "libs/irc/userstorage";
@@ -154,7 +154,7 @@ export default class User extends Speakable {
 			return [];
 		}
 
-		const hash = crypto.createHash("sha256").update(`@${this.encId}`).digest("hex");
+		const hash = sha256(`@${this.encId}`);
 
 		const response = await zeroDB.query(`
 			SELECT

@@ -67,6 +67,7 @@
     "material-icons": "^0.2.3",
     "node-sass": "^4.7.2",
     "sanitize-html": "^1.20.0",
+    "sha256": "^0.2.0",
     "singleton-js": "^1.0.0",
     "vue": "^2.5.13",
     "vue-async-computed": "^3.3.1",

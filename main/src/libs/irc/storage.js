@@ -1,6 +1,6 @@
 import EventEmitter from "wolfy87-eventemitter";
 import {zeroPage, zeroFS} from "zero";
-import crypto from "crypto";
+import {sha256} from "libs/crypto";
 
 export default new class Storage extends EventEmitter {
 	async save(id, object) {
@@ -34,7 +34,7 @@ export default new class Storage extends EventEmitter {
 		console.log("Saving to permanent storage at", address);
 
 
-		const hash = crypto.createHash("sha256").update(id).digest("hex");
+		const hash = sha256(id);
 		const fileName = id.charCodeAt(0).toString(16) + "_" + hash;
 		const userId = await this.getUserId();
 
@@ -71,7 +71,7 @@ export default new class Storage extends EventEmitter {
 		}
 
 		// Get file names
-		const hash = crypto.createHash("sha256").update(id).digest("hex");
+		const hash = sha256(id);
 		const fileName = id.charCodeAt(0).toString(16) + "_" + hash;
 		const userId = await this.getUserId();
 
@@ -111,7 +111,7 @@ export default new class Storage extends EventEmitter {
 		console.log("Deleting", id, "from permanent storages:", permanentStorages);
 
 		// Get file names
-		const hash = crypto.createHash("sha256").update(id).digest("hex");
+		const hash = sha256(id);
 		const fileName = id.charCodeAt(0).toString(16) + "_" + hash;
 		const userId = await this.getUserId();
 
@@ -132,7 +132,6 @@ export default new class Storage extends EventEmitter {
 		const authAddress = siteInfo.auth_address;
 		const certUserId = siteInfo.cert_user_id;
 
-		const hash = crypto.createHash("sha256").update(`${authAddress}!!${certUserId}`).digest("hex");
-		return hash;
+		return sha256(`${authAddress}!!${certUserId}`);
 	}
 };

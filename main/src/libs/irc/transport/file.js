@@ -1,6 +1,6 @@
 import EventEmitter from "wolfy87-eventemitter";
 import {zeroPage, zeroDB, zeroFS, zeroAuth} from "zero";
-import crypto from "crypto";
+import {sha256} from "libs/crypto";
 import CryptMessage from "libs/irc/cryptmessage";
 
 export default new class FileTransport extends EventEmitter {
@@ -104,7 +104,7 @@ export default new class FileTransport extends EventEmitter {
 
 		const authAddress = siteInfo.auth_address;
 
-		const hash = crypto.createHash("sha256").update(id).digest("hex");
+		const hash = sha256(id);
 		const fileName = id.charCodeAt(0).toString(16) + "_" + hash;
 
 		// Check content.json

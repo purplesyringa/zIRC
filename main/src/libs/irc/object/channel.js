@@ -1,10 +1,10 @@
 import Speakable from "libs/irc/speakable";
 import {zeroDB} from "zero";
-import crypto from "crypto";
+import {sha256} from "libs/crypto";
 
 export default class Channel extends Speakable {
 	async _loadHistory() {
-		const hash = crypto.createHash("sha256").update(this.name).digest("hex");
+		const hash = sha256(this.name);
 
 		const response = await zeroDB.query(`
 			SELECT
