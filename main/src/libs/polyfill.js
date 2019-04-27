@@ -1,0 +1,14 @@
+import "core-js/es6";
+import "core-js/fn/array/includes";
+import "core-js/fn/array/flat-map";
+import "core-js/fn/string/pad-start";
+import "core-js/fn/string/pad-end";
+import "core-js/fn/string/trim-start";
+import "core-js/fn/string/trim-end";
+import "core-js/fn/symbol/async-iterator";
+import "core-js/fn/object/get-own-property-descriptors";
+import "core-js/fn/object/values";
+import "core-js/fn/object/entries";
+import "core-js/fn/promise/finally";
+import "core-js/web";
+import "regenerator-runtime/runtime";

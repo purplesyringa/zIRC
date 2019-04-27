@@ -1,3 +1,7 @@
+// CoreJS polyfill
+import "libs/polyfill";
+
+
 import "./sass/main.sass";
 
 import Vue from "vue/dist/vue.min.js";

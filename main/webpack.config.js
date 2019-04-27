@@ -27,7 +27,14 @@ function genSass(indentedSyntax) {
 const BABEL = {
 	loader: "babel-loader",
 	options: {
-		presets: ["env", "stage-0"],
+		presets: [
+			[
+				"env", {
+					useBuiltIns: "entry"
+				}
+			],
+			"stage-0"
+		],
 		plugins: [
 			"syntax-decorators",
 			"transform-decorators-legacy",
@@ -46,7 +53,7 @@ const CHUNKS = [
 	["sanitize-html", /sanitize-html/],
 	["highlight", /highlight/],
 	["dom", /dom-serializer|entities|htmlparser2/],
-	["polyfill", /readable-stream|buffer|lodash|regenerator-runtime|browserify|babel-polyfill|process|setimmediate/],
+	["polyfill", /readable-stream|buffer|lodash|regenerator-runtime|browserify|process|setimmediate/],
 	["vue-util", /vuex|vue-awesome|vue-style-loader|vue-async-computed|vue-loader|style-loader/],
 	["vendor-ui", /marked|emojis|jdenticon|autosize|dom/],
 	["vendor", /node_modules/],
@@ -61,7 +68,7 @@ module.exports = {
 		modules: [path.resolve(__dirname, "./src"), "node_modules"]
 	},
 	entry: {
-		[CHUNKS[0][0]]: ["babel-polyfill", "./main.js"]
+		[CHUNKS[0][0]]: ["./main.js"]
 	},
 	output: {
 		path: path.resolve(__dirname, "./dist"),
