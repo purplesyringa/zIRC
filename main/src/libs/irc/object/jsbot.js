@@ -145,7 +145,7 @@ export default class JSBot extends Bot {
 			this.botExists = true;
 
 			// Create worker
-			const code = `
+			const code = dedent`
 				(
 					${webWorker.toString()}
 				)(
@@ -231,7 +231,7 @@ export default class JSBot extends Bot {
 			} else {
 				this._sendAs(
 					"/HelloBot", "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D",
-					`
+					dedent`
 						The supported commands are '/HelloBot restart' (reloads
 						the source and restarts the bot), '/HelloBot debug'
 						(adds /HelloBot buttons under each message) and

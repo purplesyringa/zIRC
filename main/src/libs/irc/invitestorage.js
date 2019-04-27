@@ -20,7 +20,7 @@ export default new class InviteStorage extends EventEmitter {
 	}
 
 	async loadInvites() {
-		const response = await zeroDB.query(`
+		const response = await zeroDB.query(dedent`
 			SELECT
 				invites.*,
 				content_json.directory,

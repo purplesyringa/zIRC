@@ -16,7 +16,7 @@ export default class User extends Speakable {
 		} else if(name.startsWith("cert_user_id:")) {
 			// Find auth address via DB
 			const certUserId = name.replace("cert_user_id:", "");
-			const directory = ((await zeroDB.query(`
+			const directory = ((await zeroDB.query(dedent`
 				SELECT directory FROM json WHERE cert_user_id = :cert_user_id
 			`, {
 				cert_user_id: certUserId
@@ -156,7 +156,7 @@ export default class User extends Speakable {
 
 		const hash = sha256(`@${this.encId}`);
 
-		const response = await zeroDB.query(`
+		const response = await zeroDB.query(dedent`
 			SELECT
 				users.*,
 				content_json.directory,

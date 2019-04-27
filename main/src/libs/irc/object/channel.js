@@ -6,7 +6,7 @@ export default class Channel extends Speakable {
 	async _loadHistory() {
 		const hash = sha256(this.name);
 
-		const response = await zeroDB.query(`
+		const response = await zeroDB.query(dedent`
 			SELECT
 				channels.*,
 				content_json.directory,

@@ -43,7 +43,8 @@ const BABEL = {
 					globals: ["Error", "Array"]
 				}
 			],
-			"transform-class-properties"
+			"transform-class-properties",
+			"dedent"
 		]
 	}
 };
@@ -54,7 +55,6 @@ const CHUNKS = [
 	["highlight", /highlight/],
 	["dom", /dom-serializer|entities|htmlparser2/],
 	["polyfill", /readable-stream|buffer|lodash|regenerator-runtime|browserify|process|setimmediate/],
-	["vue-util", /vuex|vue-awesome|vue-style-loader|vue-async-computed|vue-loader|style-loader/],
 	["vendor-ui", /marked|emojis|jdenticon|autosize|dom/],
 	["vendor", /node_modules/],
 	["components", /vue_components/]
