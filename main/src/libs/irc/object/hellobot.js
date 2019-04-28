@@ -32,6 +32,11 @@ const SLASH_COMMANDS = [
 ];
 
 export default class HelloBot extends Bot {
+	static async get(...args) {
+		return new this(...args);
+	}
+
+
 	constructor() {
 		super("/HelloBot", "1chat4ahuD4atjYby2JA9T9xZWdTY4W4D");
 		this.state = "start";
