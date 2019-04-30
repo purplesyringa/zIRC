@@ -61,7 +61,7 @@ export default class User extends Speakable {
 		UserStorage.on("changeUser", () => this.init());
 		zeroPage.on("setSiteInfo", async () => {
 			await this.init();
-		})
+		});
 	}
 	async init() {
 		await this.initLock.acquire();
