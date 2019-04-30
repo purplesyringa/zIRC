@@ -16,6 +16,8 @@ import Avatar from "vue_components/avatar/avatar.vue";
 Vue.component("Avatar", Avatar);
 import Sidebar from "vue_components/sidebar/sidebar.vue";
 Vue.component("Sidebar", Sidebar);
+import GroupSidebar from "vue_components/sidebar/groupsidebar.vue";
+Vue.component("GroupSidebar", GroupSidebar);
 import Message from "vue_components/message/message.vue";
 Vue.component("Message", Message);
 import SpecialMessage from "vue_components/message/specialmessage.vue";
