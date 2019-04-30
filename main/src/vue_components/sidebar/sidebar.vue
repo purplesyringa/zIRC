@@ -358,14 +358,14 @@
 			},
 
 			async createGroup() {
-				const encKey = await CryptMessage.getRandomSymmetricKey();
+				const encKey = await CryptMessage.generateRandomSymmetricKey();
 
 				const object = await IRC.getObjectById(`+${encKey}`);
 
 				// Add channel to list
 				if(!this.channels.some(o => o.object === object)) {
 					this.channels.push({
-						name: object.name,
+						name: `+${encKey}`,
 						object,
 						fromInviteStorage: false
 					});
@@ -376,7 +376,7 @@
 				}
 
 				// Open channel
-				this.open(channel);
+				this.open(`+${encKey}`);
 			},
 
 			async acceptInvite(channel) {
