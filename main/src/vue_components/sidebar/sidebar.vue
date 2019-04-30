@@ -93,12 +93,12 @@
 						<SmallMessage
 							v-if="
 								(channel.object.history || [])
-									.filter(message => !message.special)
-									.length
+									.filter(message => !message.message.special)
+									.length > 0
 							"
 							v-bind="
 								(channel.object.history || [])
-									.filter(message => !message.special)
+									.filter(message => !message.message.special)
 									.slice(-1)[0]
 							"
 							:channelName="channel.name"
@@ -390,6 +390,10 @@
 				await object._send({
 					special: "invite",
 					authAddress: this.$store.state.siteInfo.auth_address
+				});
+				// Join
+				await object._send({
+					special: "join"
 				});
 			},
 
