@@ -91,8 +91,16 @@
 						<div class="name">{{channel.name}}</div>
 
 						<SmallMessage
-							v-if="(channel.object.history || []).length"
-							v-bind="(channel.object.history || []).slice(-1)[0]"
+							v-if="
+								(channel.object.history || [])
+									.filter(message => !message.special)
+									.length
+							"
+							v-bind="
+								(channel.object.history || [])
+									.filter(message => !message.special)
+									.slice(-1)[0]
+							"
 							:channelName="channel.name"
 						/>
 					</div>

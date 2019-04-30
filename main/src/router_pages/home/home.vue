@@ -27,13 +27,19 @@
 			</div>
 
 			<div class="messages">
-				<Message
-					v-for="message in reverseHistory"
-					:key="message.messages[0].id"
-
-					v-bind="message"
-					@sendButton="sendButton"
-				/>
+				<template v-for="message in reverseHistory">
+					<SpecialMessage
+						v-if="message.special"
+						v-bind="message.messages[0]"
+						:key="message.messages[0].id"
+					/>
+					<Message
+						v-else
+						v-bind="message"
+						@sendButton="sendButton"
+						:key="message.messages[0].id"
+					/>
+				</template>
 			</div>
 		</main>
 
@@ -327,15 +333,44 @@
 						authAddress: curPost.authAddress,
 						certUserId: curPost.certUserId,
 						receiveDate: curPost.receiveDate,
+						special: curPost.message.special,
 						messages
 					});
 				}
 				return result;
+			},
+
+			members() {
+				if(!this.allMembers) {
+					return [];
+				}
+
+				return this.allMembers.filter(member => {
+					return this.currentObject.history.some(message => {
+						return (
+							message.message.special === "join" &&
+							message.authAddress === member.authAddress
+						);
+					});
+				});
+			},
+			invitedMembers() {
+				if(!this.allMembers) {
+					return [];
+				}
+
+				return this.allMembers.filter(member => {
+					return this.members.indexOf(member) === -1;
+				});
 			}
 		},
 
 		asyncComputed: {
-			async members() {
+			async allMembers() {
+				if(!this.currentObject || !this.currentObject.history) {
+					return null;
+				}
+
 				if(this.currentObject instanceof Group) {
 					return await Promise.all(
 						this.currentObject.history
@@ -363,9 +398,6 @@
 				} else {
 					return [];
 				}
-			},
-			async invitedMembers() {
-				return [];
 			}
 		}
 	};
