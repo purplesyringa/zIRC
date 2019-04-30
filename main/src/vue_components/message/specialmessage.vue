@@ -1,8 +1,13 @@
 <template>
 	<div class="message">
 		<template v-if="message.special === 'invite'">
-			<b>{{name}}</b> invited <b>{{nameMessage}}</b> to
-			join the conversation.
+			<template v-if="authAddress === message.authAddress">
+				<b>{{name}}</b> created the group.
+			</template>
+			<template v-else>
+				<b>{{name}}</b> invited <b>{{nameMessage}}</b> to
+				join the conversation.
+			</template>
 		</template>
 		<template v-else-if="message.special === 'join'">
 			<b>{{name}}</b> joined the conversation.
