@@ -1,84 +1,155 @@
 <template>
-	<main>
-		<div class="info">
-			You are logged in as
-			<span class="monospace">
-				{{username}}
-				<a @click="login">[Change]</a>
-			</span>
-		</div>
+	<div class="root">
+		<main>
+			<div class="info">
+				You are logged in as
+				<span class="monospace">
+					{{username}}
+					<a @click="login">[Change]</a>
+				</span>
+			</div>
 
-		<div>
-			<textarea
-				v-model="message"
-				ref="message"
-				class="input"
-				placeholder="Type here..."
-				@keypress.enter.exact.prevent="submit"
-				@input="autoreplace"
-			/>
-		</div>
+			<div>
+				<textarea
+					v-model="message"
+					ref="message"
+					class="input"
+					placeholder="Type here..."
+					@keypress.enter.exact.prevent="submit"
+					@input="autoreplace"
+				/>
+			</div>
 
-		<div>
-			<button class="right" title="Delete history from permanent storage" @click="deleteHistory">
-				<icon name="trash" />
-			</button>
-		</div>
+			<div>
+				<button class="right" title="Delete history from permanent storage" @click="deleteHistory">
+					<icon name="trash" />
+				</button>
+			</div>
 
-		<div class="messages">
-			<Message
-				v-for="message in reverseHistory"
-				:key="message.messages[0].id"
+			<div class="messages">
+				<Message
+					v-for="message in reverseHistory"
+					:key="message.messages[0].id"
 
-				v-bind="message"
-				@sendButton="sendButton"
-			/>
-		</div>
-	</main>
+					v-bind="message"
+					@sendButton="sendButton"
+				/>
+			</div>
+		</main>
+
+		<aside v-if="currentObject instanceof Group">
+			<h2>Members</h2>
+
+			<template v-for="member in members">
+				<div class="member">
+					<Avatar
+						:channel="member.name"
+						:authAddress="member.authAddress"
+					/>
+
+					<div class="content">
+						<div class="name">{{member.name}}</div>
+					</div>
+				</div>
+			</template>
+
+			<h2 v-if="invitedMembers.length > 0">Invited</h2>
+
+			<template v-for="member in invitedMembers">
+				<div class="member">
+					<Avatar
+						:channel="member.name"
+						:authAddress="member.authAddress"
+					/>
+
+					<div class="content">
+						<div class="name">{{member.name}}</div>
+					</div>
+				</div>
+			</template>
+		</aside>
+	</div>
 </template>
 
 <style lang="sass" scoped>
-	main
-		padding: 32px
+	.root
+		display: flex
+		flex-direction: row
 		flex: 1 0 0
-		overflow-y: auto
 
-		.input, button
-			font-family: "Courier New", monospace
-			font-size: 16px
-			padding: 8px 12px
-			border: none
+		> main
+			padding: 32px
+			flex: 1 0 0
+			overflow-y: auto
+
+			.input, button
+				font-family: "Courier New", monospace
+				font-size: 16px
+				padding: 8px 12px
+				border: none
+
+				[theme=dark] &
+					background-color: #444
+				[theme=light] &
+					background-color: #FDD
+
+			.input
+				width: 100%
+				resize: none
+				height: 1em
+			button
+				box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2)
+
+			.right
+				margin-top: 16px
+				float: right
+
+			.info
+				margin-bottom: 16px
+
+				.monospace
+					font-family: "Courier New", monospace
+					font-size: 16px
+
+			.messages
+				margin-top: 32px
+
+		> aside
+			flex: 0 0 320px
+			width: 320px
+			overflow-y: auto
+			overflow-x: hidden
+
+			display: flex
+			flex-direction: column
+			padding: 16px
 
 			[theme=dark] &
-				background-color: #444
+				background-color: #223
 			[theme=light] &
 				background-color: #FDD
 
-		.input
-			width: 100%
-			resize: none
-			height: 1em
-		button
-			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2)
-
-		.right
-			margin-top: 16px
-			float: right
-
-		.info
-			margin-bottom: 16px
-
-			.monospace
+			.member
+				display: flex
+				flex-direction: row
+				align-items: center
 				font-family: "Courier New", monospace
-				font-size: 16px
 
-		.messages
-			margin-top: 32px
+				.avatar
+					margin-right: 16px
+				.content
+					min-width: 0
+					flex: 1 1 0
+					.name
+						overflow: hidden
+						white-space: nowrap
+						text-overflow: ellipsis
 </style>
 
 <script type="text/javascript">
 	import IRC from "libs/irc";
-	import {zeroPage, zeroAuth} from "zero";
+	import {zeroPage, zeroDB, zeroAuth} from "zero";
+	import Group from "libs/irc/object/group";
 	import autosize from "autosize";
 	import "vue-awesome/icons/trash";
 	import emojis from "./emojis";
@@ -89,7 +160,8 @@
 			return {
 				message: "",
 				currentObject: null,
-				history: []
+				history: [],
+				Group
 			};
 		},
 
@@ -237,6 +309,8 @@
 						const prevPost = posts[++i];
 						if(
 							prevPost &&
+							!prevPost.message.special &&
+							!curPost.message.special &&
 							prevPost.authAddress === curPost.authAddress &&
 							prevPost.certUserId === curPost.certUserId &&
 							!prevPost.message.buttons &&
@@ -257,6 +331,41 @@
 					});
 				}
 				return result;
+			}
+		},
+
+		asyncComputed: {
+			async members() {
+				if(this.currentObject instanceof Group) {
+					return await Promise.all(
+						this.currentObject.history
+							.filter(message => message.message.special === "invite")
+							.map(async message => {
+								const member = message.message.authAddress;
+
+								const certUserId = ((await zeroDB.query(dedent`
+									SELECT cert_user_id
+									FROM json
+									WHERE (
+										directory = :directory AND
+										file_name = "content.json"
+									)
+								`, {
+									directory: `users/${member}`
+								}))[0] || {}).cert_user_id;
+
+								return {
+									name: certUserId || `@${member}`,
+									authAddress: member
+								};
+							})
+					);
+				} else {
+					return [];
+				}
+			},
+			async invitedMembers() {
+				return [];
 			}
 		}
 	};

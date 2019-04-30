@@ -117,10 +117,16 @@ export default class Speakable extends EventEmitter {
 	}
 
 	async send(message) {
+		await this._send({
+			text: message
+		});
+	}
+
+	async _send(message) {
 		message = {
 			date: Date.now(),
-			text: message,
-			id: Math.random().toString(36).substr(2) + "/" + Date.now()
+			id: Math.random().toString(36).substr(2) + "/" + Date.now(),
+			...message
 		};
 
 		// Receive, in case the transfers are slow

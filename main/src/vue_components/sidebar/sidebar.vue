@@ -377,6 +377,12 @@
 
 				// Open channel
 				this.open(`+${encKey}`);
+
+				// Invite yourself
+				await object._send({
+					special: "invite",
+					authAddress: this.$store.state.siteInfo.auth_address
+				});
 			},
 
 			async acceptInvite(channel) {
