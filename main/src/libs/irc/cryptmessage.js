@@ -56,4 +56,17 @@ export default new class CryptMessage {
 		}
 		return JSON.parse(res);
 	}
+
+	// Encrypt/decrypt via AES
+	async encryptSymmetric(message, encKey) {
+		const [, iv, ciphertext] = await zeroPage.cmd("aesEncrypt", [message, encKey]);
+		return `${iv}|${ciphertext}`;
+	}
+	async decryptSymmetric(message, encKey) {
+		const [iv, ciphertext] = message.split("|");
+		return await zeroPage.cmd("aesDecrypt", [iv, ciphertext, encKey]);
+	}
+	async generateRandomSymmetricKey() {
+		return (await zeroPage.cmd("aesEncrypt", ["test"]))[0];
+	}
 };
