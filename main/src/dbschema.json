@@ -9,6 +9,10 @@
 				{
 					"node": "invites",
 					"table": "invites"
+				},
+				{
+					"node": "group_invites",
+					"table": "group_invites"
 				}
 			]
 		},
@@ -86,6 +90,14 @@
 		"invites": {
 			"cols": [
 				["for_self", "TEXT"],
+				["for_invitee", "TEXT"],
+				["json_id", "INTEGER"]
+			],
+			"schema_changed": 1
+		},
+		"group_invites": {
+			"cols": [
+				["for_inviter", "TEXT"],
 				["for_invitee", "TEXT"],
 				["json_id", "INTEGER"]
 			],

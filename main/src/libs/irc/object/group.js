@@ -114,7 +114,7 @@ export default class Group extends Speakable {
 			await zeroFS.readFile(`data/users/${authAddress}/content.json`)
 		);
 
-		for(const invite of content.groupInvites || []) {
+		for(const invite of content.group_invites || []) {
 			// Try to decrypt the invite
 			try {
 				const inviteContent = await CryptMessage.decrypt(
@@ -130,8 +130,8 @@ export default class Group extends Speakable {
 		}
 
 		// Add the invite
-		content.groupInvites = content.groupInvites || [];
-		content.groupInvites.push({
+		content.group_invites = content.group_invites || [];
+		content.group_invites.push({
 			for_inviter: await CryptMessage.encrypt(
 				this.encKey,
 				await CryptMessage.getSelfPublicKey()
