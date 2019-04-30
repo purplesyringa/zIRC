@@ -2,18 +2,18 @@
 	<div class="message">
 		<template v-if="message.special === 'invite'">
 			<template v-if="authAddress === message.authAddress">
-				<b>{{name}}</b> created the group.
+				<code>{{name}}</code> created the group.
 			</template>
 			<template v-else>
-				<b>{{name}}</b> invited <b>{{nameMessage}}</b> to
+				<code>{{name}}</code> invited <code>{{nameMessage}}</code> to
 				join the conversation.
 			</template>
 		</template>
 		<template v-else-if="message.special === 'join'">
-			<b>{{name}}</b> joined the conversation.
+			<code>{{name}}</code> joined the conversation.
 		</template>
 		<template v-else>
-			<b>{{name}}</b> fucked up the messages.
+			<code>{{name}}</code> fucked up the messages.
 		</template>
 	</div>
 </template>
@@ -22,6 +22,9 @@
 	.message
 		margin: 16px 0
 		font-family: "Arial", sans-serif
+
+		code
+			font-family: "Courier New", monospace
 </style>
 
 <script type="text/javascript">
@@ -44,7 +47,10 @@
 				return this.messages[0];
 			},
 			name() {
-				return this.certUserId || `@${this.authAddress}`;
+				return (
+					this.certUserId.replace(/@.*/, "") ||
+					`@${this.authAddress.substr(0, 6)}...`
+				);
 			}
 		},
 
