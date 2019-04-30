@@ -18,7 +18,7 @@ export default new class IRC {
 		if(id[0] === "#") {
 			this.objectCache[id] = await Channel.get(id);
 		} else if(id[0] === "+") {
-			this.objectCache[id] = await Group.get(id);
+			this.objectCache[id] = await Group.get(id.substr(1));
 		} else if(id[0] === "@") {
 			this.objectCache[id] = await User.get(`auth_address:${id.substr(1)}`);
 		} else if(id === "/HelloBot") {

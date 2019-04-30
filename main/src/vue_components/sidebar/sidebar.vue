@@ -7,17 +7,17 @@
 				<div
 					v-if="(channel.object instanceof User) && channel.object.theyInvited && !channel.object.wasTheirInviteHandled"
 
-					:class="['channel', {current: current === channel.visibleName}]"
+					:class="['channel', {current: current === channel.name}]"
 				>
 					<!-- Show invite -->
 					<Avatar
-						:channel="channel.visibleName"
+						:channel="channel.name"
 						:authAddress="channel.object.name"
 					/>
 
 					<div class="content">
 						<div class="invite">
-							<div class="name">{{channel.visibleName}}</div>
+							<div class="name">{{channel.name}}</div>
 							<div class="invite-status">
 								<button class="accept" @click="acceptInvite(channel)">Accept</button>
 								<button class="dismiss" @click="dismissInvite(channel)">Dismiss</button>
@@ -29,24 +29,24 @@
 				<div
 					v-else-if="(channel.object instanceof User) && channel.object.theirInviteState === 'dismiss' && !channel.object.weInvited"
 
-					:class="['channel', {current: current === channel.visibleName}]"
+					:class="['channel', {current: current === channel.name}]"
 				>
 					<!-- Show invite -->
 					<Avatar
-						:channel="channel.visibleName"
+						:channel="channel.name"
 						:authAddress="channel.object.name"
 					/>
 
 					<div class="content">
 						<div class="invite">
-							<div class="name">{{channel.visibleName}}</div>
+							<div class="name">{{channel.name}}</div>
 							<div class="invite-status">
 								<button class="accept" @click="invite(channel)">Invite</button>
 							</div>
 						</div>
 					</div>
 
-					<span class="close" @click.stop="removeChannel(channel.visibleName)">
+					<span class="close" @click.stop="removeChannel(channel.name)">
 						&times;
 					</span>
 				</div>
@@ -54,17 +54,17 @@
 				<div
 					v-else-if="(channel.object instanceof User) && channel.object.weInvited && channel.object.ourInviteState !== 'accept'"
 
-					:class="['channel', {current: current === channel.visibleName}]"
+					:class="['channel', {current: current === channel.name}]"
 				>
 					<!-- Show invite -->
 					<Avatar
-						:channel="channel.visibleName"
+						:channel="channel.name"
 						:authAddress="channel.object.name"
 					/>
 
 					<div class="content">
 						<div class="invite">
-							<div class="name">{{channel.visibleName}}</div>
+							<div class="name">{{channel.name}}</div>
 							<div v-if="!channel.object.wasOurInviteHandled" class="invite-status">Invited</div>
 							<div v-else class="invite-status">Dismissed :(</div>
 						</div>
@@ -78,22 +78,22 @@
 				<div
 					v-else
 
-					:class="['channel', {current: current === channel.visibleName}]"
-					@click="open(channel.visibleName)"
+					:class="['channel', {current: current === channel.name}]"
+					@click="open(channel.name)"
 				>
 					<!-- Show user/channel/group badge -->
 					<Avatar
-						:channel="channel.visibleName"
+						:channel="channel.name"
 						:authAddress="channel.object.name"
 					/>
 
 					<div class="content">
-						<div class="name">{{channel.visibleName}}</div>
+						<div class="name">{{channel.name}}</div>
 
 						<SmallMessage
 							v-if="(channel.object.history || []).length"
 							v-bind="(channel.object.history || []).slice(-1)[0]"
-							:channelName="channel.visibleName"
+							:channelName="channel.name"
 						/>
 					</div>
 
@@ -101,7 +101,7 @@
 						{{channel.object.countUnread}}
 					</span>
 
-					<span class="close" @click.stop="removeChannel(channel.visibleName)">
+					<span class="close" @click.stop="removeChannel(channel.name)">
 						&times;
 					</span>
 				</div>
@@ -109,7 +109,8 @@
 		</div>
 
 		<div class="footer">
-			<div class="footer-icon" @click="addChannel">+</div>
+			<div class="footer-icon" @click="addChannel">Join</div>
+			<div class="footer-icon" @click="createGroup">Create new group</div>
 		</div>
 	</aside>
 </template>
@@ -217,16 +218,17 @@
 		.footer
 			flex: 0 0 48px
 			display: flex
-			flex-direction: row
+			flex-direction: column
 			align-content: space-between
+			margin-bottom: 10px
 
 			.footer-icon
 				display: block
 				flex: 1 1 0
-				font-size: 32px
 				text-align: center
 				cursor: pointer
-				padding-top: 12px
+				padding-top: 10px
+				padding-bottom: 12px
 
 				&:hover
 					[theme=dark] &
@@ -239,6 +241,7 @@
 	import {zeroPage} from "zero";
 	import IRC from "libs/irc";
 	import InviteStorage from "libs/irc/invitestorage";
+	import CryptMessage from "libs/irc/cryptmessage";
 	import UserStorage from "libs/irc/userstorage";
 	import User from "libs/irc/object/user";
 	import EventEmitter from "wolfy87-eventemitter";
@@ -275,7 +278,7 @@
 						"/HelloBot"
 					]).map(async name => {
 						return {
-							visibleName: name,
+							name: name,
 							object: await IRC.getObjectById(name),
 							fromInviteStorage: false
 						};
@@ -313,7 +316,7 @@
 							await object.invite();
 						} catch(e) {
 							zeroPage.error(`Error while inviting user: ${e}`);
-							this.channels = this.channels.filter(o => o.visibleName !== channel);
+							this.channels = this.channels.filter(o => o.object !== object);
 							return;
 						}
 						doOpen = false;
@@ -325,9 +328,9 @@
 				}
 
 				// Add channel to list
-				if(!this.channels.some(o => !o.fromInviteStorage && o.visibleName === channel)) {
+				if(!this.channels.some(o => !o.fromInviteStorage && o.object !== object)) {
 					this.channels.push({
-						visibleName: channel,
+						name: channel,
 						object,
 						fromInviteStorage: false
 					});
@@ -344,7 +347,7 @@
 			},
 
 			async removeChannel(channel) {
-				this.channels = this.channels.filter(o => o.visibleName !== channel);
+				this.channels = this.channels.filter(o => o.name !== channel);
 
 				await this.saveChannels();
 
@@ -352,6 +355,28 @@
 					// Open #lobby if we removed the current channel
 					this.open("#lobby");
 				}
+			},
+
+			async createGroup() {
+				const encKey = await CryptMessage.getRandomSymmetricKey();
+
+				const object = await IRC.getObjectById(`+${encKey}`);
+
+				// Add channel to list
+				if(!this.channels.some(o => o.object === object)) {
+					this.channels.push({
+						name: object.name,
+						object,
+						fromInviteStorage: false
+					});
+					this.channels = this.channels.slice();
+					this.bindEvents();
+
+					await this.saveChannels();
+				}
+
+				// Open channel
+				this.open(channel);
 			},
 
 			async acceptInvite(channel) {
@@ -363,7 +388,7 @@
 				}
 
 				this.channels.push({
-					visibleName: channel.visibleName,
+					name: channel.name,
 					object: channel.object,
 					fromInviteStorage: false
 				});
@@ -388,7 +413,7 @@
 				}
 
 				this.channels.push({
-					visibleName: channel.visibleName,
+					name: channel.name,
 					object: channel.object,
 					fromInviteStorage: false
 				});
@@ -400,7 +425,7 @@
 
 			async cancelInvite(channel) {
 				await channel.object.cancelInvite();
-				await this.removeChannel(channel.visibleName);
+				await this.removeChannel(channel.name);
 			},
 
 			async renderInvites() {
@@ -410,7 +435,7 @@
 					InviteStorage.invites.map(async invite => {
 						const user = await IRC.getObjectById(`@${invite.authAddress}`);
 						return {
-							visibleName: invite.certUserId || `@${invite.authAddress}`,
+							name: invite.certUserId || `@${invite.authAddress}`,
 							object: user,
 							fromInviteStorage: true
 						};
@@ -419,7 +444,7 @@
 
 				this.channels = inviteChannels.concat(this.channels)
 					.filter((val, idx, arr) => {
-						return arr.findIndex(o => o.visibleName === val.visibleName) === idx;
+						return arr.findIndex(o => o.object === val.object) === idx;
 					});
 				this.bindEvents();
 			},
@@ -429,7 +454,7 @@
 				let userSettings = await UserStorage.get();
 				userSettings.channels = this.channels
 					.filter(o => !o.fromInviteStorage)
-					.map(o => o.visibleName);
+					.map(o => o.name);
 				await UserStorage.set(userSettings);
 			},
 
@@ -465,15 +490,15 @@
 				// Only show the notification if the user is on another tab, or
 				// if the user is on another channel
 				if(
-					channel.visibleName !== this.current ||
+					channel.name !== this.current ||
 					document.hidden
 				) {
 					// Generate random notification ID
 					const id = Math.random().toString(36).substr(2);
 					// Send the notification
 					let title = message.certUserId;
-					if(channel.visibleName !== message.certUserId) {
-						title += ` (${channel.visibleName})`;
+					if(channel.name !== message.certUserId) {
+						title += ` (${channel.name})`;
 					}
 					// Body
 					let body = message.message.text.replace(/\s+/g, " ").trim();
@@ -488,7 +513,7 @@
 					const options = {
 						body,
 						renotify: true,
-						tag: `zIRC:${channel.visibleName}`,
+						tag: `zIRC:${channel.name}`,
 						focus_tab: true
 					};
 					zeroPage.cmd("wrapperWebNotification", [title, id, options]);
@@ -500,7 +525,7 @@
 					// Add event handlers
 					const onClick = e => {
 						if(e.params.id === id) {
-							this.open(channel.visibleName);
+							this.open(channel.name);
 						}
 					};
 					zeroPage.on("webNotificationClick", onClick);
