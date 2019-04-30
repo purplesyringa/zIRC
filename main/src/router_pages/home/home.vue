@@ -30,7 +30,7 @@
 				<template v-for="message in reverseHistory">
 					<SpecialMessage
 						v-if="message.special"
-						v-bind="message.messages[0]"
+						v-bind="message"
 						:key="message.messages[0].id"
 					/>
 					<Message
