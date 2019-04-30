@@ -1,7 +1,8 @@
 <template>
 	<div class="message">
 		<template v-if="message.special === 'invite'">
-			<b>{{name}}</b> was invited to the conversation.
+			<b>{{name}}</b> invited <b>{{nameMessage}}</b> to
+			join the conversation.
 		</template>
 		<template v-else-if="message.special === 'join'">
 			<b>{{name}}</b> joined the conversation.
@@ -19,6 +20,8 @@
 </style>
 
 <script type="text/javascript">
+	import {zeroDB} from "zero";
+
 	export default {
 		name: "SpecialMessage",
 		props: ["authAddress", "certUserId", "receiveDate", "messages"],
@@ -37,6 +40,26 @@
 			},
 			name() {
 				return this.certUserId || `@${this.authAddress}`;
+			}
+		},
+
+		asyncComputed: {
+			async nameMessage() {
+				if(!this.message.authAddress) {
+					return null;
+				}
+
+				const certUserId = ((await zeroDB.query(dedent`
+					SELECT cert_user_id
+					FROM json
+					WHERE (
+						directory = :directory AND
+						file_name = "content.json"
+					)
+				`, {
+					directory: `users/${this.message.authAddress}`
+				}))[0] || {}).cert_user_id;
+				return certUserId || `@${this.message.authAddress}`;
 			}
 		}
 	};
