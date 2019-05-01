@@ -432,6 +432,11 @@
 					special: "makeAdmin",
 					authAddress: this.$store.state.siteInfo.auth_address
 				});
+				// Set title
+				await object.sendAdminSigned({
+					special: "setTitle",
+					title: "New group"
+				});
 			},
 
 			async acceptInvite(channel) {
