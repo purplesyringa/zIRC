@@ -8,7 +8,7 @@
 					<Avatar
 						:channel="member.name"
 						:authAddress="member.authAddress"
-						status="online"
+						:status="member.status"
 					/>
 
 					<div class="content">
@@ -24,7 +24,7 @@
 					<Avatar
 						:channel="member.name"
 						:authAddress="member.authAddress"
-						status="online"
+						:status="member.status"
 					/>
 
 					<div class="content">
@@ -41,6 +41,7 @@
 					<Avatar
 						:channel="member.name"
 						:authAddress="member.authAddress"
+						:status="member.status"
 					/>
 
 					<div class="content">
@@ -141,8 +142,17 @@
 		props: ["object"],
 		data() {
 			return {
-				object: null
+				object: null,
+				updateInterval: null
 			};
+		},
+
+		mounted() {
+			this.updateInterval = setInterval(() => this.updatePings(), 5000);
+			this.updatePings();
+		},
+		destroyed() {
+			clearInterval(this.updateInterval);
 		},
 
 		methods: {
@@ -184,6 +194,16 @@
 					special: "makeAdmin",
 					authAddress
 				});
+			},
+
+			updatePings() {
+				for(const member of this.allMembers) {
+					if(Date.now() - member.object.lastPing > 60000) {
+						member.status = "offline";
+					} else {
+						member.status = "online";
+					}
+				}
 			}
 		},
 
@@ -255,7 +275,9 @@
 
 									return {
 										name: certUserId || `@${member}`,
-										authAddress: member
+										authAddress: member,
+										status: "",
+										object: await IRC.getObjectById(`@${member}`)
 									};
 								})
 						)

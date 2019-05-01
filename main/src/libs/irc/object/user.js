@@ -64,6 +64,7 @@ export default class User extends Speakable {
 		this.publicKeyLock = new Lock();
 		this.publicKeyCache = undefined;
 		this.encId = null;
+		this.lastPing = 0;
 		this.init();
 		InviteStorage.bindUser(this);
 		UserStorage.on("changeUser", () => this.init());
@@ -218,7 +219,13 @@ export default class User extends Speakable {
 
 	_listen(transport) {
 		transport.on("receive", async ({authAddress, certUserId, message}) => {
-			if(message.cmd === "user") {
+			if(message.cmd === "ping") {
+				if(authAddress !== this.name.replace("@", "")) {
+					return;
+				}
+
+				this.lastPing = Date.now();
+			} else if(message.cmd === "user") {
 				if(authAddress !== this.name.replace("@", "")) {
 					return;
 				}
