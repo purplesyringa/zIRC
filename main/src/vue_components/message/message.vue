@@ -20,7 +20,7 @@
 					<div class="buttons" v-if="message.buttons">
 						<div v-for="row in message.buttons" class="button-row">
 							<div v-for="button in row" :class="['button', `button-${button.color}`]" :style="{width: `${100 / row.length}%`}" @click="sendButton(button.text)">
-								{{button.text}}
+								[{{button.text}}]
 							</div>
 						</div>
 					</div>
@@ -152,7 +152,7 @@
 							.button
 								display: block
 								text-align: center
-								padding: 12px 16px
+								padding: 12px
 								margin: 0 4px
 								border-radius: 12px
 								cursor: pointer
