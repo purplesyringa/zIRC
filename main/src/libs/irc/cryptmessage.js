@@ -1,5 +1,6 @@
 import {zeroPage, zeroFS} from "zero";
 import UserStorage from "libs/irc/userstorage";
+import {Buffer} from "buffer";
 
 export default new class CryptMessage {
 	constructor() {
@@ -75,5 +76,11 @@ export default new class CryptMessage {
 	}
 	async generateRandomSymmetricKey() {
 		return (await zeroPage.cmd("aesEncrypt", ["test"]))[0];
+	}
+	async privateKeyToAddress(privateKey) {
+		const publicKey = await zeroPage.cmd("privToPub", [
+			Buffer.from(privateKey, "base64").toString("hex")
+		]);
+		return await zeroPage.cmd("pubToAddr", [publicKey]);
 	}
 };

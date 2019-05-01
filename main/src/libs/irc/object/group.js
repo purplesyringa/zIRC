@@ -6,9 +6,10 @@ import UserStorage from "libs/irc/userstorage";
 import Lock from "libs/lock";
 
 export default class Group extends Speakable {
-	constructor(encKey) {
-		super(encKey);
-		this.encKey = encKey;
+	constructor(name) {
+		super(name);
+
+		[this.encKey, this.adminAddr] = name.split(":");
 
 		this.initLock = new Lock();
 
@@ -55,7 +56,7 @@ export default class Group extends Speakable {
 			return [];
 		}
 
-		const hash = sha256(`+${this.encKey}`);
+		const hash = sha256(`+${this.encKey}:${this.adminAddr}`);
 
 		const response = await zeroDB.query(dedent`
 			SELECT
@@ -141,7 +142,7 @@ export default class Group extends Speakable {
 			return;
 		}
 
-		transport.send(`+${this.encKey}`, {
+		transport.send(`+${this.encKey}:${this.adminAddr}`, {
 			cmd: "group",
 			message: await CryptMessage.encryptSymmetric(message, this.encKey)
 		});
@@ -161,7 +162,7 @@ export default class Group extends Speakable {
 				const inviteContent = await CryptMessage.decrypt(
 					invite.for_inviter
 				);
-				if(inviteContent === this.encKey) {
+				if(inviteContent === `${this.encKey}:${this.adminAddr}`) {
 					// Invited before
 					return;
 				}
@@ -174,11 +175,11 @@ export default class Group extends Speakable {
 		content.group_invites = content.group_invites || [];
 		content.group_invites.push({
 			for_inviter: await CryptMessage.encrypt(
-				this.encKey,
+				`${this.encKey}:${this.adminAddr}`,
 				await CryptMessage.getSelfPublicKey()
 			),
 			for_invitee: await CryptMessage.encrypt(
-				this.encKey,
+				`${this.encKey}:${this.adminAddr}`,
 				await CryptMessage.findPublicKey(inviteeAuthAddress)
 			)
 		});

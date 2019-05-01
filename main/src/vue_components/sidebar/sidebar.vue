@@ -276,6 +276,7 @@
 	import User from "libs/irc/object/user";
 	import Group from "libs/irc/object/group";
 	import EventEmitter from "wolfy87-eventemitter";
+	import {zeroDB} from "zero";
 
 	export default {
 		name: "Sidebar",
@@ -391,13 +392,15 @@
 
 			async createGroup() {
 				const encKey = await CryptMessage.generateRandomSymmetricKey();
+				const adminKey = await CryptMessage.generateRandomSymmetricKey();
+				const adminAddr = await CryptMessage.privateKeyToAddress(adminKey);
 
-				const object = await IRC.getObjectById(`+${encKey}`);
+				const object = await IRC.getObjectById(`+${encKey}:${adminAddr}`);
 
 				// Add channel to list
 				if(!this.channels.some(o => o.object === object)) {
 					this.channels.push({
-						name: `+${encKey}`,
+						name: `+${encKey}:${adminAddr}`,
 						object,
 						fromInviteStorage: false
 					});
@@ -408,7 +411,7 @@
 				}
 
 				// Open channel
-				this.open(`+${encKey}`);
+				this.open(`+${encKey}:${adminAddr}`);
 
 				// Invite yourself
 				await object._send({
@@ -487,9 +490,9 @@
 
 				const inviteGroups = await Promise.all(
 					InviteStorage.groupInvites.map(async invite => {
-						const group = await IRC.getObjectById(`+${invite.encKey}`);
+						const group = await IRC.getObjectById(`+${invite.encKey}:${invite.adminAddr}`);
 						return {
-							name: `+${invite.encKey}`,
+							name: `+${invite.encKey}:${invite.adminAddr}`,
 							object: group,
 							fromInviteStorage: true
 						};

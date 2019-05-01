@@ -93,22 +93,25 @@ export default new class InviteStorage extends EventEmitter {
 		const IRC = (await import("libs/irc")).default;
 
 		for(const invite of response) {
-			let encKey;
+			let encKey, adminAddr;
 			try {
-				encKey = await CryptMessage.decrypt(invite.for_invitee);
+				[encKey, adminAddr] = (
+					await CryptMessage.decrypt(invite.for_invitee)
+				).split(":");
 			} catch(e) {
 				continue;
 			}
 
 			// We are invited. Check whether we have dismissed/accepted the invite before
-			const group = await IRC.getObjectById(`+${encKey}`);
+			const group = await IRC.getObjectById(`+${encKey}:${adminAddr}`);
 			await group.initLock.acquire();
 			group.initLock.release();
-			if(group.hasJoined || group.hasDismissed) {
+			console.log(group.wasInvited, group.hasJoined, group.hasDismissed);
+			if(!group.wasInvited || group.hasJoined || group.hasDismissed) {
 				// Accepted/dismissed before
 				continue;
 			}
-			this.groupInvites.push({encKey});
+			this.groupInvites.push({encKey, adminAddr});
 		}
 
 		this.emit("invitesUpdated");
@@ -150,13 +153,15 @@ export default new class InviteStorage extends EventEmitter {
 			}
 		});
 
-		transport.on("groupInvite", async ({encKey}) => {
+		transport.on("groupInvite", async ({encKey, adminAddr}) => {
 			// Skip if we already have this invite
-			if(this.groupInvites.some(invite => invite.encKey === encKey)) {
+			if(this.groupInvites.some(invite => {
+				return invite.encKey === encKey && invite.adminAddr === adminAddr;
+			})) {
 				return;
 			}
 
-			this.groupInvites.push({encKey});
+			this.groupInvites.push({encKey, adminAddr});
 			this.emit("invitesUpdated");
 		});
 	}

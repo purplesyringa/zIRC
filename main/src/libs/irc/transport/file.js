@@ -67,9 +67,11 @@ export default new class FileTransport extends EventEmitter {
 
 					// Or maybe it's a group invite?
 					for(const invite of contentJson.group_invites || []) {
-						let encKey;
+						let encKey, adminAddr;
 						try {
-							encKey = await CryptMessage.decrypt(invite.for_invitee);
+							[encKey, adminAddr] = (
+								await CryptMessage.decrypt(invite.for_invitee)
+							).split(":");
 						} catch(e) {
 							continue;
 						}
@@ -78,13 +80,16 @@ export default new class FileTransport extends EventEmitter {
 						// We can't use top-level import because of circular dependency loop
 						const IRC = (await import("libs/irc")).default;
 
-						const group = IRC.getObjectById(`+${encKey}`);
-						if(group.hasJoined || group.hasDismissed) {
+						const group = IRC.getObjectById(`+${encKey}:${adminAddr}`);
+						await group.initLock.acquire();
+						group.initLock.release();
+						if(!group.wasInvited || group.hasJoined || group.hasDismissed) {
 							continue;
 						}
 
 						this.emit("groupInvite", {
-							encKey
+							encKey,
+							adminAddr
 						});
 					}
 				} else {

@@ -96,7 +96,7 @@
 
 <script type="text/javascript">
 	import IRC from "libs/irc";
-	import {zeroPage, zeroDB, zeroAuth} from "zero";
+	import {zeroPage, zeroAuth} from "zero";
 	import Group from "libs/irc/object/group";
 	import autosize from "autosize";
 	import "vue-awesome/icons/trash";
