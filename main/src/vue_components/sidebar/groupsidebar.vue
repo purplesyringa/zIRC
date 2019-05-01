@@ -65,6 +65,7 @@
 				display: flex
 				flex-direction: row
 				align-items: center
+				padding: 8px 0
 				font-family: "Courier New", monospace
 
 				.avatar
