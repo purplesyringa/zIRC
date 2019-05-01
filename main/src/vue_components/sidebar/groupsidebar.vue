@@ -8,6 +8,7 @@
 					<Avatar
 						:channel="member.name"
 						:authAddress="member.authAddress"
+						status="online"
 					/>
 
 					<div class="content">
@@ -23,6 +24,7 @@
 					<Avatar
 						:channel="member.name"
 						:authAddress="member.authAddress"
+						status="online"
 					/>
 
 					<div class="content">
