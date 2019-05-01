@@ -82,6 +82,9 @@
 						/deep/
 							p, pre, blockquote
 								margin: 16px 0
+							.emoji
+								font-size: 2em
+								line-height: 1.5em
 							code
 								padding: 4px 8px
 								border-radius: 4px
@@ -209,6 +212,7 @@
 	import marked from "marked";
 	import sanitizeHtml from "sanitize-html";
 	import hljs from "highlight.js/lib/highlight";
+	import emojis from "libs/emojis";
 
 	// Do not optimize the lines below using a for loop, this will break WebPack
 	// optimizations
@@ -251,6 +255,11 @@
 				this.$emit("sendButton", button);
 			},
 			renderMarkdown(text) {
+				if(Object.values(emojis).indexOf(text) > -1) {
+					// It's an emoji
+					return `<span class="emoji">${text}</span>`;
+				}
+
 				return sanitizeHtml(
 					marked(text, {
 						gfm: true,

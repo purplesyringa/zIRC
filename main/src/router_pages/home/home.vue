@@ -102,7 +102,7 @@
 	import Group from "libs/irc/object/group";
 	import autosize from "autosize";
 	import "vue-awesome/icons/trash";
-	import emojis from "./emojis";
+	import emojis from "libs/emojis";
 
 	export default {
 		name: "Home",
