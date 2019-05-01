@@ -57,7 +57,7 @@ const CHUNKS = [
 	["polyfill", /readable-stream|buffer|lodash|regenerator-runtime|browserify|process|setimmediate/],
 	["vendor-ui", /marked|emojis|jdenticon|autosize|dom/],
 	["vendor", /node_modules/],
-	["components", /vue_components/]
+	["irc", /irc/]
 ];
 
 
