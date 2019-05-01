@@ -1,7 +1,22 @@
 <template>
 	<aside>
 		<div class="top">
-			<h2>Members</h2>
+			<h2>Administrators</h2>
+
+			<template v-for="member in adminMembers">
+				<div class="member">
+					<Avatar
+						:channel="member.name"
+						:authAddress="member.authAddress"
+					/>
+
+					<div class="content">
+						<div class="name">{{member.name}}</div>
+					</div>
+				</div>
+			</template>
+
+			<h2 v-if="members.length > 0">Members</h2>
 
 			<template v-for="member in members">
 				<div class="member">
@@ -12,6 +27,7 @@
 
 					<div class="content">
 						<div class="name">{{member.name}}</div>
+						<button v-if="isAdmin" @click="makeAdmin(member)">Make admin</button>
 					</div>
 				</div>
 			</template>
@@ -74,9 +90,23 @@
 					min-width: 0
 					flex: 1 1 0
 					.name
+						margin-bottom: 4px
 						overflow: hidden
 						white-space: nowrap
 						text-overflow: ellipsis
+					button
+						border: none
+						border-radius: 4px
+						padding: 4px 8px
+						border: 1px solid #F28
+						cursor: pointer
+
+						[theme=dark] &
+							background-color: #000
+							color: #FFF
+						[theme=light] &
+							background-color: #FFF
+							color: #000
 
 		.footer
 			flex: 0 0 48px
@@ -145,24 +175,53 @@
 					zeroPage.error(e.message);
 					return;
 				}
+			},
+
+			async makeAdmin({authAddress}) {
+				this.object.sendAdminSigned({
+					special: "makeAdmin",
+					authAddress
+				});
 			}
 		},
 
 		computed: {
-			members() {
+			adminMembers() {
 				return this.allMembers.filter(member => {
 					return this.object.history.some(message => {
 						return (
-							message.message.special === "join" &&
-							message.authAddress === member.authAddress
+							message.message.adminSig &&
+							message.message.special === "makeAdmin" &&
+							message.message.authAddress === member.authAddress
 						);
 					});
 				});
 			},
+			members() {
+				return this.allMembers.filter(member => {
+					return (
+						this.adminMembers.indexOf(member) == -1 &&
+						this.object.history.some(message => {
+							return (
+								message.message.special === "join" &&
+								message.authAddress === member.authAddress
+							);
+						})
+					);
+				});
+			},
 			invitedMembers() {
 				return this.allMembers.filter(member => {
-					return this.members.indexOf(member) === -1;
+					return (
+						this.adminMembers.indexOf(member) === -1 &&
+						this.members.indexOf(member) === -1
+					);
 				});
+			},
+
+			isAdmin() {
+				const authAddress = this.$store.state.siteInfo.auth_address;
+				return !!this.adminMembers.find(m => m.authAddress === authAddress);
 			}
 		},
 
