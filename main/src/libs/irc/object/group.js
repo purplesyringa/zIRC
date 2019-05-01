@@ -119,6 +119,16 @@ export default class Group extends Speakable {
 					return;
 				}
 
+				// Verify admin signature
+				if(data.adminSig) {
+					const sig = data.adminSig;
+					delete data.adminSig;
+					if(!(await CryptMessage.verify(data, this.adminAddr, sig))) {
+						return;
+					}
+					data.adminSig = true;
+				}
+
 				this._received({
 					authAddress,
 					certUserId,
@@ -205,5 +215,17 @@ export default class Group extends Speakable {
 		await this._send({
 			special: "dismiss"
 		});
+	}
+
+
+	async sendAdminSigned(message) {
+		// Get admin key
+		const userStorage = await UserStorage.get();
+		const adminKey = (userStorage.groupAdminKeys || {})[this.name];
+		if(!adminKey) {
+			throw new Error("You're not an administrator of this group");
+		}
+		message.adminSig = await CryptMessage.sign(message);
+		await this._send(message);
 	}
 }

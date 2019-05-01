@@ -15,6 +15,15 @@
 		<template v-else-if="message.special === 'dismiss'">
 			<code>{{name}}</code> dismissed the conversation.
 		</template>
+		<template v-else-if="message.adminSig">
+			<template v-if="message.special === 'makeAdmin'">
+				<code>{{name}}</code> made <code>{{nameMessage}}</code> an
+				administrator.
+			</template>
+			<template v-else>
+				<code>{{name}}</code> fucked up the messages.
+			</template>
+		</template>
 		<template v-else>
 			<code>{{name}}</code> fucked up the messages.
 		</template>

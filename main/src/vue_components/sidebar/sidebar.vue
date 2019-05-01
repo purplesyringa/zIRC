@@ -410,6 +410,12 @@
 					await this.saveChannels();
 				}
 
+				// Save the admin key
+				let userSettings = await UserStorage.get();
+				userSettings.groupAdminKeys = userSettings.groupAdminKeys || {};
+				userSettings.groupAdminKeys[`${encKey}:${adminAddr}`] = adminKey;
+				await UserStorage.set(userSettings);
+
 				// Open channel
 				this.open(`+${encKey}:${adminAddr}`);
 
@@ -421,6 +427,11 @@
 				// Join
 				await object._send({
 					special: "join"
+				});
+				// Make yourself an admin
+				await object.sendAdminSigned({
+					special: "makeAdmin",
+					authAddress: this.$store.state.siteInfo.auth_address
 				});
 			},
 
@@ -578,11 +589,17 @@
 						distName = certUserId || `@${message.message.authAddress}`;
 					}
 					if(message.message.special === "invite") {
-						body = `${origName} invited ${certUserId} to join the conversation.`;
+						body = `${origName} invited ${distName} to join the conversation.`;
 					} else if(message.message.special === "join") {
 						body = `${origName} joined the conversation.`;
 					} else if(message.message.special === "dismiss") {
 						body = `${origName} dismissed the invite.`;
+					} else if(message.message.adminSig) {
+						if(message.message.special) {
+							body = `${origName} made ${distName} an administrator.`;
+						} else {
+							body = `${origName} fucked up the messages`;
+						}
 					} else {
 						body = `${origName} fucked up the messages`;
 					}

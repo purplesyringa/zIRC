@@ -1,6 +1,7 @@
 import {zeroPage, zeroFS} from "zero";
 import UserStorage from "libs/irc/userstorage";
 import {Buffer} from "buffer";
+import stableStringify from "json-stable-stringify";
 
 export default new class CryptMessage {
 	constructor() {
@@ -76,6 +77,21 @@ export default new class CryptMessage {
 	}
 	async generateRandomSymmetricKey() {
 		return (await zeroPage.cmd("aesEncrypt", ["test"]))[0];
+	}
+
+
+	// Sign/verify via ECDSA
+	// We use stableStringify to make sure the same message is signed and
+	// verified.
+	async sign(message, privateKey) {
+		return await zeroPage.cmd("ecdsaSign", [
+			stableStringify(message), privateKey
+		]);
+	}
+	async verify(message, address, signature) {
+		return await zeroPage.cmd("ecdsaVerify", [
+			stableStringify(message), address, signature
+		]);
 	}
 	async privateKeyToAddress(privateKey) {
 		const publicKey = await zeroPage.cmd("privToPub", [
