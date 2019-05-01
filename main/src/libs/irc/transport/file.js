@@ -33,7 +33,7 @@ export default new class FileTransport extends EventEmitter {
 						// We can't use top-level import because of circular dependency loop
 						const IRC = (await import("libs/irc")).default;
 
-						const user = IRC.getObjectById(`@${authAddress}`);
+						const user = await IRC.getObjectById(`@${authAddress}`);
 						await user.initLock.peek();
 						if(user.wasTheirInviteHandled) {
 							continue;
@@ -79,7 +79,7 @@ export default new class FileTransport extends EventEmitter {
 						// We can't use top-level import because of circular dependency loop
 						const IRC = (await import("libs/irc")).default;
 
-						const group = IRC.getObjectById(`+${encKey}:${adminAddr}`);
+						const group = await IRC.getObjectById(`+${encKey}:${adminAddr}`);
 						await group.initLock.peek();
 						if(!group.wasInvited || group.hasJoined || group.hasDismissed) {
 							continue;
@@ -142,8 +142,8 @@ export default new class FileTransport extends EventEmitter {
 				files: {}
 			};
 		}
-		if(!contentJson.optional) {
-			contentJson.optional = "(2b|40)_.*\\.json";
+		if(contentJson.optional !== "40_.*\\.json") {
+			contentJson.optional = "40_.*\\.json";
 			await zeroFS.writeFile(`data/users/${authAddress}/content.json`, JSON.stringify(contentJson, null, 1))
 		}
 
