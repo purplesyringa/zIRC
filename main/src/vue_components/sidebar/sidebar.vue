@@ -399,7 +399,7 @@
 				// Add channel to list
 				if(!this.channels.some(o => o.object === object)) {
 					this.channels.push({
-						name: object.name,
+						name: `+${object.name}`,
 						object,
 						fromInviteStorage: false
 					});

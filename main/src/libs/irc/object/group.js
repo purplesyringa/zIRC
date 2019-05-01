@@ -48,10 +48,14 @@ export default class Group extends Speakable {
 			);
 		});
 
-		this.visibleName = history
-			.filter(({message: m}) => m.adminSig && m.special === "setTitle")
-			.slice(-1)[0]
-			.message.title;
+		try {
+			this.visibleName = history
+				.filter(({message: m}) => m.adminSig && m.special === "setTitle")
+				.slice(-1)[0]
+				.message.title;
+		} catch(e) {
+			this.visibleName = "New group";
+		}
 
 		this.initLock.release();
 	}
@@ -247,6 +251,7 @@ export default class Group extends Speakable {
 				special: "setTitle",
 				title
 			});
+			this.visibleName = title;
 			return;
 		}
 
