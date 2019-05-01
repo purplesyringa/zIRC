@@ -161,17 +161,46 @@ export default new class FileTransport extends EventEmitter {
 	async pin(authAddress, id) {
 		const hash = sha256(id);
 		const fileName = id.charCodeAt(0).toString(16) + "_" + hash;
-		const path = `data/users/${authAddress}/${fileName}.json`;
 
-		const fileInfo = await zeroPage.cmd("optionalFileInfo", [path]);
-		if(!fileInfo) {
-			return;
+		let authAddresses;
+		if(authAddress === "*") {
+			// All addresses
+			authAddresses = (
+				(await zeroPage.cmd("fileList", ["data/users"]))
+					.filter(path => path.endsWith(`/${fileName}.json`))
+					.map(path => path.split("/")[0])
+			);
+		} else {
+			// Specific address
+			authAddresses = [authAddress];
 		}
-		if(!fileInfo.is_pinned) {
-			await zeroPage.cmd("optionalFilePin", [path]);
+
+		console.log("Pin", authAddresses, "/", id);
+
+		// Get optional file info
+		const allInfos = (await Promise.all(
+			authAddresses
+				.map(authAddress => `data/users/${authAddress}/${fileName}.json`)
+				.map(async path => await zeroPage.cmd("optionalFileInfo", [path]))
+		))
+			.filter(info => info);
+
+		// List unpinned files
+		const unpinned = allInfos
+			.filter(info => !info.is_pinned)
+			.map(info => info.inner_path);
+		if(unpinned.length) {
+			await zeroPage.cmd("optionalFilePin", [unpinned]);
 		}
-		if(!fileInfo.is_downloaded) {
-			await zeroPage.cmd("fileNeed", [path]);
-		}
+
+		// List undownloaded files
+		const undownloaded = allInfos
+			.filter(info => !info.is_downloaded)
+			.map(info => info.inner_path);
+		await Promise.all(
+			undownloaded.map(
+				async path => await zeroPage.cmd("fileNeed", [path, 1])
+			)
+		);
 	}
 };
