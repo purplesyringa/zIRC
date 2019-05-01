@@ -14,6 +14,7 @@ export default class Speakable extends EventEmitter {
 	constructor(name) {
 		super();
 		this.name = name;
+		this.visibleName = name;
 		this.history = null;
 		this.historyLoaded = false;
 		this.received = {};

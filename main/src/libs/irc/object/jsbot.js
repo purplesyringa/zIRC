@@ -107,7 +107,6 @@ export default class JSBot extends Bot {
 	constructor(name, path) {
 		super(name, path);
 
-		this.name = name;
 		this.path = path;
 
 		this.on("start", this.onStart);

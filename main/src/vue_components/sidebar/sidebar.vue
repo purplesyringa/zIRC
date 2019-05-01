@@ -17,7 +17,7 @@
 
 					<div class="content">
 						<div class="invite">
-							<div class="name">{{channel.name}}</div>
+							<div class="name">{{channel.object.visibleName}}</div>
 							<div class="invite-status">
 								<button class="accept" @click="acceptInvite(channel)">Accept</button>
 								<button class="dismiss" @click="dismissInvite(channel)">Dismiss</button>
@@ -39,14 +39,14 @@
 
 					<div class="content">
 						<div class="invite">
-							<div class="name">{{channel.name}}</div>
+							<div class="name">{{channel.object.visibleName}}</div>
 							<div class="invite-status">
 								<button class="accept" @click="invite(channel)">Invite</button>
 							</div>
 						</div>
 					</div>
 
-					<span class="close" @click.stop="removeChannel(channel.name)">
+					<span class="close" @click.stop="removeChannel(channel)">
 						&times;
 					</span>
 				</div>
@@ -64,7 +64,7 @@
 
 					<div class="content">
 						<div class="invite">
-							<div class="name">{{channel.name}}</div>
+							<div class="name">{{channel.object.visibleName}}</div>
 							<div v-if="!channel.object.wasOurInviteHandled" class="invite-status">Invited</div>
 							<div v-else class="invite-status">Dismissed :(</div>
 						</div>
@@ -88,7 +88,7 @@
 
 					<div class="content">
 						<div class="invite">
-							<div class="name">{{channel.name}}</div>
+							<div class="name">{{channel.object.visibleName}}</div>
 							<div class="invite-status">
 								<button class="accept" @click="acceptInvite(channel)">Accept</button>
 								<button class="dismiss" @click="dismissInvite(channel)">Dismiss</button>
@@ -110,7 +110,7 @@
 					/>
 
 					<div class="content">
-						<div class="name">{{channel.name}}</div>
+						<div class="name">{{channel.object.visibleName}}</div>
 
 						<SmallMessage
 							v-if="
@@ -131,7 +131,7 @@
 						{{channel.object.countUnread}}
 					</span>
 
-					<span class="close" @click.stop="removeChannel(channel.name)">
+					<span class="close" @click.stop="removeChannel(channel)">
 						&times;
 					</span>
 				</div>
@@ -379,7 +379,7 @@
 			},
 
 			async removeChannel(channel) {
-				this.channels = this.channels.filter(o => o.name !== channel);
+				this.channels = this.channels.filter(o => o !== channel);
 
 				await this.saveChannels();
 
@@ -399,7 +399,7 @@
 				// Add channel to list
 				if(!this.channels.some(o => o.object === object)) {
 					this.channels.push({
-						name: `+${encKey}:${adminAddr}`,
+						name: object.name,
 						object,
 						fromInviteStorage: false
 					});
@@ -458,7 +458,7 @@
 				} catch(e) {
 					zeroPage.error(`Error while dismissing invite: ${e}`);
 				}
-				this.removeChannel(channel.name);
+				this.removeChannel(channel);
 			},
 			async invite(channel) {
 				try {
@@ -481,7 +481,7 @@
 
 			async cancelInvite(channel) {
 				await channel.object.cancelInvite();
-				await this.removeChannel(channel.name);
+				await this.removeChannel(channel);
 			},
 
 			async renderInvites() {
@@ -504,7 +504,7 @@
 							const group = await IRC.getObjectById(`+${invite.encKey}:${invite.adminAddr}`);
 							await group.initLock.peek();
 							return {
-								name: `+${invite.encKey}:${invite.adminAddr}`,
+								name: group.name,
 								object: group,
 								fromInviteStorage: true
 							};
