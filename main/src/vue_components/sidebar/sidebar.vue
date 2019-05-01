@@ -285,6 +285,7 @@
 			return {
 				channels: [],
 				invites: [],
+				eventListeners: {},
 				unreadInterval: null,
 				unreadIntervalParity: false, 
 				User,
@@ -349,6 +350,7 @@
 						} catch(e) {
 							zeroPage.error(`Error while inviting user: ${e}`);
 							this.channels = this.channels.filter(o => o.object !== object);
+							this.bindEvents();
 							return;
 						}
 						doOpen = false;
@@ -380,6 +382,7 @@
 
 			async removeChannel(channel) {
 				this.channels = this.channels.filter(o => o !== channel);
+				this.bindEvents();
 
 				await this.saveChannels();
 
@@ -544,14 +547,31 @@
 
 			bindEvents() {
 				// (Re)bind message event listeners
+				for(const listener of Object.values(this.eventListeners)) {
+					listener.bound = false;
+				}
 				for(const channel of this.channels) {
-					if(channel.eventListener) {
-						channel.object.off("received", channel.eventListener);
+					if(this.eventListeners[channel.name]) {
+						channel.object.off(
+							"received",
+							this.eventListeners[channel.name].f
+						);
+					} else {
+						this.eventListeners[channel.name] = {};
 					}
-					channel.eventListener = message => {
+					let listener = this.eventListeners[channel.name];
+					listener.f = message => {
 						this.showNotification(message, channel);
 					};
-					channel.object.on("received", channel.eventListener);
+					listener.object = channel.object;
+					listener.bound = true;
+					channel.object.on("received", listener.f);
+				}
+				for(const [name, {bound, f, object}] of Object.entries(this.eventListeners)) {
+					if(!bound) {
+						object.off("received", f);
+						delete this.eventListeners[name];
+					}
 				}
 			},
 
