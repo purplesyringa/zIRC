@@ -12,6 +12,9 @@
 		<template v-else-if="message.special === 'join'">
 			<code>{{name}}</code> joined the conversation.
 		</template>
+		<template v-else-if="message.special === 'dismiss'">
+			<code>{{name}}</code> dismissed the conversation.
+		</template>
 		<template v-else>
 			<code>{{name}}</code> fucked up the messages.
 		</template>

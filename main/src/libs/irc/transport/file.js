@@ -64,6 +64,29 @@ export default new class FileTransport extends EventEmitter {
 							encId
 						});
 					}
+
+					// Or maybe it's a group invite?
+					for(const invite of contentJson.group_invites || []) {
+						let encKey;
+						try {
+							encKey = await CryptMessage.decrypt(invite.for_invitee);
+						} catch(e) {
+							continue;
+						}
+
+						// We are invited. Check whether we have dismissed/accepted the invite before
+						// We can't use top-level import because of circular dependency loop
+						const IRC = (await import("libs/irc")).default;
+
+						const group = IRC.getObjectById(`+${encKey}`);
+						if(group.hasJoined || group.hasDismissed) {
+							continue;
+						}
+
+						this.emit("groupInvite", {
+							encKey
+						});
+					}
 				} else {
 					const authAddress = event[1].split("/")[2];
 

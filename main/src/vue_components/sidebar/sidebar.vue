@@ -76,6 +76,28 @@
 				</div>
 
 				<div
+					v-if="(channel.object instanceof Group) && channel.object.wasInvited && !channel.object.hasJoined && !channel.object.hasDismissed"
+
+					:class="['channel', {current: current === channel.name}]"
+				>
+					<!-- Show invite -->
+					<Avatar
+						:channel="channel.name"
+						:authAddress="channel.object.name"
+					/>
+
+					<div class="content">
+						<div class="invite">
+							<div class="name">{{channel.name}}</div>
+							<div class="invite-status">
+								<button class="accept" @click="acceptInvite(channel)">Accept</button>
+								<button class="dismiss" @click="dismissInvite(channel)">Dismiss</button>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div
 					v-else
 
 					:class="['channel', {current: current === channel.name}]"
@@ -252,6 +274,7 @@
 	import CryptMessage from "libs/irc/cryptmessage";
 	import UserStorage from "libs/irc/userstorage";
 	import User from "libs/irc/object/user";
+	import Group from "libs/irc/object/group";
 	import EventEmitter from "wolfy87-eventemitter";
 
 	export default {
@@ -262,7 +285,8 @@
 				invites: [],
 				unreadInterval: null,
 				unreadIntervalParity: false, 
-				User
+				User,
+				Group
 			};
 		},
 
@@ -401,7 +425,7 @@
 				try {
 					await channel.object.acceptInvite();
 				} catch(e) {
-					zeroPage.error(`Error while accepting user's invite: ${e}`);
+					zeroPage.error(`Error while accepting invite: ${e}`);
 					return;
 				}
 
@@ -419,8 +443,9 @@
 				try {
 					await channel.object.dismissInvite();
 				} catch(e) {
-					zeroPage.error(`Error while dismissing user's invite: ${e}`);
+					zeroPage.error(`Error while dismissing invite: ${e}`);
 				}
+				this.removeChannel(channel.name);
 			},
 			async invite(channel) {
 				try {
@@ -460,7 +485,18 @@
 					})
 				);
 
-				this.channels = inviteChannels.concat(this.channels)
+				const inviteGroups = await Promise.all(
+					InviteStorage.groupInvites.map(async invite => {
+						const group = await IRC.getObjectById(`+${invite.encKey}`);
+						return {
+							name: `+${invite.encKey}`,
+							object: group,
+							fromInviteStorage: true
+						};
+					})
+				);
+
+				this.channels = inviteChannels.concat(inviteGroups, this.channels)
 					.filter((val, idx, arr) => {
 						return arr.findIndex(o => o.object === val.object) === idx;
 					});
@@ -507,20 +543,48 @@
 
 				// Only show the notification if the user is on another tab, or
 				// if the user is on another channel
-				if(
-					channel.name !== this.current ||
-					document.hidden
-				) {
-					// Generate random notification ID
-					const id = Math.random().toString(36).substr(2);
-					// Send the notification
-					let title = message.certUserId;
-					if(channel.name !== message.certUserId) {
-						title += ` (${channel.name})`;
+				if(channel.name === this.current && !document.hidden) {
+					return;
+				}
+
+				// Generate random notification ID
+				const id = Math.random().toString(36).substr(2);
+				// Send the notification
+				let title = message.certUserId;
+				if(channel.name !== message.certUserId) {
+					title += ` (${channel.name})`;
+				}
+				// Body
+				let body;
+
+				if(message.message.special) {
+					// Prepare
+					const origName = message.certUserId || `@${message.authAddress}`;
+					let distName;
+					if(message.message.authAddress) {
+						const certUserId = await zeroDB.query(dedent`
+							SELECT cert_user_id
+							FROM json
+							WHERE (
+								directory = :directory AND
+								file_name = "content.json"
+							)
+						`, {
+							directory: `users/${message.message.authAddress}`
+						});
+						distName = certUserId || `@${message.message.authAddress}`;
 					}
-					// Body
-					let body = message.message.text.replace(/\s+/g, " ").trim();
-					// Buttons
+					if(message.message.special === "invite") {
+						body = `${origName} invited ${certUserId} to join the conversation.`;
+					} else if(message.message.special === "join") {
+						body = `${origName} joined the conversation.`;
+					} else if(message.message.special === "dismiss") {
+						body = `${origName} dismissed the invite.`;
+					} else {
+						body = `${origName} fucked up the messages`;
+					}
+				} else {
+					body = message.message.text.replace(/\s+/g, " ").trim();
 					if(message.message.buttons) {
 						body += "\n";
 						for(const row of message.message.buttons) {
@@ -528,33 +592,33 @@
 							body += row.map(button => `[${button.text}]`).join(" ");
 						}
 					}
-					const options = {
-						body,
-						renotify: true,
-						tag: `zIRC:${channel.name}`,
-						focus_tab: true
-					};
-					zeroPage.cmd("wrapperWebNotification", [title, id, options]);
-
-					setTimeout(() => {
-						zeroPage.cmd("wrapperCloseWebNotification", [id]);
-					}, 5000);
-
-					// Add event handlers
-					const onClick = e => {
-						if(e.params.id === id) {
-							this.open(channel.name);
-						}
-					};
-					zeroPage.on("webNotificationClick", onClick);
-					const onClose = e => {
-						if(e.params.id === id) {
-							zeroPage.off("webNotificationClick", onClick);
-							zeroPage.off("webNotificationClose", onClose);
-						}
-					};
-					zeroPage.on("webNotificationClose", onClose);
 				}
+				const options = {
+					body,
+					renotify: true,
+					tag: `zIRC:${channel.name}`,
+					focus_tab: true
+				};
+				zeroPage.cmd("wrapperWebNotification", [title, id, options]);
+
+				setTimeout(() => {
+					zeroPage.cmd("wrapperCloseWebNotification", [id]);
+				}, 5000);
+
+				// Add event handlers
+				const onClick = e => {
+					if(e.params.id === id) {
+						this.open(channel.name);
+					}
+				};
+				zeroPage.on("webNotificationClick", onClick);
+				const onClose = e => {
+					if(e.params.id === id) {
+						zeroPage.off("webNotificationClick", onClick);
+						zeroPage.off("webNotificationClose", onClose);
+					}
+				};
+				zeroPage.on("webNotificationClose", onClose);
 			}
 		},
 

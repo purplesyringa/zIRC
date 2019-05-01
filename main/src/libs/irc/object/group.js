@@ -2,11 +2,52 @@ import Speakable from "libs/irc/speakable";
 import {zeroPage, zeroFS, zeroDB} from "zero";
 import {sha256} from "libs/crypto";
 import CryptMessage from "libs/irc/cryptmessage";
+import UserStorage from "libs/irc/userstorage";
+import Lock from "libs/lock";
 
 export default class Group extends Speakable {
 	constructor(encKey) {
 		super(encKey);
 		this.encKey = encKey;
+
+		this.initLock = new Lock();
+
+		this.wasInvited = false;
+		this.hasJoined = false;
+		this.hasDismissed = false;
+
+		this.init();
+		UserStorage.on("changeUser", () => this.init());
+	}
+
+	async init() {
+		await this.initLock.acquire();
+
+		const history = await this._loadHistory();
+
+		const siteInfo = await zeroPage.getSiteInfo();
+		const authAddress = siteInfo.auth_address;
+
+		this.wasInvited = history.some(message => {
+			return (
+				message.message.special === "invite" &&
+				message.message.authAddress === authAddress
+			);
+		});
+		this.hasJoined = history.some(message => {
+			return (
+				message.message.special === "join" &&
+				message.authAddress === authAddress
+			);
+		});
+		this.hasDismissed = history.some(message => {
+			return (
+				message.message.special === "dismiss" &&
+				message.authAddress === authAddress
+			);
+		});
+
+		this.initLock.release();
 	}
 
 	async _loadHistory() {
@@ -149,5 +190,19 @@ export default class Group extends Speakable {
 			JSON.stringify(content, null, 1)
 		);
 		zeroPage.publish(`data/users/${authAddress}/content.json`);
+	}
+
+
+	async acceptInvite() {
+		this.hasJoined = true;
+		await this._send({
+			special: "join"
+		});
+	}
+	async dismissInvite() {
+		this.hasDismissed = true;
+		await this._send({
+			special: "dismiss"
+		});
 	}
 }
