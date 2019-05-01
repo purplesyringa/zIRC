@@ -592,7 +592,7 @@
 				// Send the notification
 				let title = message.certUserId;
 				if(channel.name !== message.certUserId) {
-					title += ` (${channel.name})`;
+					title += ` (${channel.object.visibleName})`;
 				}
 				// Body
 				let body;
