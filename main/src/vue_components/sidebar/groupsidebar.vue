@@ -174,29 +174,35 @@
 						return [];
 					}
 
-					return await Promise.all(
-						this.object.history
-							.filter(message => message.message.special === "invite")
-							.map(async message => {
-								const member = message.message.authAddress;
+					return (
+						await Promise.all(
+							this.object.history
+								.filter(message => message.message.special === "invite")
+								.map(async message => {
+									const member = message.message.authAddress;
 
-								const certUserId = ((await zeroDB.query(dedent`
-									SELECT cert_user_id
-									FROM json
-									WHERE (
-										directory = :directory AND
-										file_name = "content.json"
-									)
-								`, {
-									directory: `users/${member}`
-								}))[0] || {}).cert_user_id;
+									const certUserId = ((await zeroDB.query(dedent`
+										SELECT cert_user_id
+										FROM json
+										WHERE (
+											directory = :directory AND
+											file_name = "content.json"
+										)
+									`, {
+										directory: `users/${member}`
+									}))[0] || {}).cert_user_id;
 
-								return {
-									name: certUserId || `@${member}`,
-									authAddress: member
-								};
-							})
-					);
+									return {
+										name: certUserId || `@${member}`,
+										authAddress: member
+									};
+								})
+						)
+					).filter((member, idx, arr) => {
+						return arr.findIndex(m => {
+							return m.authAddress === member.authAddress;
+						}) === idx;
+					});
 				}
 			}
 		}
