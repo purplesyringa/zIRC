@@ -76,7 +76,7 @@
 				</div>
 
 				<div
-					v-if="(channel.object instanceof Group) && channel.object.wasInvited && !channel.object.hasJoined && !channel.object.hasDismissed"
+					v-else-if="(channel.object instanceof Group) && channel.object.wasInvited && !channel.object.hasJoined && !channel.object.hasDismissed"
 
 					:class="['channel', {current: current === channel.name}]"
 				>
