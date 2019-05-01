@@ -234,8 +234,7 @@ export default class Group extends Speakable {
 
 	async sendAdminSigned(message) {
 		// Get admin key
-		const userStorage = await UserStorage.get();
-		const adminKey = (userStorage.groupAdminKeys || {})[this.name.substr(1)];
+		const adminKey = (UserStorage.storage.groupAdminKeys || {})[this.name.substr(1)];
 		if(!adminKey) {
 			throw new Error("You're not an administrator of this group");
 		}

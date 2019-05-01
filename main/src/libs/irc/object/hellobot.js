@@ -118,8 +118,7 @@ export default class HelloBot extends Bot {
 		} else if(message.text === "/notifications") {
 			await sleep(1000);
 
-			const storage = await UserStorage.get();
-			const notificationsEnabled = storage.notificationsEnabled;
+			const notificationsEnabled = UserStorage.storage.notificationsEnabled;
 
 			this.send(
 				dedent`
@@ -350,9 +349,8 @@ export default class HelloBot extends Bot {
 			if(message.text.toLowerCase() === "enable") {
 				this.send("Ok, I'm enabling notifications!");
 
-				const storage = await UserStorage.get();
-				storage.notificationsEnabled = true;
-				await UserStorage.set(storage);
+				UserStorage.storage.notificationsEnabled = true;
+				await UserStorage.save();
 
 				await zeroPage.cmd("wrapperWebNotification", [
 					"Notifications are enabled!",
@@ -366,9 +364,8 @@ export default class HelloBot extends Bot {
 			} else if(message.text.toLowerCase() === "disable") {
 				this.send("Ok, I'm disabling notifications :(");
 
-				const storage = await UserStorage.get();
-				storage.notificationsEnabled = false;
-				await UserStorage.set(storage);
+				UserStorage.storage.notificationsEnabled = false;
+				await UserStorage.save();
 
 				this.send("Done.");
 			}

@@ -306,9 +306,8 @@
 
 		methods: {
 			async reloadAll() {
-				const userSettings = await UserStorage.get();
 				this.channels = await Promise.all(
-					((userSettings || {}).channels || [
+					(UserStorage.storage.channels || [
 						"/HelloBot"
 					]).map(async name => {
 						return {
@@ -411,10 +410,9 @@
 				}
 
 				// Save the admin key
-				let userSettings = await UserStorage.get();
-				userSettings.groupAdminKeys = userSettings.groupAdminKeys || {};
-				userSettings.groupAdminKeys[`${encKey}:${adminAddr}`] = adminKey;
-				await UserStorage.set(userSettings);
+				UserStorage.storage.groupAdminKeys = UserStorage.storage.groupAdminKeys || {};
+				UserStorage.storage.groupAdminKeys[`${encKey}:${adminAddr}`] = adminKey;
+				await UserStorage.save();
 
 				// Open channel
 				this.open(`+${encKey}:${adminAddr}`);
@@ -528,11 +526,10 @@
 
 			async saveChannels() {
 				// Save
-				let userSettings = await UserStorage.get();
-				userSettings.channels = this.channels
+				UserStorage.storage.channels = this.channels
 					.filter(o => !o.fromInviteStorage)
 					.map(o => o.name);
-				await UserStorage.set(userSettings);
+				await UserStorage.save();
 			},
 
 			async updateTitle() {
@@ -560,7 +557,7 @@
 
 			async showNotification(message, channel) {
 				// First, check whether notifications are enabled
-				if(!(await UserStorage.get()).notificationsEnabled) {
+				if(!UserStorage.storage.notificationsEnabled) {
 					return;
 				}
 

@@ -37,7 +37,7 @@ export default class Speakable extends EventEmitter {
 				await this.initLock.peek();
 			}
 
-			const storage = await UserStorage.get();
+			const storage = UserStorage.storage;
 			if(!storage.lastRead || !storage.lastRead[this.name]) {
 				return;
 			}
@@ -178,9 +178,9 @@ export default class Speakable extends EventEmitter {
 		this.countUnread = 0;
 
 		// Save lastRead
-		const storage = await UserStorage.get();
+		const storage = UserStorage.storage;
 		storage.lastRead = storage.lastRead || {};
 		storage.lastRead[this.name] = this.lastRead;
-		await UserStorage.set(storage);
+		await UserStorage.save();
 	}
 }
