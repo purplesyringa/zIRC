@@ -3,6 +3,7 @@ import {zeroPage, zeroFS, zeroDB} from "zero";
 import {sha256} from "libs/crypto";
 import CryptMessage from "libs/irc/cryptmessage";
 import UserStorage from "libs/irc/userstorage";
+import FileTransport from "libs/irc/transport/file";
 import Lock from "libs/lock";
 
 export default class Group extends Speakable {
@@ -64,6 +65,9 @@ export default class Group extends Speakable {
 		if(!this.encKey) {
 			return [];
 		}
+
+		// Download messages
+		await FileTransport.pin("*", `+${this.encKey}:${this.adminAddr}`);
 
 		const hash = sha256(`+${this.encKey}:${this.adminAddr}`);
 

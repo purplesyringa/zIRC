@@ -142,7 +142,7 @@ export default new class FileTransport extends EventEmitter {
 				files: {}
 			};
 		}
-		if(!contentJson.optional) {
+		if(contentJson.optional !== "(2b|40)_.*\\.json") {
 			contentJson.optional = "(2b|40)_.*\\.json";
 			await zeroFS.writeFile(`data/users/${authAddress}/content.json`, JSON.stringify(contentJson, null, 1))
 		}
