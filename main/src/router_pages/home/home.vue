@@ -122,12 +122,16 @@
 			this.history = await this.currentObject.loadHistory();
 			this.currentObject.on("received", this.onReceived);
 			this.currentObject.markRead();
+
+			document.addEventListener("visibilitychange", this.onVisibilityChange);
 		},
 		destroyed() {
 			if(this.currentObject) {
 				this.history = [];
 				this.currentObject.off("received", this.onReceived);
 			}
+
+			document.removeEventListener("visibilitychange", this.onVisibilityChange);
 		},
 
 		methods: {
@@ -165,6 +169,11 @@
 			},
 
 			onReceived(obj) {
+				if(!document.hidden) {
+					this.currentObject.markRead();
+				}
+			},
+			onVisibilityChange() {
 				if(!document.hidden) {
 					this.currentObject.markRead();
 				}
