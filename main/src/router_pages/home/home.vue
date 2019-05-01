@@ -27,7 +27,7 @@
 			</div>
 
 			<div class="messages">
-				<template v-for="message in reverseHistory">
+				<template v-for="message in latestHistory">
 					<SpecialMessage
 						v-if="message.special"
 						v-bind="message"
@@ -165,7 +165,9 @@
 			},
 
 			onReceived(obj) {
-				this.currentObject.markRead();
+				if(!document.hidden) {
+					this.currentObject.markRead();
+				}
 			},
 
 			async deleteHistory() {
@@ -282,6 +284,9 @@
 					});
 				}
 				return result;
+			},
+			latestHistory() {
+				return this.reverseHistory.slice(0, 100);
 			}
 		}
 	};
