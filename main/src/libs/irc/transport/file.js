@@ -157,4 +157,21 @@ export default new class FileTransport extends EventEmitter {
 			}
 		);
 	}
+
+	async pin(authAddress, id) {
+		const hash = sha256(id);
+		const fileName = id.charCodeAt(0).toString(16) + "_" + hash;
+		const path = `data/users/${authAddress}/${fileName}.json`;
+
+		const fileInfo = await zeroPage.cmd("optionalFileInfo", [path]);
+		if(!fileInfo) {
+			return;
+		}
+		if(!fileInfo.is_pinned) {
+			await zeroPage.cmd("optionalFilePin", [path]);
+		}
+		if(!fileInfo.is_downloaded) {
+			await zeroPage.cmd("fileNeed", [path]);
+		}
+	}
 };

@@ -496,9 +496,11 @@
 
 				const inviteChannels = await Promise.all(
 					InviteStorage.invites.map(async invite => {
-						const user = await IRC.getObjectById(`@${invite.authAddress}`);
+						const user = await IRC.getObjectById(
+							invite.certUserId || `@${invite.authAddress}`
+						);
 						return {
-							name: invite.certUserId || `@${invite.authAddress}`,
+							name: user.visibleName,
 							object: user,
 							fromInviteStorage: true
 						};

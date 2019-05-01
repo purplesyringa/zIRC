@@ -4,10 +4,17 @@ import {sha256} from "libs/crypto";
 import CryptMessage from "libs/irc/cryptmessage";
 import InviteStorage from "libs/irc/invitestorage";
 import UserStorage from "libs/irc/userstorage";
+import FileTransport from "libs/irc/transport/file";
 import Lock from "libs/lock";
 
 export default class User extends Speakable {
 	static async get(name) {
+		const visibleName = (
+			name.startsWith("cert_user_id:")
+				? name.replace("cert_user_id:", "")
+				: `@${name.replace("auth_address:", "")}`
+		);
+
 		// Set correct name
 		let authAddress;
 		if(name.startsWith("auth_address:")) {
@@ -40,12 +47,13 @@ export default class User extends Speakable {
 			name = "@unknown";
 		}
 
-		return new this(name);
+		return new this(name, visibleName);
 	}
 
 
-	constructor(name) {
+	constructor(name, visibleName) {
 		super(name);
+		this.visibleName = visibleName;
 		this.theyInvited = false;
 		this.weInvited = false;
 		this.wasTheirInviteHandled = false;
@@ -155,6 +163,9 @@ export default class User extends Speakable {
 		}
 
 		const hash = sha256(`@${this.encId}`);
+
+		// Download user optional file
+		await FileTransport.pin(this.name.substr(1), `@${this.encId}`);
 
 		const response = await zeroDB.query(dedent`
 			SELECT
