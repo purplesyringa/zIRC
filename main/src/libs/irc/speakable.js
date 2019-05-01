@@ -33,8 +33,7 @@ export default class Speakable extends EventEmitter {
 		(async () => {
 			// Wait for init (e.g. in User)
 			if(this.initLock) {
-				await this.initLock.acquire();
-				this.initLock.release();
+				await this.initLock.peek();
 			}
 
 			const storage = await UserStorage.get();
@@ -55,8 +54,7 @@ export default class Speakable extends EventEmitter {
 	async loadHistory() {
 		// Wait for init (e.g. in User)
 		if(this.initLock) {
-			await this.initLock.acquire();
-			this.initLock.release();
+			await this.initLock.peek();
 		}
 
 		if(!await this._doesNeedToLoadHistory()) {

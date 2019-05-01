@@ -340,8 +340,7 @@
 
 				// Invite user (in case they weren't invited before)
 				if(object instanceof User) {
-					await object.initLock.acquire();
-					object.initLock.release();
+					await object.initLock.peek();
 
 					if(!object.weInvited && !object.wasTheirInviteHandled) {
 						// Invite user
@@ -503,8 +502,7 @@
 					await Promise.all(
 						InviteStorage.groupInvites.map(async invite => {
 							const group = await IRC.getObjectById(`+${invite.encKey}:${invite.adminAddr}`);
-							await group.initLock.acquire();
-							group.initLock.release();
+							await group.initLock.peek();
 							return {
 								name: `+${invite.encKey}:${invite.adminAddr}`,
 								object: group,

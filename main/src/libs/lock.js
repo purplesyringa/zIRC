@@ -22,4 +22,9 @@ export default class Lock {
 			this.acquired = false;
 		}
 	}
+
+	async peek() {
+		await this.acquire();
+		this.release();
+	}
 }

@@ -34,8 +34,7 @@ export default new class FileTransport extends EventEmitter {
 						const IRC = (await import("libs/irc")).default;
 
 						const user = IRC.getObjectById(`@${authAddress}`);
-						await user.initLock.acquire();
-						user.initLock.release();
+						await user.initLock.peek();
 						if(user.wasTheirInviteHandled) {
 							continue;
 						}
@@ -81,8 +80,7 @@ export default new class FileTransport extends EventEmitter {
 						const IRC = (await import("libs/irc")).default;
 
 						const group = IRC.getObjectById(`+${encKey}:${adminAddr}`);
-						await group.initLock.acquire();
-						group.initLock.release();
+						await group.initLock.peek();
 						if(!group.wasInvited || group.hasJoined || group.hasDismissed) {
 							continue;
 						}
