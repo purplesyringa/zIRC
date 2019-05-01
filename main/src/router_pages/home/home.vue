@@ -54,11 +54,13 @@
 	.root
 		display: flex
 		flex-direction: row
-		flex: 1 0 0
+		flex: 1 1 0
+		overflow-x: hidden
 
 		> main
 			padding: 32px
-			flex: 1 0 0
+			flex: 1 1 0
+			overflow-x: hidden
 			overflow-y: auto
 
 			.input, button

@@ -147,6 +147,7 @@
 
 <style lang="sass" scoped>
 	aside
+		flex: 0 0 320px
 		width: 320px
 		height: 100%
 		overflow-y: auto
