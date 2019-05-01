@@ -360,7 +360,7 @@
 				}
 
 				// Add channel to list
-				if(!this.channels.some(o => !o.fromInviteStorage && o.object !== object)) {
+				if(!this.channels.some(o => !o.fromInviteStorage && o.object === object)) {
 					this.channels.push({
 						name: channel,
 						object,
