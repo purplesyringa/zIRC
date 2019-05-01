@@ -499,16 +499,21 @@
 					})
 				);
 
-				const inviteGroups = await Promise.all(
-					InviteStorage.groupInvites.map(async invite => {
-						const group = await IRC.getObjectById(`+${invite.encKey}:${invite.adminAddr}`);
-						return {
-							name: `+${invite.encKey}:${invite.adminAddr}`,
-							object: group,
-							fromInviteStorage: true
-						};
-					})
-				);
+				const inviteGroups = (
+					await Promise.all(
+						InviteStorage.groupInvites.map(async invite => {
+							const group = await IRC.getObjectById(`+${invite.encKey}:${invite.adminAddr}`);
+							await group.initLock.acquire();
+							group.initLock.release();
+							return {
+								name: `+${invite.encKey}:${invite.adminAddr}`,
+								object: group,
+								fromInviteStorage: true
+							};
+						})
+					)
+				)
+					.filter(o => !o.object.hasJoined && !o.object.hasDismissed);
 
 				this.channels = inviteChannels.concat(inviteGroups, this.channels)
 					.filter((val, idx, arr) => {
