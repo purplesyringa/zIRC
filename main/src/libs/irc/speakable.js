@@ -14,6 +14,7 @@ export default class Speakable extends EventEmitter {
 	constructor(name) {
 		super();
 		this.name = name;
+		this.visibleName = name;
 		this.history = null;
 		this.historyLoaded = false;
 		this.received = {};
@@ -33,8 +34,7 @@ export default class Speakable extends EventEmitter {
 		(async () => {
 			// Wait for init (e.g. in User)
 			if(this.initLock) {
-				await this.initLock.acquire();
-				this.initLock.release();
+				await this.initLock.peek();
 			}
 
 			const storage = await UserStorage.get();
@@ -55,8 +55,7 @@ export default class Speakable extends EventEmitter {
 	async loadHistory() {
 		// Wait for init (e.g. in User)
 		if(this.initLock) {
-			await this.initLock.acquire();
-			this.initLock.release();
+			await this.initLock.peek();
 		}
 
 		if(!await this._doesNeedToLoadHistory()) {
@@ -117,10 +116,16 @@ export default class Speakable extends EventEmitter {
 	}
 
 	async send(message) {
+		await this._send({
+			text: message
+		});
+	}
+
+	async _send(message) {
 		message = {
 			date: Date.now(),
-			text: message,
-			id: Math.random().toString(36).substr(2) + "/" + Date.now()
+			id: Math.random().toString(36).substr(2) + "/" + Date.now(),
+			...message
 		};
 
 		// Receive, in case the transfers are slow

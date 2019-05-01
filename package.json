@@ -64,6 +64,7 @@
     "highlight.js": "^9.15.6",
     "hoek": "4.2.1",
     "jdenticon": "^2.1.1",
+    "json-stable-stringify": "^1.0.1",
     "marked": "^0.6.2",
     "material-icons": "^0.2.3",
     "node-sass": "^4.7.2",

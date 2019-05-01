@@ -307,7 +307,7 @@ export default class HelloBot extends Bot {
 				this.send(
 					dedent`
 						Oh. Okaay, you can always setup the permanent storage
-						any time later by accessing me (reminder: press "+",
+						any time later by accessing me (reminder: press "Join",
 						then "/HelloBot" ^_^) and pressing "/storage" button.
 						When you're ready to start using IRC, tell me.
 					`,
@@ -329,8 +329,8 @@ export default class HelloBot extends Bot {
 			this.send(dedent`
 				Okay. Now, look at the sidebar at the left << Right now, you
 				only see /HelloBot (that's me!!) here. Let's start our tour by
-				opening #lobby. Press the + at the bottom-left corner and type
-				in "#lobby". Now, enjoy using the IRC! ^_^
+				opening #lobby. Press the "Join" button at the bottom-left
+				corner and type in "#lobby". Now, enjoy using the IRC! ^_^
 			`);
 			await sleep(1000);
 

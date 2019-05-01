@@ -34,8 +34,7 @@ export default new class FileTransport extends EventEmitter {
 						const IRC = (await import("libs/irc")).default;
 
 						const user = IRC.getObjectById(`@${authAddress}`);
-						await user.initLock.acquire();
-						user.initLock.release();
+						await user.initLock.peek();
 						if(user.wasTheirInviteHandled) {
 							continue;
 						}
@@ -62,6 +61,33 @@ export default new class FileTransport extends EventEmitter {
 							certUserId,
 							result,
 							encId
+						});
+					}
+
+					// Or maybe it's a group invite?
+					for(const invite of contentJson.group_invites || []) {
+						let encKey, adminAddr;
+						try {
+							[encKey, adminAddr] = (
+								await CryptMessage.decrypt(invite.for_invitee)
+							).split(":");
+						} catch(e) {
+							continue;
+						}
+
+						// We are invited. Check whether we have dismissed/accepted the invite before
+						// We can't use top-level import because of circular dependency loop
+						const IRC = (await import("libs/irc")).default;
+
+						const group = IRC.getObjectById(`+${encKey}:${adminAddr}`);
+						await group.initLock.peek();
+						if(!group.wasInvited || group.hasJoined || group.hasDismissed) {
+							continue;
+						}
+
+						this.emit("groupInvite", {
+							encKey,
+							adminAddr
 						});
 					}
 				} else {

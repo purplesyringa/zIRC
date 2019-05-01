@@ -1,5 +1,7 @@
 import {zeroPage, zeroFS} from "zero";
 import UserStorage from "libs/irc/userstorage";
+import {Buffer} from "buffer";
+import stableStringify from "json-stable-stringify";
 
 export default new class CryptMessage {
 	constructor() {
@@ -55,5 +57,46 @@ export default new class CryptMessage {
 			throw new Error("Could not decrypt message");
 		}
 		return JSON.parse(res);
+	}
+
+	// Encrypt/decrypt via AES
+	async encryptSymmetric(message, encKey) {
+		const [, iv, ciphertext] = await zeroPage.cmd("aesEncrypt", [
+			JSON.stringify(message),
+			encKey
+		]);
+		return `${iv}|${ciphertext}`;
+	}
+	async decryptSymmetric(message, encKey) {
+		const [iv, ciphertext] = message.split("|");
+		const res = await zeroPage.cmd("aesDecrypt", [iv, ciphertext, encKey]);
+		if(!res) {
+			throw new Error("Could not decrypt message");
+		}
+		return JSON.parse(res);
+	}
+	async generateRandomSymmetricKey() {
+		return (await zeroPage.cmd("aesEncrypt", ["test"]))[0];
+	}
+
+
+	// Sign/verify via ECDSA
+	// We use stableStringify to make sure the same message is signed and
+	// verified.
+	async sign(message, privateKey) {
+		return await zeroPage.cmd("ecdsaSign", [
+			stableStringify(message), privateKey
+		]);
+	}
+	async verify(message, address, signature) {
+		return await zeroPage.cmd("ecdsaVerify", [
+			stableStringify(message), address, signature
+		]);
+	}
+	async privateKeyToAddress(privateKey) {
+		const publicKey = await zeroPage.cmd("privToPub", [
+			Buffer.from(privateKey, "base64").toString("hex")
+		]);
+		return await zeroPage.cmd("pubToAddr", [publicKey]);
 	}
 };

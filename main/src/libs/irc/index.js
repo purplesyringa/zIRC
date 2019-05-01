@@ -1,5 +1,5 @@
 import Channel from "./object/channel";
-// import Group from "./object/group";
+import Group from "./object/group";
 import User from "./object/user";
 import HelloBot from "./object/hellobot";
 import JSBot from "./object/jsbot";
@@ -17,8 +17,8 @@ export default new class IRC {
 
 		if(id[0] === "#") {
 			this.objectCache[id] = await Channel.get(id);
-		// } else if(id[0] === "+") {
-		// 	this.objectCache[id] = Group(id);
+		} else if(id[0] === "+") {
+			this.objectCache[id] = await Group.get(id.substr(1));
 		} else if(id[0] === "@") {
 			this.objectCache[id] = await User.get(`auth_address:${id.substr(1)}`);
 		} else if(id === "/HelloBot") {

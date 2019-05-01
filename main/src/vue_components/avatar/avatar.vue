@@ -73,7 +73,7 @@
 				if(this.channel[0] === "#") {
 					// It's a public channel
 					return "channel";
-				} else if(this.channel[0] === "!") {
+				} else if(this.channel[0] === "+") {
 					// It's a private group
 					return "group";
 				} else if(this.channel[0] === "/") {
@@ -112,7 +112,7 @@
 			},
 
 			useJdenticon() {
-				return this.type === "user-id" || this.type === "user-name";
+				return ["user-id", "user-name", "group"].indexOf(this.type) > -1;
 			},
 
 			rgbHash() {

@@ -1,84 +1,103 @@
 <template>
-	<main>
-		<div class="info">
-			You are logged in as
-			<span class="monospace">
-				{{username}}
-				<a @click="login">[Change]</a>
-			</span>
-		</div>
+	<div class="root">
+		<main>
+			<div class="info">
+				You are logged in as
+				<span class="monospace">
+					{{username}}
+					<a @click="login">[Change]</a>
+				</span>
+			</div>
 
-		<div>
-			<textarea
-				v-model="message"
-				ref="message"
-				class="input"
-				placeholder="Type here..."
-				@keypress.enter.exact.prevent="submit"
-				@input="autoreplace"
-			/>
-		</div>
+			<div>
+				<textarea
+					v-model="message"
+					ref="message"
+					class="input"
+					placeholder="Type here..."
+					@keypress.enter.exact.prevent="submit"
+					@input="autoreplace"
+				/>
+			</div>
 
-		<div>
-			<button class="right" title="Delete history from permanent storage" @click="deleteHistory">
-				<icon name="trash" />
-			</button>
-		</div>
+			<div>
+				<button class="right" title="Delete history from permanent storage" @click="deleteHistory">
+					<icon name="trash" />
+				</button>
+			</div>
 
-		<div class="messages">
-			<Message
-				v-for="message in reverseHistory"
-				:key="message.messages[0].id"
+			<div class="messages">
+				<template v-for="message in reverseHistory">
+					<SpecialMessage
+						v-if="message.special"
+						v-bind="message"
+						:key="message.messages[0].id"
+					/>
+					<Message
+						v-else
+						v-bind="message"
+						@sendButton="sendButton"
+						:key="message.messages[0].id"
+					/>
+				</template>
+			</div>
+		</main>
 
-				v-bind="message"
-				@sendButton="sendButton"
-			/>
-		</div>
-	</main>
+		<GroupSidebar
+			v-if="currentObject instanceof Group"
+			:object="currentObject"
+		/>
+	</div>
 </template>
 
 <style lang="sass" scoped>
-	main
-		padding: 32px
+	.root
+		display: flex
+		flex-direction: row
 		flex: 1 0 0
-		overflow-y: auto
 
-		.input, button
-			font-family: "Courier New", monospace
-			font-size: 16px
-			padding: 8px 12px
-			border: none
+		> main
+			padding: 32px
+			flex: 1 0 0
+			overflow-y: auto
 
-			[theme=dark] &
-				background-color: #444
-			[theme=light] &
-				background-color: #FDD
-
-		.input
-			width: 100%
-			resize: none
-			height: 1em
-		button
-			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2)
-
-		.right
-			margin-top: 16px
-			float: right
-
-		.info
-			margin-bottom: 16px
-
-			.monospace
+			.input, button
 				font-family: "Courier New", monospace
 				font-size: 16px
+				padding: 8px 12px
+				border: none
 
-		.messages
-			margin-top: 32px
+				[theme=dark] &
+					background-color: #444
+				[theme=light] &
+					background-color: #FDD
+
+			.input
+				width: 100%
+				resize: none
+				height: 1em
+			button
+				box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2)
+
+			.right
+				margin-top: 16px
+				float: right
+
+			.info
+				margin-bottom: 16px
+
+				.monospace
+					font-family: "Courier New", monospace
+					font-size: 16px
+
+			.messages
+				margin-top: 32px
 </style>
 
 <script type="text/javascript">
 	import IRC from "libs/irc";
 	import {zeroPage, zeroAuth} from "zero";
+	import Group from "libs/irc/object/group";
 	import autosize from "autosize";
 	import "vue-awesome/icons/trash";
 	import emojis from "./emojis";
@@ -89,7 +108,8 @@
 			return {
 				message: "",
 				currentObject: null,
-				history: []
+				history: [],
+				Group
 			};
 		},
 
@@ -237,6 +257,8 @@
 						const prevPost = posts[++i];
 						if(
 							prevPost &&
+							!prevPost.message.special &&
+							!curPost.message.special &&
 							prevPost.authAddress === curPost.authAddress &&
 							prevPost.certUserId === curPost.certUserId &&
 							!prevPost.message.buttons &&
@@ -253,6 +275,7 @@
 						authAddress: curPost.authAddress,
 						certUserId: curPost.certUserId,
 						receiveDate: curPost.receiveDate,
+						special: curPost.message.special,
 						messages
 					});
 				}
