@@ -228,4 +228,18 @@ export default class Group extends Speakable {
 		message.adminSig = await CryptMessage.sign(message);
 		await this._send(message);
 	}
+
+
+	async send(text) {
+		if(text.startsWith("/title ")) {
+			const title = text.replace("/title ", "");
+			await this.sendAdminSigned({
+				special: "setTitle",
+				title
+			});
+			return;
+		}
+
+		await super.send(text);
+	}
 }

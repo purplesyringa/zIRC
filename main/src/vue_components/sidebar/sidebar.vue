@@ -598,8 +598,10 @@
 					} else if(message.message.special === "dismiss") {
 						body = `${origName} dismissed the invite.`;
 					} else if(message.message.adminSig) {
-						if(message.message.special) {
+						if(message.message.special === "makeAdmin") {
 							body = `${origName} made ${distName} an administrator.`;
+						} else if(message.message.special === "setTitle") {
+							body = `${origName} changed group title to ${message.message.title}.`;
 						} else {
 							body = `${origName} fucked up the messages`;
 						}

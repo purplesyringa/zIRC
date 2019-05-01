@@ -20,6 +20,10 @@
 				<code>{{name}}</code> made <code>{{nameMessage}}</code> an
 				administrator.
 			</template>
+			<template v-else-if="message.special === 'setTitle'">
+				<code>{{name}}</code> changed group title to
+				<code>{{message.title}}</code>.
+			</template>
 			<template v-else>
 				<code>{{name}}</code> fucked up the messages.
 			</template>
