@@ -9,7 +9,7 @@ export default class Group extends Speakable {
 	constructor(name) {
 		super(name);
 
-		[this.encKey, this.adminAddr] = name.split(":");
+		[this.encKey, this.adminAddr] = name.substr(1).split(":");
 
 		this.initLock = new Lock();
 
@@ -235,7 +235,7 @@ export default class Group extends Speakable {
 	async sendAdminSigned(message) {
 		// Get admin key
 		const userStorage = await UserStorage.get();
-		const adminKey = (userStorage.groupAdminKeys || {})[this.name];
+		const adminKey = (userStorage.groupAdminKeys || {})[this.name.substr(1)];
 		if(!adminKey) {
 			throw new Error("You're not an administrator of this group");
 		}
