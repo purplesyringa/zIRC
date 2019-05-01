@@ -354,6 +354,11 @@ export default class HelloBot extends Bot {
 				storage.notificationsEnabled = true;
 				await UserStorage.set(storage);
 
+				await zeroPage.cmd("wrapperWebNotification", [
+					"Notifications are enabled!",
+					"enableNotifications"
+				]);
+
 				this.send(dedent`
 					Done. You will now get a notification when someone sends a
 					message.
