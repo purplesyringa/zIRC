@@ -383,7 +383,7 @@
 
 				await this.saveChannels();
 
-				if(this.current === channel) {
+				if(this.current === channel.name) {
 					// Open #lobby if we removed the current channel
 					this.open("#lobby");
 				}
