@@ -18,11 +18,11 @@
  "ignore": "",
  "inner_path": "content.json",
  "merged_type": "IRC",
- "modified": 1555427783,
+ "modified": 1556693462,
  "postmessage_nonce_security": true,
  "signers_sign": "HAgJxbLckxkhRdK8Q9EiFWCoFzuzv6cXLq1KJOug8OqpMwnTzzyTDWfNM8URGHubG/G3pVHdbDUF3dhF2g91TYc=",
  "signs": {
-  "1BdN9PbGxqnZ8X9egY664rPCNVWNPQTAVT": "HGAR9sipe1KT3PHisrLjAURboiCriNiufxWEzXBt1bw+Tf1bmKby+nTwc5U8xDwAl9nDCvkguhTIVnjkHE39CEo="
+  "1BdN9PbGxqnZ8X9egY664rPCNVWNPQTAVT": "G/d7ErHGVLOSAE2tWGAZNzRQgm+5kpT5qSSreW7KDZKYc0uaek5ZIi1NNXpLJm8SKeMZ8nv8y1Wje2CzCylz2tI="
  },
  "signs_required": 1,
  "title": "PeerMessage hub",
