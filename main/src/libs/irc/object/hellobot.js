@@ -14,6 +14,7 @@ const SLASH_COMMANDS = [
 	[
 		{text: "/help"},
 		{text: "/storage"},
+		{text: "/integrations"},
 		{text: "/notifications"}
 	],
 	[
@@ -29,6 +30,27 @@ const SLASH_COMMANDS = [
 		{text: "/restartdeployer", color: "yellow"},
 		{text: "/publish", color: "yellow"}
 	]
+];
+
+const INTEGRATION_ADDRESSES = [
+	"18Pfr2oswXvD352BbJvo59gZ3GbdbipSzh", // KopyKate
+	"14c5LUN73J7KKMznp9LvZWkxpZFWgE1sDz", // KxoVid
+	"1BLogC9LN4oPDcruNz3qo1ysa133E9AGg8", // ZeroBlog
+	"1KiwiBCVBUcuypVm8FEmUW9YT6fJDXkN9r", // Kiwipedia
+	"1GitLiXB6t5r8vuU2zC6a8GYj9ME6HMQ4t", // Git Center
+	"1TaLkFrMwvbNsooF4ioKAY9EuxTBTjipT",  // ZeroTalk
+	"1uPLoaDwKzP6MCGoVzw48r4pxawRBdmQc",  // ZeroUp
+	"1CiXRY9ATZSoZqBzwMfXEMsKtPRt2aQoF2", // ZeroUp Unlimited
+	"138R53t3ZW7KDfSfxVpWUsMXgwUnsDNXLP", // ZeroWiki
+	"1LX2wiouHctuUXtu5WkVM9TJJ3YoL6gAfm", // New ZeroWiki
+	"1Jtjb5CU9aod4jtz8hF5NPPqFKofRSsb4x", // ZeroTuto
+	"1CVmbCKWtbskK2GAZLM6gnMuiL6Je25Yds", // ZeroMedium
+	"1GTVetvjTEriCMzKzWSP9FahYoMPy6BG1P", // KxoNetwork
+	"1PHBjZSAc6mHDMkySJNs3XeSXUL7eY7Q7W", // KxoQA
+	"1MeFqFfFFGQfa1J3gJyYYUvb5Lksczq7nH", // ZeroMe
+	"1CodEr7T9xNXSPcwbsvf5fHTqsixDMwDzL", // CodeR
+	"1BTZh5pymEKzMYr3qgDtgr4dMmap77QvEs", // StreamZ
+	"1MQveQ3RPpimXX2wjW2geAGkNJ1GdXkvJ3"  // ZeroLSTN
 ];
 
 export default class HelloBot extends Bot {
@@ -88,19 +110,26 @@ export default class HelloBot extends Bot {
 
 			this.send(
 				dedent`
-					Help: /storage -- create a new permanent storage;
-					/notifications -- enable or disable web notifications;
-					/newbot -- create a new bot (like me!); /deploybot -- make
-					your bot available under a short name; /undeploybot -- take
-					your bot off the public storage; /renamebot -- rename your
-					bot; /deletebot -- delete your bot completely; /mybots --
-					get a list of my bots;
+					Help:
 
-					###### Admin-only commands
+					/storage -- create a new permanent storage;<br>
+					/integrations -- enable integration with ZeroMe, ZeroUp,
+					KxoVid, etc.;<br>
+					/notifications -- enable or disable web notifications;<br>
+					/newbot -- create a new bot (like me!);<br>
+					/deploybot -- make your bot available under a short
+					name;<br>
+					/undeploybot -- take your bot off the public storage;<br>
+					/renamebot -- rename your bot;<br>
+					/deletebot -- delete your bot completely;<br>
+					/mybots -- get a list of my bots;<br>
 
-					/initdeployer -- init a deployer to handle bot deployment;
-					/restartdeployer -- restart the bot deployer; /publish --
-					publish zIRC site
+					Admin-only commands:
+
+					/initdeployer -- init a deployer to handle bot
+					deployment;<br>
+					/restartdeployer -- restart the bot deployer;<br>
+					/publish -- publish zIRC site
 				`,
 				SLASH_COMMANDS
 			);
@@ -117,6 +146,25 @@ export default class HelloBot extends Bot {
 
 			const siteInfo = await zeroPage.getSiteInfo();
 			zeroPage.cmd("siteClone", [siteInfo.address, "storage"]);
+			return;
+		} else if(message.text === "/integrations") {
+			await sleep(1000);
+
+			this.send(dedent`
+				You'll see a lot of questions popping up right now, please
+				accept them all.
+			`);
+
+			await sleep(1000);
+
+			for(const address of INTEGRATION_ADDRESSES) {
+				await zeroPage.cmd("corsPermission", [address]);
+			}
+
+			await sleep(1000);
+
+			this.send("Integrations are ready now!");
+
 			return;
 		} else if(message.text === "/notifications") {
 			await sleep(1000);
@@ -339,8 +387,14 @@ export default class HelloBot extends Bot {
 			this.send(
 				dedent`
 					By the way, I have some interesting features you might
-					want to learn about. Press "/help" button if you want to
-					learn about them!
+					want to learn about.
+
+					First, you can enable web notifications by pressing
+					"/notifications" button. Second, you can enable integrations
+					with ZeroTalk, ZeroMe, KxoVid, etc. by pressing
+					"/integrations".
+
+					Press "/help" button if you want to learn more! ^_^
 				`,
 				SLASH_COMMANDS
 			);
