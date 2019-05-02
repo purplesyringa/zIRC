@@ -175,8 +175,6 @@ export default new class FileTransport extends EventEmitter {
 			authAddresses = [authAddress];
 		}
 
-		console.log("Pin", authAddresses, "/", id);
-
 		// Get optional file info
 		const allInfos = (await Promise.all(
 			authAddresses

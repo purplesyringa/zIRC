@@ -156,6 +156,8 @@ export default new class InviteStorage extends EventEmitter {
 				return;
 			}
 
+			console.log("Parse group invite", encKey, adminAddr);
+
 			this.groupInvites.push({encKey, adminAddr});
 			this.emit("invitesUpdated");
 		});
