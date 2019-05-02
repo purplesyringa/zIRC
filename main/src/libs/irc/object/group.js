@@ -256,6 +256,23 @@ export default class Group extends Speakable {
 			});
 			this.visibleName = title;
 			return;
+		} else if(text === "/away") {
+			await this._send({
+				special: "away",
+				reason: null
+			});
+			return;
+		} else if(text.startsWith("/away ")) {
+			await this._send({
+				special: "away",
+				reason: text.replace("/away ", "")
+			});
+			return;
+		} else if(text === "/back") {
+			await this._send({
+				special: "back"
+			});
+			return;
 		}
 
 		await super.send(text);

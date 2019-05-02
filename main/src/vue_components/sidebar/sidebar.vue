@@ -622,6 +622,14 @@
 						body = `${origName} joined the conversation.`;
 					} else if(message.message.special === "dismiss") {
 						body = `${origName} dismissed the invite.`;
+					} else if(message.message.special === "away") {
+						if(message.message.reason) {
+							body = `${origName} is away ${message.message.reason}.`;
+						} else {
+							body = `${origName} is away.`;
+						}
+					} else if(message.message.special === "back") {
+						body = `${origName} is back.`;
 					} else if(message.message.adminSig) {
 						if(message.message.special === "makeAdmin") {
 							body = `${origName} made ${distName} an administrator.`;
