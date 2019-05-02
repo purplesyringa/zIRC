@@ -8,7 +8,7 @@
 					<Avatar
 						:channel="member.name"
 						:authAddress="member.authAddress"
-						:status="member.status"
+						:status="statuses[member.authAddress]"
 					/>
 
 					<div class="content">
@@ -24,7 +24,7 @@
 					<Avatar
 						:channel="member.name"
 						:authAddress="member.authAddress"
-						:status="member.status"
+						:status="statuses[member.authAddress]"
 					/>
 
 					<div class="content">
@@ -143,13 +143,13 @@
 		data() {
 			return {
 				object: null,
-				updateInterval: null
+				updateInterval: null,
+				statuses: {}
 			};
 		},
 
 		mounted() {
 			this.updateInterval = setInterval(() => this.updatePings(), 5000);
-			this.updatePings();
 		},
 		destroyed() {
 			clearInterval(this.updateInterval);
@@ -198,11 +198,23 @@
 
 			updatePings() {
 				for(const member of this.allMembers) {
+					let status;
 					if(Date.now() - member.object.lastPing > 60000) {
-						member.status = "offline";
+						status = "offline";
 					} else {
-						member.status = "online";
+						let lastStatus = this.object.history.filter(message => {
+							return (
+								message.authAddress === member.authAddress &&
+								["away", "back"].indexOf(message.message.special) > -1
+							);
+						}).slice(-1)[0];
+						if(lastStatus) {
+							status = lastStatus.message.special === "away" ? "away" : "online";
+						} else {
+							status = "online";
+						}
 					}
+					this.$set(this.statuses, member.authAddress, status);
 				}
 			}
 		},
@@ -276,7 +288,6 @@
 									return {
 										name: certUserId || `@${member}`,
 										authAddress: member,
-										status: "",
 										object: await IRC.getObjectById(`@${member}`)
 									};
 								})
