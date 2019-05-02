@@ -589,6 +589,11 @@
 					return;
 				}
 
+				// Only non-instant messages should be notified
+				if(message.message.instant) {
+					return;
+				}
+
 				// Generate random notification ID
 				const id = Math.random().toString(36).substr(2);
 				// Send the notification

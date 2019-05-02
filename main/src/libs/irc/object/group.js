@@ -170,7 +170,7 @@ export default class Group extends Speakable {
 			return;
 		}
 
-		transport.send(`+${this.encKey}:${this.adminAddr}`, {
+		await transport.send(`+${this.encKey}:${this.adminAddr}`, {
 			cmd: "group",
 			message: await CryptMessage.encryptSymmetric(message, this.encKey)
 		});

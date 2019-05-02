@@ -47,7 +47,7 @@ export default class Speakable extends EventEmitter {
 
 			this.countUnread = this.history.filter(message => {
 				const date = message.receiveDate || message.message.date;
-				return date > this.lastRead;
+				return date > this.lastRead && !message.message.instant;
 			}).length;
 		})();
 	}
@@ -91,7 +91,7 @@ export default class Speakable extends EventEmitter {
 			if(this.lastRead) {
 				this.countUnread = this.history.filter(message => {
 					const date = message.receiveDate || message.message.date;
-					return date > this.lastRead;
+					return date > this.lastRead && !message.message.instant;
 				}).length;
 			}
 		}
@@ -129,7 +129,7 @@ export default class Speakable extends EventEmitter {
 		});
 	}
 
-	async _send(message) {
+	async _send(message, transports=[PeerTransport, FileTransport]) {
 		message = {
 			date: Date.now(),
 			id: Math.random().toString(36).substr(2) + "/" + Date.now(),
@@ -145,12 +145,13 @@ export default class Speakable extends EventEmitter {
 		});
 
 		// Use Promise.all to handle errors
-		await Promise.all([
-			// Transfer via peers
-			this._transfer(message, PeerTransport),
-			// Transfer via files
-			this._transfer(message, FileTransport)
-		]);
+		await Promise.all(transports.map(async t => await this._transfer(message, t)));
+	}
+	async _sendInstant(message) {
+		await this._send({
+			instant: true,
+			...message
+		}, [PeerTransport]);
 	}
 
 	async _received({authAddress, certUserId, message}) {
@@ -164,12 +165,17 @@ export default class Speakable extends EventEmitter {
 				message
 			};
 
-			this.countUnread++;
+			if(!message.instant) {
+				this.countUnread++;
+			}
 
 			await this.loadHistory();
 			this.history.push(object);
 
-			Storage.save(this.name, object);
+			if(!message.instant) {
+				Storage.save(this.name, object);
+			}
+
 			this.emit("received", object);
 		}
 	}

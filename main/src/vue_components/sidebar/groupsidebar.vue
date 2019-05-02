@@ -12,7 +12,9 @@
 					/>
 
 					<div class="content">
-						<div class="name">{{member.name}}</div>
+						<div :class="['name', {typing: typing[member.authAddress]}]">
+							{{member.name}}
+						</div>
 					</div>
 				</div>
 			</template>
@@ -28,7 +30,9 @@
 					/>
 
 					<div class="content">
-						<div class="name">{{member.name}}</div>
+						<div :class="['name', {typing: typing[member.authAddress]}]">
+							{{member.name}}
+						</div>
 						<button v-if="isAdmin" @click="makeAdmin(member)">Make admin</button>
 					</div>
 				</div>
@@ -97,6 +101,11 @@
 						overflow: hidden
 						white-space: nowrap
 						text-overflow: ellipsis
+						&.typing
+							[theme=dark] &
+								animation: typing-dark 2s infinite
+							[theme=light] &
+								animation: typing-light 2s infinite
 					button
 						border: none
 						border-radius: 4px
@@ -131,6 +140,17 @@
 						background-color: #000
 					[theme=light] &
 						background-color: #FFF
+
+	@keyframes typing-dark
+		0%
+			color: #FFF
+		100%
+			color: #8FB
+	@keyframes typing-light
+		0%
+			color: #000
+		100%
+			color: #088
 </style>
 
 <script type="text/javascript">
@@ -144,14 +164,17 @@
 			return {
 				object: null,
 				updateInterval: null,
-				statuses: {}
+				statuses: {},
+				typing: {}
 			};
 		},
 
 		mounted() {
+			this.object.on("received", this.onReceived);
 			this.updateInterval = setInterval(() => this.updatePings(), 5000);
 		},
 		destroyed() {
+			this.object.off("received", this.onReceived);
 			clearInterval(this.updateInterval);
 		},
 
@@ -215,6 +238,16 @@
 						}
 					}
 					this.$set(this.statuses, member.authAddress, status);
+				}
+			},
+
+			onReceived(message) {
+				if(message.message.special === "typing") {
+					this.$set(
+						this.typing,
+						message.authAddress,
+						message.message.isTyping
+					);
 				}
 			}
 		},

@@ -51,8 +51,8 @@ export default class Channel extends Speakable {
 		});
 	}
 
-	_transfer(message, transport) {
-		transport.send(this.name, {
+	async _transfer(message, transport) {
+		await transport.send(this.name, {
 			cmd: "channel" + this.name,
 			message
 		});

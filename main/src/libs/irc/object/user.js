@@ -264,7 +264,7 @@ export default class User extends Speakable {
 			return;
 		}
 
-		transport.send(`@${this.encId}`, {
+		await transport.send(`@${this.encId}`, {
 			cmd: "user",
 			message: await CryptMessage.encrypt(message, publicKey)
 		});

@@ -16,7 +16,7 @@
 					class="input"
 					placeholder="Type here..."
 					@keypress.enter.exact.prevent="submit"
-					@input="autoreplace"
+					@input="onInput"
 				/>
 			</div>
 
@@ -100,6 +100,7 @@
 	import IRC from "libs/irc";
 	import {zeroPage, zeroAuth} from "zero";
 	import Group from "libs/irc/object/group";
+	import PeerTransport from "libs/irc/transport/peer";
 	import autosize from "autosize";
 	import "vue-awesome/icons/trash";
 	import emojis from "libs/emojis";
@@ -111,6 +112,8 @@
 				message: "",
 				currentObject: null,
 				history: [],
+				pingInterval: null,
+				currentIsTyping: false,
 				Group
 			};
 		},
@@ -123,6 +126,9 @@
 			this.currentObject.on("received", this.onReceived);
 			this.currentObject.markRead();
 
+			this.pingInterval = setInterval(() => this.ping(), 40000);
+			setTimeout(() => this.ping(), 5000);
+
 			document.addEventListener("visibilitychange", this.onVisibilityChange);
 		},
 		destroyed() {
@@ -130,6 +136,8 @@
 				this.history = [];
 				this.currentObject.off("received", this.onReceived);
 			}
+
+			clearInterval(this.pingInterval);
 
 			document.removeEventListener("visibilitychange", this.onVisibilityChange);
 		},
@@ -142,6 +150,7 @@
 
 				const message = this.message.trim();
 				this.message = "";
+				this.onInput();
 				this.$refs.message.focus();
 				setTimeout(() => {
 					autosize.update(this.$refs.message);
@@ -182,6 +191,26 @@
 			async deleteHistory() {
 				await this.currentObject.deleteHistory();
 				this.history = await this.currentObject.refreshHistory();
+			},
+
+			async ping() {
+				PeerTransport.send(null, {
+					cmd: "ping"
+				});
+				this.currentObject._sendInstant({
+					special: "typing",
+					isTyping: this.message.trim() !== ""
+				});
+			},
+
+			onInput() {
+				const isTyping = this.message.trim() !== "";
+				if(isTyping !== this.currentIsTyping) {
+					this.currentIsTyping = isTyping;
+					this.ping();
+				}
+
+				this.autoreplace();
 			},
 
 			autoreplace() {
@@ -258,7 +287,11 @@
 			},
 			reverseHistory() {
 				// Combine posts by one user, posted within 2 minutes
-				const posts = this.history.slice().reverse();
+				const posts = this.history
+					.slice()
+					.reverse()
+					.filter(m => !m.message.instant);
+
 				let i = 0;
 				let result = [];
 

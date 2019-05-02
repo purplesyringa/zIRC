@@ -93,17 +93,3 @@ zeroPage.on("setSiteInfo", msg => {
 	store.commit("setSiteInfo", msg.params);
 	app.$eventBus.$emit("setSiteInfo", msg.params);
 });
-
-
-// Send pings
-import PeerTransport from "libs/irc/transport/peer";
-setInterval(() => {
-	PeerTransport.send(null, {
-		cmd: "ping"
-	});
-}, 40000);
-setTimeout(() => {
-	PeerTransport.send(null, {
-		cmd: "ping"
-	});
-}, 5000);
