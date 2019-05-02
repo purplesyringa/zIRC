@@ -12,6 +12,8 @@
 			<span class="big">{{icon[1] || ""}}</span>
 			<span class="small">{{icon[0] ? "&nbsp;" : ""}}</span>
 		</template>
+
+		<div v-if="status" :class="['status', `status-${status}`]"></div>
 	</div>
 </template>
 
@@ -22,6 +24,8 @@
 		height: 64px
 		border-radius: 50%
 		vertical-align: middle
+
+		position: relative
 
 		text-align: center
 		font-family: Verdana, Arial, sans-serif
@@ -53,6 +57,33 @@
 		.big
 			font-size: 30px
 			vertical-align: top
+
+
+		.status
+			display: inline-block
+			width: 12px
+			height: 12px
+			position: absolute
+			right: 4px
+			bottom: 4px
+
+			border-radius: 50%
+
+			[theme=dark] &
+				&.status-online
+					background-color: #6DEA64
+				&.status-offline
+					background-color: #ED4C3D
+				&.status-away
+					background-color: #F2AE30
+			[theme=light] &
+				&.status-online
+					background-color: #29FF62
+				&.status-offline
+					background-color: #FF392A
+				&.status-away
+					background-color: #FFB42B
+			background: red
 </style>
 
 <script type="text/javascript">
@@ -60,11 +91,12 @@
 
 	export default {
 		name: "Avatar",
-		props: ["channel", "authAddress"],
+		props: ["channel", "authAddress", "status"],
 		data() {
 			return {
 				channel: "",
-				authAddress: ""
+				authAddress: "",
+				status: ""
 			};
 		},
 

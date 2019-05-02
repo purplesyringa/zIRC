@@ -33,7 +33,7 @@ export default new class FileTransport extends EventEmitter {
 						// We can't use top-level import because of circular dependency loop
 						const IRC = (await import("libs/irc")).default;
 
-						const user = IRC.getObjectById(`@${authAddress}`);
+						const user = await IRC.getObjectById(`@${authAddress}`);
 						await user.initLock.peek();
 						if(user.wasTheirInviteHandled) {
 							continue;
@@ -79,7 +79,7 @@ export default new class FileTransport extends EventEmitter {
 						// We can't use top-level import because of circular dependency loop
 						const IRC = (await import("libs/irc")).default;
 
-						const group = IRC.getObjectById(`+${encKey}:${adminAddr}`);
+						const group = await IRC.getObjectById(`+${encKey}:${adminAddr}`);
 						await group.initLock.peek();
 						if(!group.wasInvited || group.hasJoined || group.hasDismissed) {
 							continue;
