@@ -24,6 +24,10 @@
 							</div>
 						</div>
 					</div>
+
+					<Integration
+						:url="getIntegration(message.text)"
+					/>
 				</div>
 			</div>
 		</div>
@@ -212,21 +216,8 @@
 </style>
 
 <script type="text/javascript">
-	import marked from "marked";
-	import sanitizeHtml from "sanitize-html";
-	import hljs from "highlight.js/lib/highlight";
+	import markdown from "libs/markdown";
 	import emojis from "libs/emojis";
-
-	// Do not optimize the lines below using a for loop, this will break WebPack
-	// optimizations
-	const context = require.context(
-		"highlight.js/lib/languages", false,
-		/\b(apache|asp|brainfuck|c|cfm|clojure|cmake|cpp|cs|csharp|css|csv|bash|diff|elixir|go|haml|http|java|javascript|json|jsx|less|make|markdown|matlab|nginx|objectivec|pascal|php|perl|python|rust|shell|sql|scss|sql|svg|swift|ruby|vim|vue|xml|yaml)\b/
-	);
-	for(const name of context.keys()) {
-		const language = name.replace("./", "").replace(".js", "");
-		hljs.registerLanguage(language, context(name));
-	}
 
 	export default {
 		name: "Message",
@@ -263,39 +254,16 @@
 					return `<span class="emoji">${text}</span>`;
 				}
 
-				return sanitizeHtml(
-					marked(text, {
-						gfm: true,
-						silent: true,
-						tables: true,
-						highlight(code, lang) {
-							if(lang) {
-								return hljs.highlight(lang, code).value;
-							} else {
-								return hljs.highlightAuto(code).value;
-							}
-						}
-					}),
-					{
-						allowedTags: [
-							"h1", "h2", "h3", "h4", "h5", "h6", "blockquote",
-							"p", "a", "ul", "ol", "nl", "li", "b", "i",
-							"strong", "em", "strike", "code", "hr", "br", "div",
-							"table", "thead", "caption", "tbody", "tr", "th",
-							"td", "pre", "img", "span"
-						],
-						allowedAttributes: {
-							a: ["href", "name", "target"],
-							img: ["src"],
-							"*": ["class", "align"]
-						},
-						selfClosing: ["img", "br", "hr"],
-						allowedSchemes: ["http", "https", "ftp", "mailto"],
-						allowedSchemesByTag: {},
-						allowedSchemesAppliedToAttributes: ["href", "src"],
-						allowProtocolRelative: true
-					}
-				);
+				return markdown(text);
+			},
+			getIntegration(text) {
+				const node = document.createElement("div");
+				node.innerHTML = this.renderMarkdown(text);
+				const link = node.querySelector("a");
+				if(link && link.href.startsWith(`${location.origin}/`)) {
+					return link.href.replace(`${location.origin}/`, "");
+				}
+				return "";
 			}
 		}
 	};

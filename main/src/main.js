@@ -24,6 +24,8 @@ import SpecialMessage from "vue_components/message/specialmessage.vue";
 Vue.component("SpecialMessage", SpecialMessage);
 import SmallMessage from "vue_components/message/smallmessage.vue";
 Vue.component("SmallMessage", SmallMessage);
+import Integration from "vue_components/message/integration.vue";
+Vue.component("Integration", Integration);
 import ClearFix from "vue_components/clearfix.vue";
 Vue.component("ClearFix", ClearFix);
 
