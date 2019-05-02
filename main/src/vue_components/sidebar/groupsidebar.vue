@@ -41,7 +41,7 @@
 					<Avatar
 						:channel="member.name"
 						:authAddress="member.authAddress"
-						:status="member.status"
+						:status="statuses[member.authAddress]"
 					/>
 
 					<div class="content">
