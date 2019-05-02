@@ -128,6 +128,9 @@
 									color: #FAA
 									background-color: #FAA
 									border-color: #FAA
+							h1, h2, h3, h4, h5, h6
+								margin: 16px 0
+								line-height: 1em
 							h1
 								font-size: 2em
 							h2

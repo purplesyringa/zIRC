@@ -94,10 +94,13 @@ export default class HelloBot extends Bot {
 					your bot available under a short name; /undeploybot -- take
 					your bot off the public storage; /renamebot -- rename your
 					bot; /deletebot -- delete your bot completely; /mybots --
-					get a list of my bots; /initdeployer -- [admin-only command]
-					init a deployer to handle bot deployment; /restartdeployer
-					-- [admin-only command] restart the bot deployer; /publish
-					-- [admin-only command] publish zIRC site
+					get a list of my bots;
+
+					###### Admin-only commands
+
+					/initdeployer -- init a deployer to handle bot deployment;
+					/restartdeployer -- restart the bot deployer; /publish --
+					publish zIRC site
 				`,
 				SLASH_COMMANDS
 			);

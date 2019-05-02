@@ -20,6 +20,10 @@ class SpeakableBot extends Speakable {
 	}
 
 	async _transfer(message) {
+		if(message.instant) {
+			return;
+		}
+
 		if(this._readMessages[message.id]) {
 			return;
 		}
