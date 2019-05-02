@@ -26,6 +26,9 @@
 		<template v-else-if="message.special === 'back'">
 			<code>{{name}}</code> is back.
 		</template>
+		<template v-else-if="message.special === 'is'">
+			<code>{{name}}</code> is {{message.what}}.
+		</template>
 		<template v-else-if="message.adminSig">
 			<template v-if="message.special === 'makeAdmin'">
 				<code>{{name}}</code> made <code>{{nameMessage}}</code> an

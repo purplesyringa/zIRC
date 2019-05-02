@@ -630,6 +630,8 @@
 						}
 					} else if(message.message.special === "back") {
 						body = `${origName} is back.`;
+					} else if(message.message.special === "is") {
+						body = `${origName} is ${message.message.what}.`;
 					} else if(message.message.adminSig) {
 						if(message.message.special === "makeAdmin") {
 							body = `${origName} made ${distName} an administrator.`;

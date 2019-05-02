@@ -116,6 +116,14 @@ export default class Speakable extends EventEmitter {
 	}
 
 	async send(message) {
+		if(message.startsWith("/is ")) {
+			await this._send({
+				special: "is",
+				what: message.replace("/is ", "")
+			});
+			return;
+		}
+
 		await this._send({
 			text: message
 		});
